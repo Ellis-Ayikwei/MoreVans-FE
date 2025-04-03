@@ -4,9 +4,9 @@ import { useChat } from '../../contexts/ChatContext';
 import ChatList from '../../components/Chat/ChatList';
 import ChatContainer from '../../components/Chat/ChatContainer';
 import EmptyChat from '../../components/Chat/EmptyChat';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faPlus } from '@fortawesome/free-solid-svg-icons';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 const ChatPage: React.FC = () => {
   const { chatId } = useParams<{ chatId?: string }>();
@@ -87,11 +87,12 @@ const ChatPage: React.FC = () => {
                   </button>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                  <ChatList 
-                    chats={chats} 
+                  <ChatList
+                    chats={chats}
                     selectedChatId={selectedChatId || chatId}
                     onSelectChat={handleSelectChat}
-                    loading={loading}
+                    loading={loading} 
+                    type={'provider'}     // This might need to be dynamic
                   />
                 </div>
               </div>
@@ -108,6 +109,11 @@ const ChatPage: React.FC = () => {
                     onSetTyping={setTyping}
                     onStopTyping={stopTyping}
                   />
+                ) : loading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    <p className="ml-2">Loading chat...</p>
+                  </div>
                 ) : (
                   <EmptyChat onNewChat={handleNewChat} />
                 )}

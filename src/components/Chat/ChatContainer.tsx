@@ -4,49 +4,32 @@ import ChatThread from './ChatThread';
 import ChatInput from './ChatInput';
 import EmptyChat from './EmptyChat';
 import ProviderInfo from './ProviderInfo';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 interface ChatContainerProps {
-  selectedChat?: {
+  chat: {
     id: string;
     name: string;
-    avatar?: string;
-    isOnline: boolean;
-    messages: any[];
-    provider: {
-      id: string;
-      name: string;
-      avatar?: string;
-      rating: number;
-      reviewCount: number;
-      company?: string;
-      email?: string;
-      phone?: string;
-    };
-    booking?: {
-      id: string;
-      status: string;
-      date: string;
-      service: string;
-    };
+    messages: Array<any>;
+    // other properties
   };
+  onBack?: () => void;
   onSendMessage: (chatId: string, message: string, attachments?: File[]) => void;
-  onTyping: (chatId: string) => void;
+  onSetTyping: (chatId: string) => void;
   onStopTyping: (chatId: string) => void;
   isTyping?: boolean;
   typingUser?: string;
-  onBackClick?: () => void;
   loading?: boolean;
 }
 
 const ChatContainer: React.FC<ChatContainerProps> = ({
-  selectedChat,
+  chat,
   onSendMessage,
-  onTyping,
+  onSetTyping,
   onStopTyping,
   isTyping = false,
   typingUser = '',
-  onBackClick,
+  onBack,
   loading = false
 }) => {
   const [showInfo, setShowInfo] = useState(false);
@@ -57,40 +40,40 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     if (isMobile) {
       setShowInfo(false);
     }
-  }, [selectedChat?.id, isMobile]);
+  }, [chat?.id, isMobile]);
   
-  if (!selectedChat) {
+  if (!chat) {
     return <EmptyChat />;
   }
   
   const handleSendMessage = (message: string, attachments?: File[]) => {
-    onSendMessage(selectedChat.id, message, attachments);
+    onSendMessage(chat.id, message, attachments);
   };
   
   const handleTyping = () => {
-    onTyping(selectedChat.id);
+    onSetTyping(chat.id);
   };
   
   const handleStopTyping = () => {
-    onStopTyping(selectedChat.id);
+    onStopTyping(chat.id);
   };
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
       <div className="flex flex-col flex-grow">
         <ChatHeader 
-          title={selectedChat.name}
-          subtitle={selectedChat.booking ? `Booking #${selectedChat.booking.id}` : ''}
-          avatar={selectedChat.avatar}
-          isOnline={selectedChat.isOnline}
-          onBackClick={isMobile ? onBackClick : undefined}
+          title={chat.name}
+          subtitle={chat.booking ? `Booking #${chat.booking.id}` : ''}
+          avatar={chat.avatar}
+          isOnline={chat.isOnline}
+          onBackClick={isMobile ? onBack : undefined}
           onInfoClick={() => setShowInfo(!showInfo)}
           isMobile={isMobile}
         />
         
         <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-850">
           <ChatThread 
-            messages={selectedChat.messages}
+            messages={chat.messages}
             isTyping={isTyping}
             typingUser={typingUser}
             loading={loading}
@@ -107,8 +90,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       {showInfo && (
         <div className={`${isMobile ? 'absolute inset-0 z-10' : ''}`}>
           <ProviderInfo 
-            provider={selectedChat.provider}
-            booking={selectedChat.booking}
+            provider={chat.provider}
+            booking={chat.booking}
             onClose={() => setShowInfo(false)}
           />
         </div>

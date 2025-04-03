@@ -29,6 +29,8 @@ import BookingDetail from '../pages/user/BookingDetail';
 import BidSelection from '../pages/user/BidSelection';
 import EditRequestForm from '../pages/EditRequestForm';
 import DisputesPage from '../pages/help and support/DisputesPage';
+import SavedProviders from '../pages/user/SavedProvider';
+import ChatPage from '../pages/chat/ChatPage';
 // import HelpCenter from '../pages/support/HelpCenter';
 // import LiveChat from '../pages/support/LiveChat';
 // import DisputeResolution from '../pages/support/DisputeResolution';
@@ -137,6 +139,21 @@ const routes = [
     {
         path: '/notifications/:id',
         element: <NotificationDetail />,
+        layout: 'default',
+    },
+    {
+        path: '/saved_providers',
+        element: <SavedProviders />,
+        layout: 'default',
+    },
+    {
+        path: '/chat',
+        element: <ChatPage />,
+        layout: 'default',
+    },
+    {
+        path: '/chat/:id',
+        element: <ChatPage />,
         layout: 'default',
     },
     // {

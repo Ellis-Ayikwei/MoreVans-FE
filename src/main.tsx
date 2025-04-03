@@ -28,6 +28,7 @@ import createStore from 'react-auth-kit/createStore';
 import { Provider } from 'react-redux';
 import authAxiosInstance from './helper/authAxiosInstance';
 import store from './store/index';
+import { ChatProvider } from './contexts/ChatContext';
 
 const refresh = createRefresh({
     interval: 60,
@@ -68,9 +69,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                     <DatesProvider settings={{ locale: 'en' }}>
                         <Provider store={store}>
                             <AuthProvider store={store1}>
+                                <ChatProvider>
                                 {/* <PersistGate loading={null} persistor={persistor}> */}
                                 <RouterProvider router={router} />
                                 {/* </PersistGate> */}
+                                </ChatProvider>
                             </AuthProvider>
                         </Provider>
                     </DatesProvider>

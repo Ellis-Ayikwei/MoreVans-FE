@@ -48,7 +48,14 @@ import {
   faCog,
   faTasks,
   faSave,
-  faWarehouse
+  faWarehouse,
+  faBookmark,
+  faUserFriends,
+  faComments,
+  faInbox,
+  faUserCircle,
+  faPaperPlane,
+  faComment,
 } from '@fortawesome/free-solid-svg-icons';
 import { Switch } from '@headlessui/react';
 
@@ -121,6 +128,24 @@ const Sidebar = () => {
             label: 'My Moves ',
             children: null
         },
+        // Add Saved Providers here
+        {
+            name: 'saved-providers',
+            path: '/saved-providers',
+            icon: <FontAwesomeIcon icon={faBookmark} className="w-5 h-5" />,
+            label: 'Saved Providers ',
+            badge: '3', // Optional: Show how many providers are saved
+            children: null
+        },
+        // Add Messages section here
+        {
+            name: 'messages',
+            path: '/chat',
+            icon: <FontAwesomeIcon icon={faComments} className="w-5 h-5" />,
+            label: 'Messages ',
+            badge: '2', // Shows number of unread messages
+            children: null
+        },
         {
             name: 'payments',
             path: '/payments',
@@ -163,6 +188,31 @@ const Sidebar = () => {
             label: 'Job Management ',
             children: null
         },
+        // Add Client Messages section here
+        {
+            name: 'client-messages',
+            icon: <FontAwesomeIcon icon={faComments} className="w-5 h-5" />,
+            label: 'Client Messages ',
+            badge: '3', // Shows number of unread client messages
+            children: [
+                { 
+                    path: '/provider/messages/inbox', 
+                    icon: <FontAwesomeIcon icon={faInbox} className="w-4 h-4" />, 
+                    label: 'Inbox',
+                    badge: '3'
+                },
+                { 
+                    path: '/provider/messages/active', 
+                    icon: <FontAwesomeIcon icon={faComment} className="w-4 h-4" />, 
+                    label: 'Active Chats' 
+                },
+                { 
+                    path: '/provider/messages/sent', 
+                    icon: <FontAwesomeIcon icon={faPaperPlane} className="w-4 h-4" />, 
+                    label: 'Sent' 
+                }
+            ]
+        },
         {
             name: 'vehicle-management',
             path: '/provider/vehicles',
@@ -198,15 +248,22 @@ const Sidebar = () => {
     // Use provider or customer navigation based on mode
     const navItems = isProviderMode ? providerNavItems : customerNavItems;
 
-    // Render a menu item with potential children
+    // Render a menu item with potential children and optional badge
     const renderMenuItem = (item: any) => {
         if (!item.children) {
             return (
                 <li key={item.path} className="menu nav-item">
                     <NavLink to={item.path} className="group">
-                        <div className="flex items-center">
-                            <div className="text-primary">{item.icon}</div>
-                            <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{item.label}</span>
+                        <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center">
+                                <div className="text-primary">{item.icon}</div>
+                                <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{item.label}</span>
+                            </div>
+                            {item.badge && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                    {item.badge}
+                                </span>
+                            )}
                         </div>
                     </NavLink>
                 </li>
@@ -220,12 +277,21 @@ const Sidebar = () => {
                     className={`nav-link group w-full ${currentMenu === item.name ? 'active' : ''}`}
                     onClick={() => toggleMenu(item.name)}
                 >
-                    <div className="flex items-center">
-                        <div className="text-primary">{item.icon}</div>
-                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{item.label}</span>
-                    </div>
-                    <div className={`rtl:rotate-180 ${currentMenu === item.name ? 'rotate-90' : ''}`}>
-                        <IconCaretsDown />
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center">
+                            <div className="text-primary">{item.icon}</div>
+                            <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{item.label}</span>
+                        </div>
+                        <div className="flex items-center">
+                            {item.badge && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 mr-2">
+                                    {item.badge}
+                                </span>
+                            )}
+                            <div className={`rtl:rotate-180 ${currentMenu === item.name ? 'rotate-90' : ''}`}>
+                                <IconCaretsDown />
+                            </div>
+                        </div>
                     </div>
                 </button>
                 
@@ -233,9 +299,16 @@ const Sidebar = () => {
                     {item.children.map((child: any) => (
                         <li key={child.path}>
                             <NavLink to={child.path}>
-                                <div className="flex items-center">
-                                    <div className="ltr:pl-7 rtl:pr-7 text-primary">{child.icon}</div>
-                                    <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{child.label}</span>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <div className="ltr:pl-7 rtl:pr-7 text-primary">{child.icon}</div>
+                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{child.label}</span>
+                                    </div>
+                                    {child.badge && (
+                                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 mr-2">
+                                            {child.badge}
+                                        </span>
+                                    )}
                                 </div>
                             </NavLink>
                         </li>
