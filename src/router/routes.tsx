@@ -2,7 +2,7 @@ import { lazy, useEffect, useState } from 'react';
 import AdminDashboard from '../pages/Dasboard/AdminDashboard';
 import Homepage from '../pages/Homepage';
 import HowItWorks from '../pages/HowItWorks';
-import ServiceRequestForm from '../pages/ServiceRequestForm';
+
 // import AnalyticsPage from '../pages/analytics';
 import Login from '../pages/auth/login';
 import Register from '../pages/auth/register';
@@ -31,6 +31,12 @@ import EditRequestForm from '../pages/EditRequestForm';
 import DisputesPage from '../pages/help and support/DisputesPage';
 import SavedProviders from '../pages/user/SavedProvider';
 import ChatPage from '../pages/chat/ChatPage';
+import LeaveReviewPage from '../pages/user/LeaveAReview';
+import ProviderReviews from '../pages/provider/reviews';
+import Home from '../pages/Home';
+import ServiceRequestForm from '../pages/ServiceRequest/servicesRequest';
+import VehicleManagement from '../pages/vehicleManagement/vehicleManagment';
+import DriversManagement from '../pages/DriverManagement/driverManagement';
 // import HelpCenter from '../pages/support/HelpCenter';
 // import LiveChat from '../pages/support/LiveChat';
 // import DisputeResolution from '../pages/support/DisputeResolution';
@@ -44,11 +50,8 @@ import ChatPage from '../pages/chat/ChatPage';
 // import ProviderHelpCenter from '../pages/provider/ProviderHelpCenter';
 // import ProviderLiveChat from '../pages/provider/ProviderLiveChat';
 
-const Index = lazy(() => import('../pages/Index'));
 
-const LoginBoxed = lazy(() => import('../pages/Authentication/LoginBoxed'));
-const RegisterBoxed = lazy(() => import('../pages/Authentication/RegisterBoxed'));
-const RecoverIdBoxed = lazy(() => import('../pages/Authentication/RecoverIdBox'));
+
 const userRole = localStorage.getItem('userRole') || '';
 const adminUsers = ['SUPER_ADMIN', 'ADMIN', 'UNDERWRITER', 'PREMIUM_ADMIN', 'SALES'];
 const personalUsers = ['MEMBER', 'REGULAR'];
@@ -77,11 +80,16 @@ const ConditionalDashboard = () => {
 };
 
 const routes = [
-    // Public routes
+    // // Public routes
+    // {
+    //     path: '/',
+    //     element: <Homepage />,
+    //     layout: 'blank',
+    // },
     {
         path: '/',
-        element: <Homepage />,
-        layout: 'default',
+        element: <Home />,
+        layout: 'blank',
     },
     {
         path: '/login',
@@ -96,7 +104,7 @@ const routes = [
     {
         path: '/how-it-works',
         element: <HowItWorks />,
-        layout: 'default',
+        layout: 'blank',
     },
     {
         path: '/faq',
@@ -127,6 +135,16 @@ const routes = [
         layout: 'default',
     },
     {
+        path: '/service-request2',
+        element: <ServiceRequestForm />,
+        layout: 'default',
+    },
+    {
+        path: '/bookings/:bookingId/review',
+        element: <LeaveReviewPage/>,
+        layout: 'default',
+    },
+    {
         path: '/edit-request/:id',
         element: <EditRequestForm />,
         layout: 'default',
@@ -142,7 +160,7 @@ const routes = [
         layout: 'default',
     },
     {
-        path: '/saved_providers',
+        path: '/saved-providers',
         element: <SavedProviders />,
         layout: 'default',
     },
@@ -269,6 +287,11 @@ const routes = [
         layout: 'default',
     },
     {
+        path: '/providers/:providerId/ratings',
+        element: <ProviderReviews />,
+        layout: 'default',
+    },
+    {
         path: '/booking-confirmation/:requestId/:providerId',
         element: <BookingConfirmation />,
         layout: 'default',
@@ -286,6 +309,16 @@ const routes = [
     {
         path: '/bidding/:serviceId',
         element: <BidSelection />,
+        layout: 'default',
+    },
+    {
+        path: 'vehicle-management',
+        element: <VehicleManagement />,
+        layout: 'default',
+    },
+    {
+        path: 'driver-management',
+        element: <DriversManagement />,
         layout: 'default',
     },
     {

@@ -317,6 +317,11 @@ const MyBookings: React.FC = () => {
     navigate(`/bookings/${bookingId}`);
   };
 
+
+  //Navigates to the review page 
+  const goToLeaveAReview = (bookingId: string) => {
+    navigate(`/bookings/${bookingId}/review`);
+  }
   // Navigates to the bid selection page
   const goToBidSelection = (bookingId: string) => {
     navigate(`/bidding/${bookingId}`);
@@ -400,7 +405,7 @@ const MyBookings: React.FC = () => {
       case 'completed':
         return (
           <button 
-            onClick={() => goToBookingDetail(booking.id)}
+            onClick={() => goToLeaveAReview(booking.id)}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
           >
             <FontAwesomeIcon icon={faStar} className="mr-2" />

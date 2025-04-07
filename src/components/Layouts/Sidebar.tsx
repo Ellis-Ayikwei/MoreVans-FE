@@ -229,6 +229,7 @@ const Sidebar = () => {
         },
         {
             name: 'ratings',
+            path: '/providers/:providerId/ratings',
             icon: <FontAwesomeIcon icon={faStar} className="w-5 h-5" />,
             label: 'Ratings & Reviews ',
             children: null

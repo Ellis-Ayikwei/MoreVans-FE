@@ -45,12 +45,19 @@ import {
   faWineGlassAlt,
   faDumbbell,
   faLeaf,
+  faMapMarkedAlt,
+  faGripLines,
+  faRoute,
+  faMapMarkerAlt,
+  faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ErrorMessage, Field, Form, Formik, FieldArray } from 'formik';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { v4 as uuidv4 } from 'uuid';
 
 // Helper functions for the component
 const formatDate = (dateString: string) => {
@@ -73,6 +80,51 @@ const formatTime = (timeString: string) => {
   const period = hours >= 12 ? 'PM' : 'AM';
   const hour12 = hours % 12 || 12;
   return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
+
+const addJourneyStop = (values, setFieldValue, type = 'stop') => {
+  const newStop = {
+    id: uuidv4(),
+    type: type,
+    location: '',
+    unitNumber: '',
+    floor: 0,
+    parkingInfo: '',
+    hasElevator: false,
+    instructions: '',
+    estimatedTime: ''
+  };
+  
+  const stops = [...values.journeyStops];
+  
+  // If this is the first stop and it's not a pickup, add a pickup first
+  if (stops.length === 0 && type !== 'pickup') {
+    stops.push({
+      ...newStop,
+      id: uuidv4(),
+      type: 'pickup'
+    });
+  }
+  
+  // If adding a pickup, add it at the beginning
+  if (type === 'pickup') {
+    stops.unshift(newStop);
+  } 
+  // If adding a dropoff, add it at the end
+  else if (type === 'dropoff') {
+    stops.push(newStop);
+  } 
+  // If adding a stop, insert it before the first dropoff if any, otherwise at the end
+  else {
+    const dropoffIndex = stops.findIndex(stop => stop.type === 'dropoff');
+    if (dropoffIndex !== -1) {
+      stops.splice(dropoffIndex, 0, newStop);
+    } else {
+      stops.push(newStop);
+    }
+  }
+  
+  setFieldValue('journeyStops', stops);
 };
 
 // Add this to your Tailwind CSS file or inline styles
@@ -118,7 +170,7 @@ interface ServiceRequest {
   specialHandling?: string;
   isFlexible: boolean;
   needsInsurance: boolean;
-  requestType: 'fixed' | 'bidding';
+  requestType: 'fixed' | 'bidding' | 'journey';
   photoURLs?: string[];
   inventoryList?: File;
   itemWeight?: string;
@@ -140,6 +192,17 @@ interface ServiceRequest {
     needsDisassembly: boolean;
     notes: string;
     photo: File | string | null;
+  }>;
+  journeyStops?: Array<{
+    id: string;
+    type: 'pickup' | 'dropoff' | 'stop';
+    location: string;
+    unitNumber: string;
+    floor: number;
+    parkingInfo: string;
+    hasElevator: boolean;
+    instructions: string;
+    estimatedTime: string;
   }>;
 }
 
@@ -187,10 +250,9 @@ const initialValues: ServiceRequest = {
   needsDisassembly: false,
   isFragile: false,
   pickupNumberOfFloors: 1,
-  dropoffNumberOfFloors: 1,
   pickupHasElevator: false,
-  dropoffHasElevator: false,
   movingItems: [],
+  journeyStops: [],
 };
 
 const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEditing = false }) => {
@@ -264,6 +326,38 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEditing = fal
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Initialize journey stops when selecting journey type
+    if (formValues.requestType === 'journey' && formValues.journeyStops.length === 0) {
+      // Add default pickup and dropoff based on existing pickup/dropoff addresses
+      const initialStops = [
+        {
+          id: uuidv4(),
+          type: 'pickup',
+          location: formValues.pickupLocation || '',
+          unitNumber: formValues.pickupUnitNumber || '',
+          floor: formValues.pickupFloor || 0,
+          parkingInfo: formValues.pickupParkingInfo || '',
+          hasElevator: formValues.pickupHasElevator || false,
+          instructions: '',
+          estimatedTime: ''
+        },
+        {
+          id: uuidv4(),
+          type: 'dropoff',
+          location: formValues.dropoffLocation || '',
+          unitNumber: formValues.dropoffUnitNumber || '',
+          floor: formValues.dropoffFloor || 0,
+          parkingInfo: formValues.dropoffParkingInfo || '',
+          hasElevator: formValues.dropoffHasElevator || false,
+          instructions: '',
+          estimatedTime: ''
+        }
+      ];
+      setFormValues(prevValues => ({ ...prevValues, journeyStops: initialStops }));
+    }
+  }, [formValues.requestType]);
 
   const itemTypes = [
     'Residential Moving',
@@ -650,7 +744,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEditing = fal
                               <FontAwesomeIcon icon={faMoneyBill} className="text-blue-600 dark:text-blue-400 mr-2" />
                               <h3 className="font-medium text-gray-700 dark:text-gray-300">Choose Your Pricing Model</h3>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <label className={`flex items-center p-4 border ${values.requestType === 'fixed' ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'} rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition-all duration-200`}>
                                 <Field type="radio" name="requestType" value="fixed" className="mr-3 h-4 w-4 text-blue-600" />
                                 <div>
@@ -672,6 +766,18 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEditing = fal
                                   </span>
                                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                     Compare multiple offers from providers. Best for complex jobs.
+                                  </p>
+                                </div>
+                              </label>
+                              <label className={`flex items-center p-4 border ${values.requestType === 'journey' ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20' : 'border-gray-300 dark:border-gray-600'} rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition-all duration-200`}>
+                                <Field type="radio" name="requestType" value="journey" className="mr-3 h-4 w-4 text-green-600" />
+                                <div>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
+                                    <FontAwesomeIcon icon={faRoute} className="mr-2 text-green-600 dark:text-green-400" />
+                                    Multi-Stop Journey
+                                  </span>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    Plan a route with multiple pickups and dropoffs for complex moves.
                                   </p>
                                 </div>
                               </label>
@@ -925,7 +1031,322 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEditing = fal
                           </div>
                         </div>
 
-                        {/* Simple route visualization */}
+                        {/* Multi-stop Journey Planning - only shown for journey type */}
+                        {values.requestType === 'journey' && (
+                          <div className="mt-10 pt-8 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center mb-6">
+                              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-600 dark:text-green-400 mr-3">
+                                <FontAwesomeIcon icon={faRoute} />
+                              </div>
+                              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Journey Planning</h2>
+                            </div>
+                            
+                            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mb-6">
+                              <div className="px-6 py-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 border-b border-gray-200 dark:border-gray-700">
+                                <h3 className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
+                                  <FontAwesomeIcon icon={faMapMarkedAlt} className="mr-2 text-green-600 dark:text-green-400" />
+                                  Plan Your Route
+                                </h3>
+                              </div>
+                              <div className="p-6">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                                  Add all pickup, drop-off, and stop locations in your journey. Drag to reorder.
+                                </p>
+                                
+                                <FieldArray
+                                  name="journeyStops"
+                                  render={arrayHelpers => (
+                                    <div>
+                                      {values.journeyStops && values.journeyStops.length > 0 ? (
+                                        <>
+                                          <DragDropContext
+                                            onDragEnd={(result) => {
+                                              if (!result.destination) return;
+                                              
+                                              const items = Array.from(values.journeyStops);
+                                              const [reorderedItem] = items.splice(result.source.index, 1);
+                                              items.splice(result.destination.index, 0, reorderedItem);
+                                              
+                                              setFieldValue('journeyStops', items);
+                                            }}
+                                          >
+                                            <Droppable droppableId="journeyStops">
+                                              {(provided) => (
+                                                <div
+                                                  {...provided.droppableProps}
+                                                  ref={provided.innerRef}
+                                                  className="space-y-4 mb-6"
+                                                >
+                                                  {values.journeyStops.map((stop, index) => (
+                                                    <Draggable
+                                                      key={stop.id}
+                                                      draggableId={stop.id}
+                                                      index={index}
+                                                    >
+                                                      {(provided) => (
+                                                        <div
+                                                          ref={provided.innerRef}
+                                                          {...provided.draggableProps}
+                                                          className={`
+                                                            border rounded-lg p-4 
+                                                            ${stop.type === 'pickup' ? 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20' : ''}
+                                                            ${stop.type === 'dropoff' ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' : ''}
+                                                            ${stop.type === 'stop' ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20' : ''}
+                                                          `}
+                                                        >
+                                                          <div className="flex items-start">
+                                                            <div 
+                                                              {...provided.dragHandleProps}
+                                                              className="mr-3 cursor-grab flex-shrink-0 mt-2"
+                                                            >
+                                                              <FontAwesomeIcon icon={faGripLines} className="text-gray-400" />
+                                                            </div>
+                                                            
+                                                            <div className={`
+                                                              w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-2
+                                                              ${stop.type === 'pickup' ? 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300' : ''}
+                                                              ${stop.type === 'dropoff' ? 'bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300' : ''}
+                                                              ${stop.type === 'stop' ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300' : ''}
+                                                            `}>
+                                                              {index + 1}
+                                                            </div>
+                                                            
+                                                            <div className="flex-1">
+                                                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                <div className="md:col-span-3">
+                                                                  <div className="flex justify-between items-center mb-3">
+                                                                    <Field
+                                                                      as="select"
+                                                                      name={`journeyStops.${index}.type`}
+                                                                      className="border-none bg-transparent text-sm font-medium focus:ring-0 p-0"
+                                                                    >
+                                                                      <option value="pickup">Pickup Location</option>
+                                                                      <option value="stop">Intermediate Stop</option>
+                                                                      <option value="dropoff">Dropoff Location</option>
+                                                                    </Field>
+                                                                    
+                                                                    <button
+                                                                      type="button"
+                                                                      onClick={() => arrayHelpers.remove(index)}
+                                                                      className="p-1 text-gray-400 hover:text-red-500"
+                                                                    >
+                                                                      <FontAwesomeIcon icon={faTrash} />
+                                                                    </button>
+                                                                  </div>
+                                                                  
+                                                                  <div className="relative mb-3">
+                                                                    <FontAwesomeIcon icon={faMapMarkerAlt} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                                                                    <Field 
+                                                                      name={`journeyStops.${index}.location`}
+                                                                      placeholder="Enter full address"
+                                                                      className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 pl-10 pr-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                                                    />
+                                                                  </div>
+                                                                </div>
+                                                                
+                                                                <div>
+                                                                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                                    Floor
+                                                                  </label>
+                                                                  <Field 
+                                                                    name={`journeyStops.${index}.floor`} 
+                                                                    type="number" 
+                                                                    min="0"
+                                                                    className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" 
+                                                                  />
+                                                                </div>
+                                                                
+                                                                <div>
+                                                                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                                    Unit/Apt #
+                                                                  </label>
+                                                                  <Field 
+                                                                    name={`journeyStops.${index}.unitNumber`} 
+                                                                    className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" 
+                                                                  />
+                                                                </div>
+                                                                
+                                                                <div>
+                                                                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                                    <FontAwesomeIcon icon={faCar} className="mr-2 text-gray-500" />
+                                                                    Parking Info
+                                                                  </label>
+                                                                  <Field 
+                                                                    name={`journeyStops.${index}.parkingInfo`} 
+                                                                    placeholder="e.g., Street parking"
+                                                                    className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" 
+                                                                  />
+                                                                </div>
+                                                              </div>
+                                                              
+                                                              <div className="mt-3">
+                                                                <details className="text-sm">
+                                                                  <summary className="text-blue-600 dark:text-blue-400 cursor-pointer">
+                                                                    Additional details
+                                                                  </summary>
+                                                                  <div className="mt-3 pl-2 border-l-2 border-gray-200 dark:border-gray-700 space-y-3">
+                                                                    <div>
+                                                                      <label className="flex items-center text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                                        <Field 
+                                                                          type="checkbox" 
+                                                                          name={`journeyStops.${index}.hasElevator`} 
+                                                                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-1.5" 
+                                                                        />
+                                                                        <FontAwesomeIcon icon={faElevator} className="mr-1.5" />
+                                                                        Elevator Access
+                                                                      </label>
+                                                                    </div>
+                                                                    
+                                                                    <div>
+                                                                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                                        Special Instructions
+                                                                      </label>
+                                                                      <Field
+                                                                        as="textarea"
+                                                                        rows="2"
+                                                                        name={`journeyStops.${index}.instructions`}
+                                                                        placeholder="Any specific details for this location"
+                                                                        className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                                                      />
+                                                                    </div>
+                                                                    
+                                                                    <div>
+                                                                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                                        <FontAwesomeIcon icon={faClock} className="mr-1.5" />
+                                                                        Estimated Time at Location
+                                                                      </label>
+                                                                      <Field 
+                                                                        name={`journeyStops.${index}.estimatedTime`}
+                                                                        placeholder="e.g., 30 minutes"
+                                                                        className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" 
+                                                                      />
+                                                                    </div>
+                                                                  </div>
+                                                                </details>
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                          
+                                                          {/* Connection line between stops */}
+                                                          {index < values.journeyStops.length - 1 && (
+                                                            <div className="ml-11 pl-3 mt-4 border-l-2 border-dashed border-gray-300 dark:border-gray-600 pb-2">
+                                                              <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                                                                <FontAwesomeIcon icon={faTruck} className="mr-2 opacity-70" />
+                                                                <span>Next Stop</span>
+                                                              </div>
+                                                            </div>
+                                                          )}
+                                                        </div>
+                                                      )}
+                                                    </Draggable>
+                                                  ))}
+                                                  {provided.placeholder}
+                                                </div>
+                                              )}
+                                            </Droppable>
+                                          </DragDropContext>
+                                          
+                                          {/* Journey Map Visualization */}
+                                          <div className="mt-8 bg-gray-50 dark:bg-gray-750 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Journey Overview</h4>
+                                            
+                                            <div className="relative">
+                                              {/* Vertical timeline line */}
+                                              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600"></div>
+                                              
+                                              <div className="space-y-6">
+                                                {values.journeyStops.map((stop, idx) => (
+                                                  <div key={`map-${stop.id}`} className="relative flex items-start pl-8">
+                                                    {/* Timeline node */}
+                                                    <div className={`
+                                                      absolute left-0 mt-1 w-8 h-8 rounded-full flex items-center justify-center
+                                                      border-2 border-white dark:border-gray-800
+                                                      ${stop.type === 'pickup' ? 'bg-blue-500 dark:bg-blue-600' : ''}
+                                                      ${stop.type === 'dropoff' ? 'bg-green-500 dark:bg-green-600' : ''}
+                                                      ${stop.type === 'stop' ? 'bg-yellow-500 dark:bg-yellow-600' : ''}
+                                                    `}>
+                                                      <span className="text-white text-xs font-bold">{idx + 1}</span>
+                                                    </div>
+                                                    
+                                                    {/* Location card */}
+                                                    <div className="flex-1">
+                                                      <div className="flex items-center mb-1">
+                                                        <span className={`
+                                                          text-xs font-semibold px-2 py-0.5 rounded-full mr-2
+                                                          ${stop.type === 'pickup' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ''}
+                                                          ${stop.type === 'dropoff' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''}
+                                                          ${stop.type === 'stop' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''}
+                                                        `}>
+                                                          {stop.type.charAt(0).toUpperCase() + stop.type.slice(1)}
+                                                        </span>
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                          {stop.location || '(Address not entered)'}
+                                                        </span>
+                                                      </div>
+                                                      
+                                                      {(stop.unitNumber || stop.floor > 0) && (
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                          {stop.unitNumber && `Unit ${stop.unitNumber}, `}
+                                                          {stop.floor > 0 && `Floor ${stop.floor}`}
+                                                          {stop.hasElevator && ', Elevator available'}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="text-center py-8">
+                                          <p className="text-gray-500 dark:text-gray-400 mb-4">No journey stops added yet</p>
+                                        </div>
+                                      )}
+                                      
+                                      {/* Add location buttons */}
+                                      <div className="mt-4 flex flex-wrap gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => addJourneyStop(values, setFieldValue, 'pickup')}
+                                          className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 
+                                            shadow-sm text-sm rounded-md text-gray-700 dark:text-gray-300 
+                                            bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                        >
+                                          <FontAwesomeIcon icon={faPlus} className="mr-2 text-blue-500 dark:text-blue-400" />
+                                          Add Pickup
+                                        </button>
+                                        
+                                        <button
+                                          type="button"
+                                          onClick={() => addJourneyStop(values, setFieldValue, 'stop')}
+                                          className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 
+                                            shadow-sm text-sm rounded-md text-gray-700 dark:text-gray-300 
+                                            bg-white dark:bg-gray-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                                        >
+                                          <FontAwesomeIcon icon={faPlus} className="mr-2 text-yellow-500 dark:text-yellow-400" />
+                                          Add Stop
+                                        </button>
+                                        
+                                        <button
+                                          type="button"
+                                          onClick={() => addJourneyStop(values, setFieldValue, 'dropoff')}
+                                          className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 
+                                            shadow-sm text-sm rounded-md text-gray-700 dark:text-gray-300 
+                                            bg-white dark:bg-gray-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                        >
+                                          <FontAwesomeIcon icon={faPlus} className="mr-2 text-green-500 dark:text-green-400" />
+                                          Add Dropoff
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         <div className="py-4 flex flex-col items-center">
                           <div className="flex items-center w-full max-w-md">
                             <div className="flex flex-col items-center">
@@ -1708,7 +2129,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEditing = fal
                                 <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                                   <li><span className="font-medium">Type:</span> {values.itemType}</li>
                                   <li><span className="font-medium">Size:</span> {values.itemSize}</li>
-                                  <li><span className="font-medium">Pricing:</span> {values.requestType === 'fixed' ? 'Fixed Price' : 'Competitive Bidding'}</li>
+                                  <li><span className="font-medium">Pricing:</span> {values.requestType === 'fixed' ? 'Fixed Price' : values.requestType === 'bidding' ? 'Competitive Bidding' : 'Multi-Stop Journey'}</li>
                                 </ul>
                               </div>
                               <div>
@@ -1743,6 +2164,34 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEditing = fal
                                 )}
                               </div>
                             </div>
+
+                            {values.requestType === 'journey' && values.journeyStops.length > 0 && (
+                              <div className="col-span-3 mt-4">
+                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Journey Stops ({values.journeyStops.length})</h4>
+                                <div className="bg-gray-50 dark:bg-gray-750 p-3 rounded-lg">
+                                  {values.journeyStops.map((stop, idx) => (
+                                    <div key={`summary-${stop.id}`} className="flex items-center mb-2">
+                                      <div className={`
+                                        w-6 h-6 rounded-full flex items-center justify-center mr-2
+                                        ${stop.type === 'pickup' ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300' : ''}
+                                        ${stop.type === 'dropoff' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300' : ''}
+                                        ${stop.type === 'stop' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300' : ''}
+                                      `}>
+                                        {idx + 1}
+                                      </div>
+                                      <div>
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                          {stop.type.charAt(0).toUpperCase() + stop.type.slice(1)}:
+                                        </span>
+                                        <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
+                                          {stop.location || '(Address not entered)'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                             
                             <div className="text-center text-sm mt-4">
                               <p className="text-gray-600 dark:text-gray-400">

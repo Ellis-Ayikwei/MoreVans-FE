@@ -352,7 +352,7 @@ const NotificationsPage: React.FC = () => {
 
   return (
     <div className="w-full px-4 md:px-8 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full mx-auto">
         {/* Status message */}
         {statusMessage && (
           <div className={`mb-4 p-3 rounded-md ${

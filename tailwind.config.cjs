@@ -60,7 +60,7 @@ module.exports = {
                 },
             },
             fontFamily: {
-                sans: ['Manrope', 'sans-serif'], // Modern logistics-friendly font
+                sans: [' '], // Modern logistics-friendly font
             },
             spacing: {
                 4.5: '18px',

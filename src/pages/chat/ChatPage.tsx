@@ -21,7 +21,8 @@ const ChatPage: React.FC = () => {
   const [showChatList, setShowChatList] = useState(true);
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  
+  const [scrollPosition, setScrollPosition] = useState(0);
+
   // Find the selected chat
   const selectedChat = chats.find(chat => chat.id === (selectedChatId || chatId));
   
@@ -50,12 +51,26 @@ const ChatPage: React.FC = () => {
   
   // Handle chat selection
   const handleSelectChat = (id: string) => {
+    setScrollPosition(window.scrollY);
     selectChat(id);
     if (isMobile) {
       setShowChatList(false);
     }
+    setTimeout(() => {
+      window.scrollTo({ top: scrollPosition, behavior: 'auto' });
+    }, 0);
   };
   
+
+useEffect(() => {
+  if (selectedChatId) {
+    document.body.classList.add('no-scroll');
+  } else {
+    document.body.classList.remove('no-scroll');
+  }
+}, [selectedChatId]);
+
+
   // Handle back button on mobile
   const handleBackToList = () => {
     setShowChatList(true);

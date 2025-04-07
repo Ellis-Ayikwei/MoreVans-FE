@@ -15,9 +15,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) =>
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <Link to="/">
                     <img
-                        className="mx-auto h-12 w-auto"
-                        src="/logo.svg"
-                        alt="MoveIt Logo"
+                        className="mx-auto h-12 w-auto brightness-0"
+                        src="assets/images/morevanstext.png"
+                        alt="MoreVans Logo"
                         onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.src = 'https://via.placeholder.com/120x40?text=MoveIt';
