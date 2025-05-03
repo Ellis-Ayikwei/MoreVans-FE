@@ -29,21 +29,21 @@ const ERROR_MESSAGES = {
 
 export const LoginUser = createAsyncThunk(
     'auth/LoginUser',
-    async ({ userOrEmail, password, extra }: { userOrEmail: { email?: string; username?: string }; password: string; extra?: any }, { rejectWithValue }) => {
-        const payload = { ...userOrEmail, password };
+    async ({ email, password, extra }: { email?: string; password: string; extra?: any }, { rejectWithValue }) => {
+        const payload = { email, password };
 
         try {
-            const response = await authAxiosInstance.post('/login', payload);
+            const response = await authAxiosInstance.post('/login/', payload);
 
             const accessToken = response?.headers['authorization'];
             const refreshToken = response?.headers['x-refresh-token'];
 
             const user = response.data;
 
-            if (!accessToken || !refreshToken) {
-                console.error('Error: Missing tokens from server response');
-                throw new Error('Invalid token response from server');
-            }
+            // if (!accessToken || !refreshToken) {
+            //     console.error('Error: Missing tokens from server response');
+            //     throw new Error('Invalid token response from server');
+            // }
 
             const { signIn } = extra;
             const isSignedIn = signIn({

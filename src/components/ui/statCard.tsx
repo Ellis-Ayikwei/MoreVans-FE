@@ -75,7 +75,7 @@ interface StatCardProps {
     const colors = getColorClasses(color);
     
     return (
-      <div className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]" style={{borderLeftColor: `var(--tw-${color}-500)`}}>
+      <div className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px] overflow-hidden" style={{borderLeftColor: `var(--tw-${color}-500)`}}>
         {/* Decorative background element */}
         <div className="absolute right-0 top-0 w-20 h-20 opacity-5 transition-all duration-300 group-hover:scale-125">
           <FontAwesomeIcon icon={icon} className="w-full h-full" />

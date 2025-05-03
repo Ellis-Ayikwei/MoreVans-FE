@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getCookie } from './authAxiosInstance';
 
-export const apiUrl = 'http://127.0.0.1:5004/alumni/api/v1';
+export const apiUrl = 'http://127.0.0.1:8000/morevans/api/v1/';
 //const apiUrl = 'http://172.20.10.4:5004/alumni/api/v1';
 
 const axiosInstance = axios.create({
@@ -84,7 +84,7 @@ const onRefreshed = (accessToken: string): void => {
 //     }
 // );
 
-export default axiosInstance;
+
 
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import authAxiosInstance from './authAxiosInstance';
@@ -132,3 +132,6 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+
+export default axiosInstance;

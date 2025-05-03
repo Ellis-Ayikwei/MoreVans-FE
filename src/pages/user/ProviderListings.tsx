@@ -1,4 +1,4 @@
-import { faFilter, faMapMarkerAlt, faSort, faStar, faTruck } from '@fortawesome/free-solid-svg-icons';
+import { faFilter, faInfoCircle, faMapMarkerAlt, faSort, faStar, faTruck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -15,15 +15,17 @@ interface Provider {
     description: string;
     services: string[];
     distance: number;
+    vehicleCount?: number;
+    driverCount?: number;
 }
 
 interface ServiceRequest {
     id: string;
-    pickupLocation: string;
-    dropoffLocation: string;
+    pickup_location: string;
+    dropoff_location: string;
     itemType: string;
-    itemSize: string;
-    preferredTime: string;
+    item_size: string;
+    preferred_time: string;
 }
 
 const ProviderListings: React.FC = () => {
@@ -50,11 +52,11 @@ const ProviderListings: React.FC = () => {
                 // Mock data
                 const mockServiceRequest: ServiceRequest = {
                     id: requestId || 'SR-12345',
-                    pickupLocation: '123 Main St, New York, NY',
-                    dropoffLocation: '456 Park Ave, New York, NY',
+                    pickup_location: '123 Main St, New York, NY',
+                    dropoff_location: '456 Park Ave, New York, NY',
                     itemType: 'Furniture',
-                    itemSize: 'Large',
-                    preferredTime: '2023-06-20T14:00:00',
+                    item_size: 'Large',
+                    preferred_time: '2023-06-20T14:00:00',
                 };
 
                 setServiceRequest(mockServiceRequest);
@@ -88,8 +90,39 @@ const ProviderListings: React.FC = () => {
                         description: 'Professional moving service with 10+ years of experience. Specializing in furniture and delicate items.',
                         services: ['Furniture', 'Packing', 'Assembly'],
                         distance: 2.5,
+                        vehicleCount: 4,
+                        driverCount: 6
                     },
-                    // ... other providers
+                    {
+                        id: 'P-124',
+                        name: "Quick Transport",
+                        image: 'https://randomuser.me/api/portraits/men/2.jpg',
+                        rating: 4.7,
+                        reviewCount: 128,
+                        price: 110.0,
+                        vehicleType: 'Box Truck',
+                        availableTime: '2023-06-20T14:30:00',
+                        description: 'Reliable and efficient transportation services with a fleet of various vehicles for all your moving needs.',
+                        services: ['Furniture Moving', 'Appliance Delivery', 'Commercial Shipping'],
+                        distance: 3.2,
+                        vehicleCount: 8,
+                        driverCount: 10
+                    },
+                    {
+                        id: 'P-125',
+                        name: "City Movers",
+                        image: 'https://randomuser.me/api/portraits/women/3.jpg',
+                        rating: 4.5,
+                        reviewCount: 92,
+                        price: 95.0,
+                        vehicleType: 'Small Van',
+                        availableTime: '2023-06-20T16:00:00',
+                        description: 'Fast and affordable moving service within city limits. Perfect for small to medium-sized moves.',
+                        services: ['Small Items', 'Student Moving', 'Same-Day Service'],
+                        distance: 1.8,
+                        vehicleCount: 5,
+                        driverCount: 8
+                    }
                 ];
 
                 setProviders(mockProviders);
@@ -104,6 +137,10 @@ const ProviderListings: React.FC = () => {
 
     const handleBookProvider = (providerId: string) => {
         navigate(`/booking-confirmation/${requestId}/${providerId}`);
+    };
+    
+    const handleViewProviderDetails = (providerId: string) => {
+        navigate(`/providers/${providerId}`);
     };
 
     const filteredProviders = providers
@@ -157,7 +194,7 @@ const ProviderListings: React.FC = () => {
                             <div className="text-sm text-gray-500">Pickup Location</div>
                             <div className="flex items-start">
                                 <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mt-1 mr-2 flex-shrink-0" />
-                                <div>{serviceRequest.pickupLocation}</div>
+                                <div>{serviceRequest.pickup_location}</div>
                             </div>
                         </div>
 
@@ -165,20 +202,20 @@ const ProviderListings: React.FC = () => {
                             <div className="text-sm text-gray-500">Dropoff Location</div>
                             <div className="flex items-start">
                                 <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-500 mt-1 mr-2 flex-shrink-0" />
-                                <div>{serviceRequest.dropoffLocation}</div>
+                                <div>{serviceRequest.dropoff_location}</div>
                             </div>
                         </div>
 
                         <div>
                             <div className="text-sm text-gray-500">Item Type</div>
                             <div>
-                                {serviceRequest.itemType} - {serviceRequest.itemSize}
+                                {serviceRequest.itemType} - {serviceRequest.item_size}
                             </div>
                         </div>
 
                         <div>
                             <div className="text-sm text-gray-500">Preferred Time</div>
-                            <div>{new Date(serviceRequest.preferredTime).toLocaleString()}</div>
+                            <div>{new Date(serviceRequest.preferred_time).toLocaleString()}</div>
                         </div>
                     </div>
                 </div>
@@ -200,7 +237,7 @@ const ProviderListings: React.FC = () => {
                                     <div className="p-2">
                                         <h3 className="font-medium mb-2">Vehicle Type</h3>
                                         <div className="space-y-2">
-                                            {['Large Van', 'Small Van', 'Truck', 'Car'].map((type) => (
+                                            {['Large Van', 'Small Van', 'Box Truck', 'Pickup Truck'].map((type) => (
                                                 <label key={type} className="flex items-center">
                                                     <input
                                                         type="checkbox"
@@ -309,6 +346,11 @@ const ProviderListings: React.FC = () => {
                                             <div className="flex items-center text-gray-600 mb-2">
                                                 <FontAwesomeIcon icon={faTruck} className="mr-2" />
                                                 <span>{provider.vehicleType}</span>
+                                                {provider.vehicleCount && (
+                                                    <span className="ml-2 text-sm text-gray-500">
+                                                        (Fleet of {provider.vehicleCount} vehicles)
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <div className="flex items-center text-gray-600 mb-2">
@@ -331,7 +373,18 @@ const ProviderListings: React.FC = () => {
 
                                         <div className="text-sm text-gray-500 mb-4">Available at {new Date(provider.availableTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
 
-                                        <button onClick={() => handleBookProvider(provider.id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
+                                        <button 
+                                            onClick={() => handleViewProviderDetails(provider.id)} 
+                                            className="w-full mb-2 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded flex items-center justify-center"
+                                        >
+                                            <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+                                            View Details
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => handleBookProvider(provider.id)} 
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
+                                        >
                                             Book Now
                                         </button>
                                     </div>

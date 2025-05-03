@@ -17,7 +17,6 @@ import BookingConfirmation from '../pages/user/BookingConfirmation';
 import BookingTracking from '../pages/user/BookingTracking';
 import ProviderListings from '../pages/user/ProviderListings';
 import UserDashboard from '../pages/user/UserDashboard';
-import UserDetail from '../pages/user/UserDetail';
 import UserSettings from '../pages/user/UserSettings';
 import MyBookings from '../pages/user/MyBookings';
 import CustomerPayments from '../pages/user/MyPayments';
@@ -34,23 +33,35 @@ import ChatPage from '../pages/chat/ChatPage';
 import LeaveReviewPage from '../pages/user/LeaveAReview';
 import ProviderReviews from '../pages/provider/reviews';
 import Home from '../pages/Home';
-import ServiceRequestForm from '../pages/ServiceRequest/servicesRequest';
+import ServiceRequestForm from '../pages/ServiceRequest/ServiceRequestForm';
 import VehicleManagement from '../pages/vehicleManagement/vehicleManagment';
 import DriversManagement from '../pages/DriverManagement/driverManagement';
-// import HelpCenter from '../pages/support/HelpCenter';
-// import LiveChat from '../pages/support/LiveChat';
-// import DisputeResolution from '../pages/support/DisputeResolution';
-// import InstantQuote from '../pages/booking/InstantQuote';
-// import SpecialRequirements from '../pages/booking/SpecialRequirements';
-// import ProviderFeedback from '../pages/provider/ProviderFeedback';
-// import ProviderResponses from '../pages/provider/ProviderResponses';
-// import ProviderScore from '../pages/provider/ProviderScore';
-// import ProviderVehicles from '../pages/provider/ProviderVehicles';
-// import ProviderProfile from '../pages/provider/ProviderProfile';
-// import ProviderHelpCenter from '../pages/provider/ProviderHelpCenter';
-// import ProviderLiveChat from '../pages/provider/ProviderLiveChat';
+import UserManagement from '../pages/admin/UserManagement';
+import ProviderManagement from '../pages/admin/ProviderManagement';
+import BookingManagement from '../pages/admin/BookingManagement';
+import RevenueManagement from '../pages/admin/RevenueManagement';
+import SystemMaintenance from '../pages/admin/SystemMaintenance';
+import DisputeManagement from '../pages/admin/DisputeManagement';
+import RolesPermissions from '../pages/admin/RolesPermissions';
+import SupportTickets from '../pages/admin/SupportTickets';
+import ProviderDetail from '../pages/admin/ProviderDetail';
+import ProviderEdit from '../pages/admin/ProviderEdit';
+import UserEdit from '../pages/admin/UserEdit';
+import UserDetail from '../pages/user/UserDetail';
+import AdminSettings from '../pages/admin/AdminSettings';
+import PaymentPage from '../pages/PaymentPage';
+import ServiceRequestDetailPage from '../pages/ServiceRequestDetailPage';
+import ServiceRequestPage from '../pages/ServiceRequestPage';
+import ProviderJobDetailPage from '../pages/ProviderJobDetailPage';
+import PaymentDetail from '../components/Payment/PaymentDetail';
+import UserBookingDetail from '../pages/user/UserBookingDetail';
+import MyJobs from '../pages/provider/MyJobs';
 
-
+// Import vehicle components
+import VehicleList from '../components/vehicle/VehicleList';
+import VehicleDetail from '../components/vehicle/VehicleDetail';
+import BiddingJobs from '../pages/provider/BiddingJobs';
+import WatchingJobs from '../pages/provider/WatchingJobs';
 
 const userRole = localStorage.getItem('userRole') || '';
 const adminUsers = ['SUPER_ADMIN', 'ADMIN', 'UNDERWRITER', 'PREMIUM_ADMIN', 'SALES'];
@@ -113,17 +124,17 @@ const routes = [
     },
     {
         path: '/disputes',
-        element: <DisputesPage  />,
+        element: <DisputesPage />,
         layout: 'default',
     },
-    
+
     // Customer routes - aligned with sidebar
     {
         path: '/dashboard',
         element: <UserDashboard />,
         layout: 'default',
     },
-   
+
     {
         path: '/instant-quote',
         element: <InstantQuoteCalculator />,
@@ -140,8 +151,18 @@ const routes = [
         layout: 'default',
     },
     {
+        path: '/service-requests',
+        element: <ServiceRequestPage />,
+        layout: 'default',
+    },
+    {
+        path: '/service-requests/:id',
+        element: <ServiceRequestDetailPage />,
+        layout: 'default',
+    },
+    {
         path: '/bookings/:bookingId/review',
-        element: <LeaveReviewPage/>,
+        element: <LeaveReviewPage />,
         layout: 'default',
     },
     {
@@ -181,8 +202,28 @@ const routes = [
     // },
     // My Moves route
     {
-        path: '/bookings',
+        path: '/my-bookings',
         element: <MyBookings />,
+        layout: 'default',
+    },
+    {
+        path: '/bookings/new',
+        element: <ServiceRequestForm />,
+        layout: 'default',
+    },
+    {
+        path: '/bookings/:id',
+        element: <BookingDetail />,
+        layout: 'default',
+    },
+    {
+        path: '/bookings/:id/review',
+        element: <LeaveReviewPage />,
+        layout: 'default',
+    },
+    {
+        path: '/bidding/:serviceId',
+        element: <BidSelection />,
         layout: 'default',
     },
     // Payments route
@@ -231,16 +272,30 @@ const routes = [
         layout: 'default',
     },
     {
+        path: '/provider/my-jobs',
+        element: <MyJobs />,
+        layout: 'default',
+    },
+    {
+        path: '/provider/my-jobs-bidding',
+        element: <BiddingJobs />,
+        layout: 'default',
+    },
+    {
+        path: '/provider/my-jobs-watching',
+        element: <WatchingJobs />,
+        layout: 'default',
+    },
+    {
         path: '/provider/job/:id',
         element: <JobDetail />,
         layout: 'default',
     },
-    
-    // {
-    //     path: '/provider/vehicles',
-    //     element: <ProviderVehicles />,
-    //     layout: 'default',
-    // },
+    {
+        path: '/provider/job/:id',
+        element: <UserBookingDetail />,
+        layout: 'default',
+    },
     {
         path: '/provider/payouts',
         element: <ProviderPayments />,
@@ -279,7 +334,7 @@ const routes = [
     //     element: <ProviderProfile />,
     //     layout: 'default',
     // },
-    
+
     // Additional flow routes
     {
         path: '/providers/:requestId',
@@ -303,7 +358,7 @@ const routes = [
     },
     {
         path: '/bookings/:id',
-        element: <BookingDetail />,
+        element: <UserBookingDetail />,
         layout: 'default',
     },
     {
@@ -326,23 +381,110 @@ const routes = [
         element: <ProviderOnboarding />,
         layout: 'default',
     },
-    
+
     // Admin routes
     {
         path: '/admin/dashboard',
         element: <AdminDashboard />,
-        layout: 'default',
+        layout: 'admin',
     },
     {
-        path: '/admin/users/:id',
-        element: <UserDetail />,
-        layout: 'default',
+        path: '/admin/users',
+        element: <UserManagement />,
+        layout: 'admin',
+    },
+    // {
+    //     path: '/admin/users/:id',
+    //     element: <UserDetail userData={{ /* Provide appropriate userData object here */ }} />,
+    //     layout: 'admin',
+    // },
+    {
+        path: '/admin/users/:id/edit',
+        element: <UserEdit />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/providers',
+        element: <ProviderManagement />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/providers/:id',
+        element: <ProviderDetail />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/providers/:id/edit',
+        element: <ProviderEdit />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/bookings',
+        element: <BookingManagement />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/bookings/:id',
+        element: <UserBookingDetail />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/revenue',
+        element: <RevenueManagement />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/disputes',
+        element: <DisputeManagement />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/settings',
+        element: <AdminSettings />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/permissions',
+        element: <RolesPermissions />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/maintenance',
+        element: <SystemMaintenance />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/support',
+        element: <SupportTickets />,
+        layout: 'admin',
     },
     // {
     //     path: '/analytics',
     //     element: <AnalyticsPage />,
     //     layout: 'default',
     // },
+
+    // Vehicle routes
+    {
+        path: '/vehicles',
+        element: <VehicleList />,
+        layout: 'default',
+    },
+    {
+        path: '/vehicles/:id',
+        element: <VehicleDetail />,
+        layout: 'default',
+    },
+    {
+        path: '/payment/:requestId?',
+        element: <PaymentPage />,
+        layout: 'default',
+    },
+    {
+        path: '/payment/detail/:requestId',
+        element: <PaymentDetail />,
+        layout: 'default',
+    },
 ];
 
 export { routes };

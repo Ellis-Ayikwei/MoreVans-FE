@@ -8,14 +8,14 @@ function App({ children }: PropsWithChildren) {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(toggleTheme(localStorage.getItem('theme') || themeConfig.theme));
-        dispatch(toggleMenu(localStorage.getItem('menu') || themeConfig.menu));
-        dispatch(toggleLayout(localStorage.getItem('layout') || themeConfig.layout));
-        dispatch(toggleRTL(localStorage.getItem('rtlClass') || themeConfig.rtlClass));
-        dispatch(toggleAnimation(localStorage.getItem('animation') || themeConfig.animation));
-        dispatch(toggleNavbar(localStorage.getItem('navbar') || themeConfig.navbar));
+        dispatch(toggleTheme((localStorage.getItem('theme') as any) || themeConfig.theme));
+        dispatch(toggleMenu((localStorage.getItem('menu') as any) || themeConfig.menu));
+        dispatch(toggleLayout((localStorage.getItem('layout') as any) || themeConfig.layout));
+        dispatch(toggleRTL((localStorage.getItem('rtlClass') as any) || themeConfig.rtlClass));
+        dispatch(toggleAnimation((localStorage.getItem('animation') as any) || themeConfig.animation));
+        dispatch(toggleNavbar((localStorage.getItem('navbar') as any) || themeConfig.navbar));
         dispatch(toggleLocale(localStorage.getItem('i18nextLng') || themeConfig.locale));
-        dispatch(toggleSemidark(localStorage.getItem('semidark') || themeConfig.semidark));
+        dispatch(toggleSemidark(localStorage.getItem('semidark') === 'true' || themeConfig.semidark));
     }, [dispatch, themeConfig.theme, themeConfig.menu, themeConfig.layout, themeConfig.rtlClass, themeConfig.animation, themeConfig.navbar, themeConfig.locale, themeConfig.semidark]);
 
     return (

@@ -10,6 +10,7 @@ interface StepNavigationProps {
   showBackButton?: boolean;
   isLastStep?: boolean;
   isSubmitting?: boolean;
+  handleSubmit?: () => Promise<void>
 }
 
 const StepNavigation: React.FC<StepNavigationProps> = ({
@@ -19,7 +20,8 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
   nextLabel = 'Next',
   showBackButton = true,
   isLastStep = false,
-  isSubmitting = false
+  isSubmitting = false,
+  handleSubmit
 }) => {
   return (
     <div className="flex justify-between mt-8">
@@ -36,7 +38,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
       
       <button 
         type={isLastStep ? "submit" : "button"} 
-        onClick={isLastStep ? undefined : onNext}
+        onClick={isLastStep ? handleSubmit : onNext}
         disabled={isSubmitting}
         className={`px-6 py-3 ${isLastStep ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} focus:ring-4 focus:ring-blue-300 focus:outline-none text-white font-medium rounded-lg flex items-center transition-colors duration-200 disabled:opacity-70`}
       >

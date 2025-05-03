@@ -29,7 +29,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
   // Filter to get only unread notifications and sort by date
   const unreadNotifications = notifications
     .filter(notification => !notification.read)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   
   const unreadCount = unreadNotifications.length;
   
@@ -94,8 +94,8 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
     markAsRead(notification.id);
     setIsDropdownOpen(false);
     
-    if (notification.actionUrl) {
-      navigate(notification.actionUrl);
+    if (notification.action_url) {
+      navigate(notification.action_url);
     } else {
       navigate(`/notifications/${notification.id}`);
     }
@@ -186,7 +186,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
                           {notification.message}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                         </p>
                       </div>
                     </div>

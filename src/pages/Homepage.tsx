@@ -72,13 +72,13 @@ const Homepage: React.FC = () => {
     
     const navigate = useNavigate();
     const [quickFormData, setQuickFormData] = useState({
-        pickupLocation: '',
-        dropoffLocation: '',
+        pickup_location: '',
+        dropoff_location: '',
         serviceType: 'home',
         date: '',
-        contactName: '',
-        contactPhone: '',
-        contactEmail: '',
+        contact_name: '',
+        contact_phone: '',
+        contact_email: '',
     });
 
     // Monitor scroll position for navbar styling
@@ -226,7 +226,7 @@ const Homepage: React.FC = () => {
     };
 
     // Handle address selection from Places Autocomplete
-    const handleAddressSelect = (address: string, field: 'pickupLocation' | 'dropoffLocation') => {
+    const handleAddressSelect = (address: string, field: 'pickup_location' | 'dropoff_location') => {
         setQuickFormData(prev => ({
             ...prev,
             [field]: address
@@ -244,7 +244,7 @@ const Homepage: React.FC = () => {
         e.preventDefault();
         
         // Basic form validation
-        if (!quickFormData.pickupLocation || !quickFormData.dropoffLocation) {
+        if (!quickFormData.pickup_location || !quickFormData.dropoff_location) {
             setFormError('Please enter both pickup and delivery locations');
             return;
         }
@@ -254,7 +254,7 @@ const Homepage: React.FC = () => {
             return;
         }
         
-        if (!quickFormData.contactName || !quickFormData.contactPhone || !quickFormData.contactEmail) {
+        if (!quickFormData.contact_name || !quickFormData.contact_phone || !quickFormData.contact_email) {
             setFormError('Please complete all contact information');
             return;
         }
@@ -268,18 +268,18 @@ const Homepage: React.FC = () => {
             
             // Map the quick form data to match the structure of the full service request form
             const fullFormData = {
-                contactName: quickFormData.contactName,
-                contactPhone: quickFormData.contactPhone,
-                contactEmail: quickFormData.contactEmail,
-                pickupLocation: quickFormData.pickupLocation,
-                dropoffLocation: quickFormData.dropoffLocation,
+                contact_name: quickFormData.contact_name,
+                contact_phone: quickFormData.contact_phone,
+                contact_email: quickFormData.contact_email,
+                pickup_location: quickFormData.pickup_location,
+                dropoff_location: quickFormData.dropoff_location,
                 itemType: mapServiceType(quickFormData.serviceType),
-                preferredDate: quickFormData.date,
+                preferred_date: quickFormData.date,
                 // Set some reasonable defaults
-                itemSize: 'medium',
-                preferredTime: '',
+                item_size: 'medium',
+                preferred_time: '',
                 description: '',
-                requestType: 'fixed',
+                request_type: 'instant',
             };
             
             // Navigate to the service request form with the collected data
@@ -665,8 +665,8 @@ const Homepage: React.FC = () => {
                                                     />
                                                     <input
                                                         type="text"
-                                                        name="pickupLocation"
-                                                        value={quickFormData.pickupLocation}
+                                                        name="pickup_location"
+                                                        value={quickFormData.pickup_location}
                                                         onChange={handleQuickFormChange}
                                                         placeholder="Enter postcode or address"
                                                         className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
@@ -686,8 +686,8 @@ const Homepage: React.FC = () => {
                                                     />
                                                     <input
                                                         type="text"
-                                                        name="dropoffLocation"
-                                                        value={quickFormData.dropoffLocation}
+                                                        name="dropoff_location"
+                                                        value={quickFormData.dropoff_location}
                                                         onChange={handleQuickFormChange}
                                                         placeholder="Enter postcode or address"
                                                         className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
@@ -735,8 +735,8 @@ const Homepage: React.FC = () => {
                                                     />
                                                     <input
                                                         type="text"
-                                                        name="contactName"
-                                                        value={quickFormData.contactName}
+                                                        name="contact_name"
+                                                        value={quickFormData.contact_name}
                                                         onChange={handleQuickFormChange}
                                                         placeholder="Your full name"
                                                         className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
@@ -753,8 +753,8 @@ const Homepage: React.FC = () => {
                                                         />
                                                         <input
                                                             type="tel"
-                                                            name="contactPhone"
-                                                            value={quickFormData.contactPhone}
+                                                            name="contact_phone"
+                                                            value={quickFormData.contact_phone}
                                                             onChange={handleQuickFormChange}
                                                             placeholder="Phone number"
                                                             className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
@@ -770,8 +770,8 @@ const Homepage: React.FC = () => {
                                                         />
                                                         <input
                                                             type="email"
-                                                            name="contactEmail"
-                                                            value={quickFormData.contactEmail}
+                                                            name="contact_email"
+                                                            value={quickFormData.contact_email}
                                                             onChange={handleQuickFormChange}
                                                             placeholder="Email address"
                                                             className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"

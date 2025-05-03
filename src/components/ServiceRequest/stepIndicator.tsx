@@ -4,15 +4,16 @@ import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
 interface StepIndicatorProps {
   currentStep: number;
+  totalSteps?: number;
 }
 
-const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
+const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, totalSteps = 4 }) => {
   const steps = ['Contact', 'Locations', 'Details', 'Schedule'];
 
   return (
-    <div className="mb-10">
+    <div className="mb-8">
       <div className="flex justify-between items-center mb-2 px-4 sm:px-12 relative max-w-4xl mx-auto">
-        {steps.map((step, index) => (
+        {Array.from({ length: totalSteps }).map((_, index) => (
           <div key={index} className="flex flex-col items-center z-10">
             <div 
               className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-medium 
@@ -33,13 +34,13 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
                 ? 'font-medium text-blue-600 dark:text-blue-400' 
                 : 'text-gray-600 dark:text-gray-400'
             }`}>
-              {step}
+              {steps[index]}
             </span>
           </div>
         ))}
         <div className="absolute left-0 right-0 h-1 top-6 -z-0 bg-gray-200 dark:bg-gray-700">
           <div className="h-full bg-blue-600 dark:bg-blue-500 transition-all duration-300"
-            style={{ width: `${((currentStep - 1) / 3) * 100}%` }} />
+            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }} />
         </div>
       </div>
       <div className="sm:hidden flex justify-between px-2 mt-2">

@@ -1,10 +1,48 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import i18next from 'i18next';
 import themeConfig from '../theme.config';
 
-const defaultState = {
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type MenuMode = 'vertical' | 'collapsible-vertical' | 'horizontal';
+export type LayoutMode = 'full' | 'boxed-layout';
+export type RTLMode = 'rtl' | 'ltr';
+export type NavbarMode = 'navbar-sticky' | 'navbar-floating' | 'navbar-static';
+export type AnimationMode =
+    | 'animate__fadeIn'
+    | 'animate__fadeInDown'
+    | 'animate__fadeInUp'
+    | 'animate__fadeInLeft'
+    | 'animate__fadeInRight'
+    | 'animate__slideInDown'
+    | 'animate__slideInLeft'
+    | 'animate__slideInRight'
+    | 'animate__zoomIn'
+    | '';
+
+interface Language {
+    code: string;
+    name: string;
+}
+
+interface ThemeState {
+    isDarkMode: boolean;
+    theme: ThemeMode;
+    menu: MenuMode;
+    layout: LayoutMode;
+    rtlClass: RTLMode;
+    animation: AnimationMode;
+    navbar: NavbarMode;
+    locale: string;
+    sidebar: boolean;
+    pageTitle: string;
+    languageList: Language[];
+    semidark: boolean;
+    accentColor: string;
+    fontSize: number;
+}
+
+const defaultState: ThemeState = {
     isDarkMode: false,
-    mainLayout: 'app',
     theme: 'light',
     menu: 'vertical',
     layout: 'full',
@@ -32,113 +70,126 @@ const defaultState = {
         { code: 'tr', name: 'Turkish' },
     ],
     semidark: false,
+    accentColor: '#dc711a',
+    fontSize: 16,
 };
 
-const initialState = {
-    theme: localStorage.getItem('theme') || themeConfig.theme,
-    menu: localStorage.getItem('menu') || themeConfig.menu,
-    layout: localStorage.getItem('layout') || themeConfig.layout,
-    rtlClass: localStorage.getItem('rtlClass') || themeConfig.rtlClass,
-    animation: localStorage.getItem('animation') || themeConfig.animation,
-    navbar: localStorage.getItem('navbar') || themeConfig.navbar,
+const getInitialTheme = (): ThemeMode => {
+    const savedTheme = (localStorage.getItem('theme') as ThemeMode) || themeConfig.theme;
+    if (savedTheme === 'system') {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return savedTheme;
+};
+
+const getInitialAnimation = (): AnimationMode => {
+    const savedAnimation = localStorage.getItem('animation');
+    if (savedAnimation && savedAnimation.startsWith('animate__')) {
+        return savedAnimation as AnimationMode;
+    }
+    return '';
+};
+
+const initialState: ThemeState = {
+    theme: getInitialTheme(),
+    menu: (localStorage.getItem('menu') as MenuMode) || themeConfig.menu,
+    layout: (localStorage.getItem('layout') as LayoutMode) || themeConfig.layout,
+    rtlClass: (localStorage.getItem('rtlClass') as RTLMode) || themeConfig.rtlClass,
+    animation: getInitialAnimation(),
+    navbar: (localStorage.getItem('navbar') as NavbarMode) || themeConfig.navbar,
     locale: localStorage.getItem('i18nextLng') || themeConfig.locale,
-    isDarkMode: false,
-    sidebar: localStorage.getItem('sidebar') || defaultState.sidebar,
-    semidark: localStorage.getItem('semidark') || themeConfig.semidark,
-    languageList: [
-        { code: 'zh', name: 'Chinese' },
-        { code: 'da', name: 'Danish' },
-        { code: 'en', name: 'English' },
-        { code: 'fr', name: 'French' },
-        { code: 'de', name: 'German' },
-        { code: 'el', name: 'Greek' },
-        { code: 'hu', name: 'Hungarian' },
-        { code: 'it', name: 'Italian' },
-        { code: 'ja', name: 'Japanese' },
-        { code: 'pl', name: 'Polish' },
-        { code: 'pt', name: 'Portuguese' },
-        { code: 'ru', name: 'Russian' },
-        { code: 'es', name: 'Spanish' },
-        { code: 'sv', name: 'Swedish' },
-        { code: 'tr', name: 'Turkish' },
-        { code: 'ae', name: 'Arabic' },
-    ],
+    isDarkMode: getInitialTheme() === 'dark',
+    sidebar: localStorage.getItem('sidebar') === 'true' || defaultState.sidebar,
+    semidark: localStorage.getItem('semidark') === 'true' || themeConfig.semidark,
+    languageList: defaultState.languageList,
+    accentColor: localStorage.getItem('accentColor') || defaultState.accentColor,
+    fontSize: Number(localStorage.getItem('fontSize')) || defaultState.fontSize,
+    pageTitle: '',
 };
 
 const themeConfigSlice = createSlice({
-    name: 'auth',
-    initialState: initialState,
+    name: 'themeConfig',
+    initialState,
     reducers: {
-        toggleTheme(state, { payload }) {
-            payload = payload || state.theme; // light | dark | system
+        toggleTheme(state, action: PayloadAction<ThemeMode>) {
+            const payload = action.payload || state.theme;
             localStorage.setItem('theme', payload);
             state.theme = payload;
+
             if (payload === 'light') {
                 state.isDarkMode = false;
             } else if (payload === 'dark') {
                 state.isDarkMode = true;
             } else if (payload === 'system') {
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    state.isDarkMode = true;
-                } else {
-                    state.isDarkMode = false;
-                }
+                state.isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             }
 
             if (state.isDarkMode) {
-                document.querySelector('body')?.classList.add('dark');
+                document.documentElement.classList.add('dark');
             } else {
-                document.querySelector('body')?.classList.remove('dark');
+                document.documentElement.classList.remove('dark');
             }
         },
-        toggleMenu(state, { payload }) {
-            payload = payload || state.menu; // vertical, collapsible-vertical, horizontal
-            state.sidebar = false; // reset sidebar state
+        toggleMenu(state, action: PayloadAction<MenuMode>) {
+            const payload = action.payload || state.menu;
+            state.sidebar = false;
             localStorage.setItem('menu', payload);
             state.menu = payload;
         },
-        toggleLayout(state, { payload }) {
-            payload = payload || state.layout; // full, boxed-layout
+        toggleLayout(state, action: PayloadAction<LayoutMode>) {
+            const payload = action.payload || state.layout;
             localStorage.setItem('layout', payload);
             state.layout = payload;
         },
-        toggleRTL(state, { payload }) {
-            payload = payload || state.rtlClass; // rtl, ltr
+        toggleRTL(state, action: PayloadAction<RTLMode>) {
+            const payload = action.payload || state.rtlClass;
             localStorage.setItem('rtlClass', payload);
             state.rtlClass = payload;
-            document.querySelector('html')?.setAttribute('dir', state.rtlClass || 'ltr');
+            document.documentElement.setAttribute('dir', payload);
         },
-        toggleAnimation(state, { payload }) {
-            payload = payload || state.animation; // animate__fadeIn, animate__fadeInDown, animate__fadeInUp, animate__fadeInLeft, animate__fadeInRight, animate__slideInDown, animate__slideInLeft, animate__slideInRight, animate__zoomIn
-            payload = payload?.trim();
+        toggleAnimation(state, action: PayloadAction<AnimationMode>) {
+            const payload = action.payload || state.animation;
             localStorage.setItem('animation', payload);
             state.animation = payload;
         },
-        toggleNavbar(state, { payload }) {
-            payload = payload || state.navbar; // navbar-sticky, navbar-floating, navbar-static
+        toggleNavbar(state, action: PayloadAction<NavbarMode>) {
+            const payload = action.payload || state.navbar;
             localStorage.setItem('navbar', payload);
             state.navbar = payload;
         },
-        toggleSemidark(state, { payload }) {
-            payload = payload === true || payload === 'true' ? true : false;
-            localStorage.setItem('semidark', payload);
+        toggleSemidark(state, action: PayloadAction<boolean>) {
+            const payload = action.payload;
+            localStorage.setItem('semidark', String(payload));
             state.semidark = payload;
         },
-        toggleLocale(state, { payload }) {
-            payload = payload || state.locale;
+        toggleLocale(state, action: PayloadAction<string>) {
+            const payload = action.payload || state.locale;
             i18next.changeLanguage(payload);
             state.locale = payload;
         },
         toggleSidebar(state) {
             state.sidebar = !state.sidebar;
         },
-
-        setPageTitle(state, { payload }) {
-            document.title = `${payload} | VRISTO - Multipurpose Tailwind Dashboard Template`;
+        setPageTitle(state, action: PayloadAction<string>) {
+            state.pageTitle = action.payload;
+            document.title = `${action.payload} | MoreVans`;
+        },
+        setAccentColor(state, action: PayloadAction<string>) {
+            const payload = action.payload;
+            localStorage.setItem('accentColor', payload);
+            state.accentColor = payload;
+            document.documentElement.style.setProperty('--accent-color', payload);
+        },
+        setFontSize(state, action: PayloadAction<number>) {
+            const payload = action.payload;
+            localStorage.setItem('fontSize', String(payload));
+            state.fontSize = payload;
+            document.documentElement.style.fontSize = `${payload}px`;
         },
     },
 });
 
-export const { toggleTheme, toggleMenu, toggleLayout, toggleRTL, toggleAnimation, toggleNavbar, toggleSemidark, toggleLocale, toggleSidebar, setPageTitle } = themeConfigSlice.actions;
+export const { toggleTheme, toggleMenu, toggleLayout, toggleRTL, toggleAnimation, toggleNavbar, toggleSemidark, toggleLocale, toggleSidebar, setPageTitle, setAccentColor, setFontSize } =
+    themeConfigSlice.actions;
 
 export default themeConfigSlice.reducer;

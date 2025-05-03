@@ -8,6 +8,7 @@ import 'mantine-datatable/styles.layer.css';
 import React, { Suspense } from 'react';
 import createRefresh from 'react-auth-kit/createRefresh';
 import ReactDOM from 'react-dom/client';
+import authAxiosInstance from './helper/authAxiosInstance';
 import './layout.css';
 // Perfect Scrollbar
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -26,38 +27,59 @@ import router from './router/index';
 import AuthProvider from 'react-auth-kit';
 import createStore from 'react-auth-kit/createStore';
 import { Provider } from 'react-redux';
-import authAxiosInstance from './helper/authAxiosInstance';
 import store from './store/index';
 import { ChatProvider } from './contexts/ChatContext';
 
-const refresh = createRefresh({
-    interval: 60,
-    refreshApiCallback: async (param) => {
-        try {
-            const response = await authAxiosInstance.post('/refresh_token', param);
-            console.log('Refreshing');
-            return {
-                isSuccess: true,
-                newAuthToken: response.data.token,
-                newAuthTokenExpireIn: 60,
-                newRefreshTokenExpiresIn: 3600,
-            };
-        } catch (error) {
-            console.error(error);
-            return {
-                isSuccess: false,
-                newAuthToken: '',
-            };
-        }
-    },
-});
+// Dynamic imports for non-critical paths
+const i18n = import('./i18n');
 
-const store1 = createStore({
+// Memoized auth configuration
+// const refresh = createRefresh({
+//   interval: 60,
+//   refreshApiCallback: async (param) => {
+//     try {
+//       const response = await authAxiosInstance('/refresh_token/', param);
+//       return {
+//         isSuccess: true,
+//         newAuthToken: response.data.token,
+//         newAuthTokenExpireIn: 60,
+//         newRefreshTokenExpiresIn: 3600,
+//       };
+//     } catch (error) {
+//       console.error(error);
+//       return { isSuccess: false, newAuthToken: '' };
+//     }
+//   },
+// });
+
+const authStore = createStore({
     authType: 'cookie',
     authName: '_auth',
     cookieDomain: window.location.hostname,
     cookieSecure: window.location.protocol === 'https:',
-    refresh: refresh,
+    refresh: createRefresh({
+        interval: 15,
+        refreshApiCallback: async () => {
+            try {
+                const response = await authAxiosInstance.post('/refresh_token/', {
+                    withCredentials: true,
+                    // Automatically sends refresh cookie
+                });
+                return {
+                    isSuccess: true,
+                    newAuthToken: response.headers.authorization,
+                    newAuthTokenExpireIn: 1900, // 15 minutes
+                };
+            } catch (error) {
+                console.log('Error refreshing token:', error);
+                return {
+                    isSuccess: false,
+                    newAuthToken: '', // Ensure newAuthToken is always a string
+                    newAuthTokenExpireIn: undefined,
+                };
+            }
+        },
+    }),
 });
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
@@ -68,11 +90,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 <ContextMenuProvider zIndex={5000} shadow="md" borderRadius="md">
                     <DatesProvider settings={{ locale: 'en' }}>
                         <Provider store={store}>
-                            <AuthProvider store={store1}>
+                            <AuthProvider store={authStore}>
                                 <ChatProvider>
-                                {/* <PersistGate loading={null} persistor={persistor}> */}
-                                <RouterProvider router={router} />
-                                {/* </PersistGate> */}
+                                    {/* <PersistGate loading={null} persistor={persistor}> */}
+                                    <RouterProvider router={router} />
+                                    {/* </PersistGate> */}
                                 </ChatProvider>
                             </AuthProvider>
                         </Provider>

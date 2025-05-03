@@ -9,6 +9,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import * as Yup from 'yup';
 import AuthLayout from '../../components/Auth/AuthLayout';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AppDispatch, IRootState } from '../../store/index';
+import { useDispatch, useSelector } from 'react-redux';
+import { LoginUser } from '../../store/authSlice';
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import { ThunkDispatch } from '@reduxjs/toolkit';
 
 interface LoginFormValues {
     email: string;
@@ -24,64 +29,25 @@ const LoginSchema = Yup.object().shape({
 const Login: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [loginError, setLoginError] = useState<string | null>(null);
+    
+  
+    
+    const dispatch: ThunkDispatch<IRootState, unknown, AnyAction> = useDispatch();
+    const signIn = useSignIn();
     const [showPassword, setShowPassword] = useState(false);
     const [loginAttempts, setLoginAttempts] = useState(0);
+    
+    // Get auth state from Redux
+    const { loading, error, user } = useSelector((state: IRootState) => state.auth);
     
     // Get redirect URL from query params if available
     const from = new URLSearchParams(location.search).get('from') || '/dashboard';
     
-    // Reset error when component mounts or remounts
+   
+    // Monitor for auth changes
     useEffect(() => {
-        setLoginError(null);
-    }, []);
-
-    const handleSubmit = async (values: LoginFormValues, { setSubmitting, setFieldError }: any) => {
-        try {
-            // Increment login attempts
-            setLoginAttempts(prev => prev + 1);
-            
-            // Check if too many failed attempts
-            if (loginAttempts >= 5) {
-                setLoginError("Too many failed attempts. Please try again later or reset your password.");
-                setSubmitting(false);
-                return;
-            }
-
-            console.log('Login values:', values);
-
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
-            // For demo purposes: Reject specific email to demonstrate error handling
-            if (values.email === 'error@example.com') {
-                throw new Error('Invalid credentials');
-            }
-
-            // Mock user data
-            const user = {
-                id: '123',
-                name: 'John Doe',
-                email: values.email,
-                role: values.email.includes('admin') ? 'admin' : 
-                      values.email.includes('provider') ? 'provider' : 'user',
-                avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
-            };
-
-            // Store user in localStorage with remember me option
-            if (values.rememberMe) {
-                localStorage.setItem('user', JSON.stringify(user));
-            } else {
-                sessionStorage.setItem('user', JSON.stringify(user));
-            }
-
-            // Clear any existing errors
-            setLoginError(null);
-
-            // Success animation before redirect
-            await new Promise((resolve) => setTimeout(resolve, 300));
-
-            // Redirect based on user role
+        // If user is authenticated, redirect to appropriate page
+        if (user) {
             if (user.role === 'admin') {
                 navigate('/admin/dashboard');
             } else if (user.role === 'provider') {
@@ -89,15 +55,33 @@ const Login: React.FC = () => {
             } else {
                 navigate(from);
             }
+        }
+    }, [user, navigate, from]);
+
+    const handleSubmit = async (values: LoginFormValues, { setSubmitting }: any) => {
+        try {
+            // Increment login attempts
+            setLoginAttempts(prev => prev + 1);
+            
+            // Check if too many failed attempts
+            if (loginAttempts >= 5) {
+                // Dispatch an action to update the auth state with a rate limit error
+                // Or handle it locally
+                setSubmitting(false);
+                return;
+            }
+            
+            // Dispatch the login action
+            const resultAction = await dispatch(LoginUser({
+                email: values.email,
+                password: values.password,
+                extra: {
+                    signIn: signIn
+                }
+            }));
         } catch (error) {
             console.error('Login error:', error);
-            setLoginError('The email or password you entered is incorrect.');
-            
-            // Field-specific errors for better UX
-            if (loginAttempts >= 3) {
-                setFieldError('email', 'Please check your email address');
-                setFieldError('password', 'Please check your password');
-            }
+            // Error handling is done by the Redux slice
         } finally {
             setSubmitting(false);
         }
@@ -109,7 +93,7 @@ const Login: React.FC = () => {
     return (
         <AuthLayout title="Welcome back" subtitle="Sign in to your account">
             <AnimatePresence mode="wait">
-                {loginError && (
+                {error && (
                     <motion.div 
                         className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 flex items-start"
                         initial={{ opacity: 0, y: -10 }}
@@ -119,7 +103,7 @@ const Login: React.FC = () => {
                     >
                         <FontAwesomeIcon icon={faExclamationCircle} className="h-5 w-5 mr-3 text-red-500 mt-0.5" />
                         <div>
-                            <p className="font-medium">{loginError}</p>
+                            <p className="font-medium">{error}</p>
                             {loginAttempts >= 3 && (
                                 <p className="text-sm mt-1">
                                     <Link to="/forgot-password" className="text-red-700 font-medium underline">
@@ -272,12 +256,12 @@ const Login: React.FC = () => {
                         <div>
                             <motion.button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || loading}
                                 className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all duration-200 relative overflow-hidden"
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                             >
-                                {isSubmitting ? (
+                                {(isSubmitting || loading) ? (
                                     <div className="flex items-center">
                                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -310,41 +294,27 @@ const Login: React.FC = () => {
 
                 <div className="mt-6 grid grid-cols-2 gap-3">
                     <motion.button
+                        type="button"
+                        onClick={() => dispatch(loginUser({ provider: 'google' }))}
                         whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-150"
+                        disabled={loading}
                     >
                         <FontAwesomeIcon icon={faGoogle} className="h-5 w-5 text-red-500" />
                         <span className="ml-2">Google</span>
                     </motion.button>
 
                     <motion.button
+                        type="button"
+                        onClick={() => dispatch(loginUser({ provider: 'facebook' }))}
                         whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-150"
+                        disabled={loading}
                     >
                         <FontAwesomeIcon icon={faFacebookF} className="h-5 w-5 text-blue-600" />
                         <span className="ml-2">Facebook</span>
-                    </motion.button>
-                </div>
-
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                    <motion.button
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-150"
-                    >
-                        <FontAwesomeIcon icon={faApple} className="h-5 w-5 text-gray-900 dark:text-white" />
-                        <span className="ml-2">Apple</span>
-                    </motion.button>
-
-                    <motion.button
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-150"
-                    >
-                        <FontAwesomeIcon icon={faTwitter} className="h-5 w-5 text-blue-400" />
-                        <span className="ml-2">Twitter</span>
                     </motion.button>
                 </div>
             </div>
