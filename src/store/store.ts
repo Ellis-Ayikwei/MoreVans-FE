@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import themeConfigSlice from './themeConfigSlice';
 import paymentSlice from './slices/paymentSlice';
+import serviceRequestSlice from './slices/createRequestSlice';
 
 export const store = configureStore({
     reducer: {
         themeConfig: themeConfigSlice,
         payments: paymentSlice,
+        serviceRequest: serviceRequestSlice,
     },
 });
 

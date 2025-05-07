@@ -1,11 +1,18 @@
-import { PropsWithChildren, useEffect } from 'react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import store, { IRootState } from './store';
+import store, { AppDispatch, IRootState } from './store';
 import { toggleAnimation, toggleLayout, toggleLocale, toggleMenu, toggleNavbar, toggleRTL, toggleSemidark, toggleTheme } from './store/themeConfigSlice';
+import DraftRequestsModal from './components/DraftRequestsModal';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import { fetchDrafts } from './store/slices/draftRequestsSlice';
 
 function App({ children }: PropsWithChildren) {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
+    const authUser = useAuthUser();
+    const user = authUser as { id: string };
+    const drafts = useSelector((state: IRootState) => state.draftRequests.drafts);
+    const [showDraftModal, setShowDraftModal] = useState(false);
 
     useEffect(() => {
         dispatch(toggleTheme((localStorage.getItem('theme') as any) || themeConfig.theme));
@@ -16,7 +23,16 @@ function App({ children }: PropsWithChildren) {
         dispatch(toggleNavbar((localStorage.getItem('navbar') as any) || themeConfig.navbar));
         dispatch(toggleLocale(localStorage.getItem('i18nextLng') || themeConfig.locale));
         dispatch(toggleSemidark(localStorage.getItem('semidark') === 'true' || themeConfig.semidark));
-    }, [dispatch, themeConfig.theme, themeConfig.menu, themeConfig.layout, themeConfig.rtlClass, themeConfig.animation, themeConfig.navbar, themeConfig.locale, themeConfig.semidark]);
+
+        if (user?.id) {
+            dispatch(fetchDrafts({ user_id: user.id }));
+        }
+
+        // Show draft modal if there are drafts and user is on the home page
+        if (drafts.length > 0 && window.location.pathname === '/') {
+            setShowDraftModal(true);
+        }
+    }, [dispatch, themeConfig.theme, themeConfig.menu, themeConfig.layout, themeConfig.rtlClass, themeConfig.animation, themeConfig.navbar, themeConfig.locale, themeConfig.semidark, drafts]);
 
     return (
         <div
@@ -25,6 +41,7 @@ function App({ children }: PropsWithChildren) {
             } main-section antialiased relative font-nunito text-sm font-normal`}
         >
             {children}
+            <DraftRequestsModal visible={showDraftModal} onClose={() => setShowDraftModal(false)} />
         </div>
     );
 }

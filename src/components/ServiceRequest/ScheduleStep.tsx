@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import StepNavigation from './stepNavigation';
-import { FormikProps } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { faCalendarAlt, faCalendarCheck, faClock, faClipboardCheck, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ErrorMessage, Field } from 'formik';
-import { use } from 'i18next';
-import { useServiceRequestForm } from '../../hooks/useServiceRequestForm';
-import { JourneyStop, RequestItem } from '../../store/slices/serviceRequestSice';
+import { ErrorMessage } from 'formik';
+import { useSelector, useDispatch } from 'react-redux';
+import { IRootState, AppDispatch } from '../../store';
+import { submitStepToAPI, resetForm, setCurrentStep } from '../../store/slices/createRequestSlice';
+import { useNavigate } from 'react-router-dom';
 import PriceForecastModal from '../Booking/PriceForecastModal';
 import PreAnimationModal from '../Booking/PreAnimationModal';
 import ConfirmationModal from '../Booking/ConfirmationModal';
+import { JourneyStop, RequestItem } from '../../store/slices/serviceRequestSice';
+import showMessage from '../../helper/showMessage';
 
 interface StaffPrice {
     total_price: number;
@@ -50,21 +53,64 @@ interface PriceForecastResponse {
     };
 }
 
+interface RequestItem {
+    id: string;
+    name: string;
+    description?: string;
+    quantity: number;
+    fragile: boolean;
+    needs_disassembly: boolean;
+    category?: string;
+    weight?: string;
+    dimensions?: string;
+    value?: string;
+    notes?: string;
+    photos?: string[];
+}
+
 // Update the props interface to include formik values and other required props
-interface ScheduleStepProps extends FormikProps<any> {
+interface ScheduleStepProps {
+    values: any;
+    handleChange: (e: React.ChangeEvent<any>) => void;
+    handleBlur: (e: React.FocusEvent<any>) => void;
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
     onBack: () => void;
     isEditing?: boolean;
     stepNumber?: number;
+    errors: any;
+    touched: any;
+    isLoading: boolean;
+    showPreAnimation: boolean;
+    showPriceModal: boolean;
+    priceForecast: PriceForecastResponse['data']['price_forecast'] | null;
+    onPriceAccept: (staffCount: string, price: number) => void;
+    onSubmit: () => void;
 }
 
-const ScheduleStep: React.FC<ScheduleStepProps> = ({ onBack, isEditing = false, stepNumber = 4, values, isSubmitting }) => {
-    const { handleSubmit } = useServiceRequestForm();
-    const [showPriceModal, setShowPriceModal] = useState(false);
-    const [priceForecast, setPriceForecast] = useState<PriceForecastResponse['data']['price_forecast'] | null>(null);
-    const [showPreAnimation, setShowPreAnimation] = useState(false);
+const ScheduleStep: React.FC<ScheduleStepProps> = ({
+    values,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    onBack,
+    isEditing = false,
+    stepNumber = 4,
+    errors,
+    touched,
+    isLoading,
+    showPreAnimation,
+    showPriceModal,
+    priceForecast,
+    onPriceAccept,
+    onSubmit,
+}) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
+    const { request_id } = useSelector((state: IRootState) => state.serviceRequest);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [selectedPrice, setSelectedPrice] = useState<number>(0);
     const [selectedStaffCount, setSelectedStaffCount] = useState<number>(0);
+    const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(null);
 
     // Add this helper function inside your component
     const requiresPropertyDetails = (serviceType: string) => {
@@ -75,40 +121,12 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ onBack, isEditing = false, 
     // console.log("Journey items:", values.journey_stops?.map(stop => stop.type === 'pickup' ? stop.items : []));
     // console.log("Moving items:", values.moving_items);
 
-    const handleFormSubmit = async () => {
-        try {
-            // Reset selected price and staff count when getting new prices
-            setSelectedPrice(0);
-            setSelectedStaffCount(0);
-
-            // Show pre-animation modal first
-            setShowPreAnimation(true);
-
-            console.log('values ------------', values);
-            const response = (await handleSubmit(values)) as unknown as PriceForecastResponse;
-            console.log('response ------------', response);
-
-            if (response?.data?.price_forecast?.monthly_calendar) {
-                setPriceForecast(response.data.price_forecast);
-                setShowPreAnimation(false);
-                setShowPriceModal(true);
-            } else {
-                console.error('Invalid response structure:', response);
-                setShowPreAnimation(false);
-            }
-        } catch (error) {
-            console.error('Error submitting form:', error);
-            setShowPreAnimation(false);
-        }
-    };
-
     const handlePriceAccept = (staffCount: string, price: number) => {
         setSelectedPrice(price);
-        // Extract the number from staffCount (e.g., "staff_1" -> 1)
         const staffCountNumber = parseInt(staffCount.split('_')[1], 10);
         setSelectedStaffCount(staffCountNumber);
-        setShowPriceModal(false);
         setShowConfirmationModal(true);
+        onPriceAccept(staffCount, price);
     };
 
     return (
@@ -543,12 +561,16 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ onBack, isEditing = false, 
                 </div>
             </div>
 
-            <StepNavigation onBack={onBack} nextLabel={isEditing ? 'Update Request' : 'Get Prices'} isLastStep={true} isSubmitting={isSubmitting} handleSubmit={handleFormSubmit} />
+            <StepNavigation onBack={onBack} nextLabel={isEditing ? 'Update Request' : 'Get Prices'} isLastStep={true} isSubmitting={isLoading} handleSubmit={onSubmit} />
 
-            {showPreAnimation && <PreAnimationModal isOpen={showPreAnimation} onClose={() => setShowPreAnimation(false)} onComplete={() => {}} isLoading={true} />}
+            {showPreAnimation && <PreAnimationModal isOpen={showPreAnimation} onClose={() => {}} onComplete={() => {}} isLoading={true} />}
+
             {showPriceModal && priceForecast && (
-                <PriceForecastModal isOpen={showPriceModal} onClose={() => setShowPriceModal(false)} priceForecast={priceForecast} request_id={values.id} onAccept={handlePriceAccept} />
+                <div onClick={(e) => e.stopPropagation()}>
+                    <PriceForecastModal isOpen={showPriceModal} onClose={() => {}} priceForecast={priceForecast} request_id={values.id} onAccept={handlePriceAccept} />
+                </div>
             )}
+
             <ConfirmationModal
                 isOpen={showConfirmationModal}
                 onClose={() => {
@@ -557,7 +579,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ onBack, isEditing = false, 
                     setSelectedStaffCount(0);
                 }}
                 price={selectedPrice}
-                email={values.email || 'user@example.com'}
+                email={values.contact_email || values.email || 'user@example.com'}
                 bookingDetails={{
                     date: values.preferred_date,
                     time: values.preferred_time,

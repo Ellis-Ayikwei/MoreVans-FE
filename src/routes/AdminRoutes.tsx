@@ -13,6 +13,7 @@ import SupportTickets from '../pages/admin/SupportTickets';
 import RolesPermissions from '../pages/admin/RolesPermissions';
 import SystemMaintenance from '../pages/admin/SystemMaintenance';
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import PricingAdmin from '../pages/admin/pricing';
 
 const AdminRoutes = () => {
     const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: true });
@@ -20,13 +21,7 @@ const AdminRoutes = () => {
     return (
         <Flex direction="row" h="100vh" w="100%">
             <AdminSidebar isOpen={isOpen} onClose={onClose} onOpen={onOpen} />
-            <Box 
-                flex="1" 
-                ml={isOpen ? { base: 0, md: '250px' } : 0}
-                transition="margin-left 0.3s"
-                overflowY="auto"
-                p={4}
-            >
+            <Box flex="1" ml={isOpen ? { base: 0, md: '250px' } : 0} transition="margin-left 0.3s" overflowY="auto" p={4}>
                 <Routes>
                     {/* We'll use the existing pages/admin components */}
                     <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -40,6 +35,7 @@ const AdminRoutes = () => {
                     <Route path="/admin/settings" element={<AdminSettings />} />
                     <Route path="/admin/permissions" element={<RolesPermissions />} />
                     <Route path="/admin/maintenance" element={<SystemMaintenance />} />
+                    <Route path="/admin/pricing" element={<PricingAdmin />} />
                     <Route path="/user/profile" element={<UserProfileTabs />} />
                 </Routes>
             </Box>

@@ -51,7 +51,6 @@ import UserDetail from '../pages/user/UserDetail';
 import AdminSettings from '../pages/admin/AdminSettings';
 import PaymentPage from '../pages/PaymentPage';
 import ServiceRequestDetailPage from '../pages/ServiceRequestDetailPage';
-import ServiceRequestPage from '../pages/ServiceRequestPage';
 import ProviderJobDetailPage from '../pages/ProviderJobDetailPage';
 import PaymentDetail from '../components/Payment/PaymentDetail';
 import UserBookingDetail from '../pages/user/UserBookingDetail';
@@ -62,6 +61,7 @@ import VehicleList from '../components/vehicle/VehicleList';
 import VehicleDetail from '../components/vehicle/VehicleDetail';
 import BiddingJobs from '../pages/provider/BiddingJobs';
 import WatchingJobs from '../pages/provider/WatchingJobs';
+import PricingAdmin from '../pages/admin/pricing';
 
 const userRole = localStorage.getItem('userRole') || '';
 const adminUsers = ['SUPER_ADMIN', 'ADMIN', 'UNDERWRITER', 'PREMIUM_ADMIN', 'SALES'];
@@ -150,11 +150,7 @@ const routes = [
         element: <ServiceRequestForm />,
         layout: 'default',
     },
-    {
-        path: '/service-requests',
-        element: <ServiceRequestPage />,
-        layout: 'default',
-    },
+
     {
         path: '/service-requests/:id',
         element: <ServiceRequestDetailPage />,
@@ -431,6 +427,11 @@ const routes = [
     {
         path: '/admin/revenue',
         element: <RevenueManagement />,
+        layout: 'admin',
+    },
+    {
+        path: '/admin/pricing',
+        element: <PricingAdmin />,
         layout: 'admin',
     },
     {

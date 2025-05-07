@@ -2,37 +2,16 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import StepNavigation from './stepNavigation';
 import { v4 as uuidv4 } from 'uuid';
-
-import {
-    faBox,
-    faBuilding,
-    faTruck,
-    faElevator,
-    faCar,
-    faImage,
-    faClipboardList,
-    faUser,
-    faRulerCombined,
-    faFileUpload,
-    faCheckCircle,
-    faCamera,
-    faTimes,
-    faCouch,
-    faList,
-    faPlus,
-    faTv,
-    faBlender,
-    faInfoCircle,
-    faChevronUp,
-    faChevronDown,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ErrorMessage, Field, FieldArray } from 'formik';
-import { useServiceRequestForm } from '../../hooks/useServiceRequestForm';
+import { useSelector, useDispatch } from 'react-redux';
+import { IRootState, AppDispatch } from '../../store';
 import { get } from 'sortablejs';
 import { getItemIcon } from '../../utilities/getItemIcon';
 import { commonItems } from '../../data/commonItems';
 import CommonItemsModal from './CommonItemsModal';
+import { setCurrentStep, submitStepToAPI } from '../../store/slices/createRequestSlice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Field, FieldArray } from 'formik';
+import { faBox, faCamera, faCheckCircle, faChevronDown, faChevronUp, faClipboardList, faCouch, faFileUpload, faImage, faInfoCircle, faList, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const itemTypes = [
     'Residential Moving',
@@ -69,10 +48,19 @@ interface MovingItem {
     photo?: File | string | null;
 }
 
-const ServiceDetailsStep = ({ values, onNext, onBack, previewImages, handleImageUpload, removeImage, setFieldValue }: any) => {
+interface ServiceDetailsStepProps {
+    values: any;
+    setFieldValue: (field: string, value: any) => void;
+    onNext: () => void;
+    onBack: () => void;
+    isLoading: boolean;
+}
+
+const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({ values, setFieldValue, onNext, onBack, isLoading }) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { currentStep } = useSelector((state: IRootState) => state.serviceRequest);
     const [showCommonItems, setShowCommonItems] = useState(false);
     const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(null);
-    const { setFormValues } = useServiceRequestForm();
 
     const scrollToPosition = (id: string) => {
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -80,6 +68,34 @@ const ServiceDetailsStep = ({ values, onNext, onBack, previewImages, handleImage
 
     console.log('the values', values);
     // alert(`the values ${values.request_type === 'instant'}`);
+
+    const handleNext = async (values: any) => {
+        try {
+            const result = await dispatch(
+                submitStepToAPI({
+                    step: currentStep,
+                    payload: values,
+                    isEditing: false,
+                    request_id: '',
+                })
+            ).unwrap();
+
+            // Move to next step if successful
+            if (result.success) {
+                dispatch(setCurrentStep(Math.min(currentStep + 1, 4)));
+                window.scrollTo(0, 0);
+            }
+        } catch (error) {
+            console.error('Error submitting step:', error);
+        }
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setFieldValue: (field: string, value: any) => void) => {
+        if (e.target.files) {
+            const files = Array.from(e.target.files);
+            setFieldValue('photo_urls', [...(values.photo_urls || []), ...files]);
+        }
+    };
 
     return (
         <div className="space-y-6 animate-fadeIn">
@@ -98,145 +114,7 @@ const ServiceDetailsStep = ({ values, onNext, onBack, previewImages, handleImage
                                 <h3 className="font-medium text-gray-800 dark:text-gray-200">Service Type & Size</h3>
                             </div>
                         </div> */}
-                        yugtukjjh
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Pickup location */}
-                            {/* Additional pickup property details */}
-                            {['Residential Moving', 'Office Relocation'].includes(values.service_type) && (
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h3 className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                                            <span className="h-8 w-8 rounded-full bg-blue-600 dark:bg-blue-500 mr-3 flex items-center justify-center text-white text-sm">A</span>
-                                            Pickup
-                                        </h3>
-                                    </div>
-                                    <div className="p-6 space-y-6">
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            Please enter the details of the property you are moving to.
-                                            <br />
-                                            This information will help us provide you with a more accurate estimate.
-                                        </p>
-                                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
-                                                <FontAwesomeIcon icon={faBuilding} className="mr-2 text-blue-600 dark:text-blue-400" />
-                                                Property Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                <div>
-                                                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Property Type</label>
-                                                    <Field
-                                                        as="select"
-                                                        name="propertyType"
-                                                        className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                                    >
-                                                        {propertyTypes.map((type) => (
-                                                            <option key={type} value={type}>
-                                                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                                                            </option>
-                                                        ))}
-                                                    </Field>
-                                                </div>
 
-                                                <div>
-                                                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                        Number of Floors <span className="text-red-500">*</span>
-                                                    </label>
-                                                    <Field
-                                                        type="number"
-                                                        name="pickupNumberOfFloors"
-                                                        min="1"
-                                                        className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                    <ErrorMessage name="pickupNumberOfFloors" component="p" className="text-red-500 text-xs mt-1" />
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                                    <Field
-                                                        type="checkbox"
-                                                        name="pickup_has_elevator"
-                                                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600"
-                                                    />
-                                                    <span className="ml-2 flex items-center">
-                                                        <FontAwesomeIcon icon={faElevator} className="mr-1.5 text-gray-500 dark:text-gray-400" />
-                                                        Elevator Access
-                                                    </span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Dropoff location */}
-                            {/* Additional dropoff property details */}
-                            {['Residential Moving', 'Office Relocation'].includes(values.service_type) && (
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h3 className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                                            <span className="h-8 w-8 rounded-full bg-green-600 dark:bg-green-500 mr-3 flex items-center justify-center text-white text-sm">B</span>
-                                            Dropoff
-                                        </h3>
-                                    </div>
-                                    <div className="p-6 space-y-6">
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            Please enter the details of the property you are moving to.
-                                            <br />
-                                            This information will help us provide you with a more accurate estimate.
-                                        </p>
-                                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
-                                                <FontAwesomeIcon icon={faBuilding} className="mr-2 text-green-600 dark:text-green-400" />
-                                                Property Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                <div>
-                                                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Property Type</label>
-                                                    <Field
-                                                        as="select"
-                                                        name="dropoffPropertyType"
-                                                        className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                                    >
-                                                        {propertyTypes.map((type) => (
-                                                            <option key={type} value={type}>
-                                                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                                                            </option>
-                                                        ))}
-                                                    </Field>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                        Number of Floors <span className="text-red-500">*</span>
-                                                    </label>
-                                                    <Field
-                                                        type="number"
-                                                        name="dropoff_number_of_floors"
-                                                        min="1"
-                                                        className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                    <ErrorMessage name="dropoff_number_of_floors" component="p" className="text-red-500 text-xs mt-1" />
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                                    <Field
-                                                        type="checkbox"
-                                                        name="dropoff_has_elevator"
-                                                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600"
-                                                    />
-                                                    <span className="ml-2 flex items-center">
-                                                        <FontAwesomeIcon icon={faElevator} className="mr-1.5 text-gray-500 dark:text-gray-400" />
-                                                        Elevator Access
-                                                    </span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        {/* Enhanced Item Selection for Moving Services */}
                         {
                             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mb-6">
                                 <div className="px-6 py-4 bg-blue-50 dark:bg-blue-900/20 border-b border-gray-200 dark:border-gray-700">
@@ -603,7 +481,16 @@ const ServiceDetailsStep = ({ values, onNext, onBack, previewImages, handleImage
                 </div>
             </div>
 
-            <StepNavigation onNext={onNext} onBack={onBack} />
+            <StepNavigation
+                onBack={onBack}
+                onNext={onNext}
+                showBackButton={currentStep > 1}
+                isLastStep={currentStep === 4}
+                isSubmitting={isLoading}
+                handleSubmit={onNext}
+                backLabel={currentStep === 1 ? 'Cancel' : 'Previous'}
+                nextLabel={currentStep === 4 ? 'Submit Request' : 'Next'}
+            />
         </div>
     );
 };

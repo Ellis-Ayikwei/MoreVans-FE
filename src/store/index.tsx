@@ -9,7 +9,8 @@ import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, R
 import storage from 'redux-persist/lib/storage';
 
 import authSlice from './authSlice';
-
+import createRequestSlice from './slices/createRequestSlice';
+import draftRequestsSlice from './slices/draftRequestsSlice';
 const authPersistConfig = {
     key: 'auth',
     storage,
@@ -23,6 +24,8 @@ const rootReducer = combineReducers({
     vehicle: vehicleSlice,
     payments: paymentSlice,
     serviceRequests: serviceRequestSlice,
+    serviceRequest: createRequestSlice,
+    draftRequests: draftRequestsSlice,
 });
 
 export const store = configureStore({
