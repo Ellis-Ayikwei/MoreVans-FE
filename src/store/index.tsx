@@ -1,11 +1,11 @@
-import { combineReducers, configureStore, Store } from '@reduxjs/toolkit';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import themeConfigSlice from './themeConfigSlice';
 import usersSlice from './usersSlice';
 import vehicleSlice from './slices/vehicleSlice';
 import paymentSlice from './slices/paymentSlice';
 import serviceRequestSlice from './slices/serviceRequestSice';
 
-import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
+import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
 import authSlice from './authSlice';
