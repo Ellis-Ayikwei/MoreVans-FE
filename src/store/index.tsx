@@ -5,7 +5,7 @@ import vehicleSlice from './slices/vehicleSlice';
 import paymentSlice from './slices/paymentSlice';
 import serviceRequestSlice from './slices/serviceRequestSice';
 
-import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
+import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
 import authSlice from './authSlice';
