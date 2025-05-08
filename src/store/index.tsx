@@ -8,10 +8,6 @@ import serviceRequestSlice from './slices/serviceRequestSice';
 import authSlice from './authSlice';
 import createRequestSlice from './slices/createRequestSlice';
 import draftRequestsSlice from './slices/draftRequestsSlice';
-const authPersistConfig = {
-    key: 'auth',
-    storage,
-};
 
 // const persistedAuthReducer = persistReducer(authPersistConfig, authSlice);
 const rootReducer = combineReducers({
