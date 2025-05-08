@@ -99,6 +99,10 @@
     },
     "devDependencies": {
         "@ag-media/react-pdf-table": "^2.0.0",
+        "@babel/core": "^7.27.1",
+        "@babel/preset-env": "^7.27.2",
+        "@babel/preset-react": "^7.27.1",
+        "@babel/preset-typescript": "^7.27.1",
         "@headlessui/react": "^1.7.3",
         "@tailwindcss/forms": "^0.5.3",
         "@tailwindcss/typography": "^0.5.7",
@@ -116,6 +120,7 @@
         "@types/styled-components": "^5.1.26",
         "@vitejs/plugin-react": "^3.1.0",
         "autoprefixer": "^10.4.17",
+        "babel-plugin-import": "^1.13.8",
         "i18next": "^21.10.0",
         "i18next-browser-languagedetector": "^6.1.8",
         "i18next-http-backend": "^1.4.4",

@@ -10,4 +10,24 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    build: {
+        commonjsOptions: {
+            include: [/node_modules/],
+            transformMixedEsModules: true,
+        },
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    antd: ['antd'],
+                    'react-vendor': ['react', 'react-dom'],
+                },
+            },
+        },
+    },
+    optimizeDeps: {
+        include: ['antd'],
+        esbuildOptions: {
+            target: 'es2020',
+        },
+    },
 });
