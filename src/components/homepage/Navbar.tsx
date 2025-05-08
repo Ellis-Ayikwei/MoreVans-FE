@@ -1,0 +1,143 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { IconMenu2, IconX, IconHome, IconBriefcase, IconInfoCircle, IconUsers, IconLogin } from '@tabler/icons-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+
+interface NavbarProps {
+    isScrolled: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('home');
+
+    const navLinks = [
+        { to: '/', label: 'Home', icon: IconHome },
+        { to: '/services', label: 'Services', icon: IconBriefcase },
+        { to: '/how-it-works', label: 'How it Works', icon: IconInfoCircle },
+        { to: '/providers', label: 'Providers', icon: IconUsers },
+        { to: '/blog', label: 'Blog', icon: IconInfoCircle },
+        { to: '/about', label: 'About', icon: IconInfoCircle },
+        { to: '/contact', label: 'Contact', icon: IconInfoCircle },
+    ];
+
+    const toggleMobileMenu = () => {
+        setMobileMenuOpen(!mobileMenuOpen);
+    };
+
+    return (
+        <nav className={`fixed top-0 left-0 w-full right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white dark:bg-gray-900 shadow-md' : 'bg-transparent'}`}>
+            <div className="max-w-[100vw] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-20">
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center">
+                        <img
+                            className={`w-[160px] sm:w-[200px] flex-none transition-all duration-300 ${isScrolled ? ' ' : 'brightness-0 invert'}`}
+                            src="/assets/images/morevanstext.png"
+                            alt="MoreVans"
+                        />
+                    </Link>
+
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center space-x-8">
+                        {navLinks.map(({ to, label, icon: Icon }) => (
+                            <Link
+                                key={to}
+                                to={to}
+                                className={`flex items-center font-medium transition-colors duration-200 ${
+                                    activeTab === to.slice(1) || (to === '/' && activeTab === 'home')
+                                        ? 'text-blue-600 dark:text-blue-400'
+                                        : isScrolled
+                                        ? 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
+                                        : 'text-white hover:text-blue-200'
+                                }`}
+                                onClick={() => setActiveTab(to.slice(1) || 'home')}
+                            >
+                                <Icon className="w-5 h-5 mr-1.5" />
+                                {label}
+                            </Link>
+                        ))}
+                    </div>
+
+                    {/* Auth Buttons */}
+                    <div className="hidden md:flex items-center space-x-4">
+                        <Link
+                            to="/login"
+                            className={`flex items-center font-medium transition-colors duration-200 ${
+                                isScrolled ? 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400' : 'text-white hover:text-blue-200'
+                            }`}
+                        >
+                            <IconLogin className="w-5 h-5 mr-1.5" />
+                            Log In
+                        </Link>
+                        <Link
+                            to="/service-request"
+                            className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+                                isScrolled ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg' : 'bg-white text-blue-600 hover:bg-blue-50 shadow-md hover:shadow-lg'
+                            }`}
+                        >
+                            Request a Move
+                        </Link>
+                    </div>
+
+                    {/* Mobile Menu Button */}
+                    <button onClick={toggleMobileMenu} className="md:hidden text-gray-700 dark:text-gray-300">
+                        <FontAwesomeIcon icon={mobileMenuOpen ? faTimes : faBars} className="text-2xl" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile Menu */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden bg-white dark:bg-gray-900 w-full">
+                        <div className="container mx-auto px-4 py-4">
+                            <div className="flex flex-col space-y-4">
+                                {navLinks.map(({ to, label, icon: Icon }) => (
+                                    <Link
+                                        key={to}
+                                        to={to}
+                                        className={`flex items-center px-4 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                                            activeTab === to.slice(1) || (to === '/' && activeTab === 'home')
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                        }`}
+                                        onClick={() => {
+                                            setActiveTab(to.slice(1) || 'home');
+                                            setMobileMenuOpen(false);
+                                        }}
+                                    >
+                                        <Icon className="w-5 h-5 mr-3" />
+                                        {label}
+                                    </Link>
+                                ))}
+
+                                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <Link
+                                        to="/login"
+                                        className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        <IconLogin className="w-5 h-5 mr-3" />
+                                        Log In
+                                    </Link>
+                                    <Link
+                                        to="/service-request"
+                                        className="block mt-4 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 text-center"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Request a Move
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </nav>
+    );
+};
+
+export default Navbar;

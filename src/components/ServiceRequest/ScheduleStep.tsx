@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import StepNavigation from './stepNavigation';
 import { Formik, Form, Field } from 'formik';
-import { faCalendarAlt, faCalendarCheck, faClock, faClipboardCheck, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconCalendar, IconCalendarCheck, IconClock, IconClipboardCheck, IconMapPin } from '@tabler/icons-react';
 import { ErrorMessage } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
@@ -135,7 +134,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
             <div className="space-y-6 animate-fadeIn">
                 <div className="flex items-center mb-6">
                     <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400 mr-3">
-                        <FontAwesomeIcon icon={faCalendarAlt} />
+                        <IconCalendar size={20} />
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">Scheduling & Instructions</h2>
                 </div>
@@ -148,7 +147,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                         <div className="grid gap-6 md:grid-cols-2">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <FontAwesomeIcon icon={faCalendarAlt} className="mr-2 text-blue-600 dark:text-blue-400" />
+                                    <IconCalendar className="inline-block mr-2 text-blue-600 dark:text-blue-400" size={18} />
                                     Preferred Date <span className="text-red-500">*</span>
                                 </label>
                                 <Field
@@ -162,7 +161,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <FontAwesomeIcon icon={faClock} className="mr-2 text-blue-600 dark:text-blue-400" />
+                                    <IconClock className="inline-block mr-2 text-blue-600 dark:text-blue-400" size={18} />
                                     Preferred Time <span className="text-red-500">*</span>
                                 </label>
                                 <Field
@@ -190,7 +189,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                                     className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600"
                                 />
                                 <span className="ml-2 flex items-center font-medium">
-                                    <FontAwesomeIcon icon={faCalendarCheck} className="mr-1.5 text-blue-600 dark:text-blue-400" />
+                                    <IconCalendarCheck className="mr-1.5 text-blue-600 dark:text-blue-400" size={18} />
                                     I'm flexible with scheduling
                                 </span>
                             </label>
@@ -239,7 +238,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 bg-green-50 dark:bg-green-900/20 border-b border-gray-200 dark:border-gray-700">
                         <h3 className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                            <FontAwesomeIcon icon={faClipboardCheck} className="mr-2 text-green-600 dark:text-green-400" />
+                            <IconClipboardCheck className="mr-2 text-green-600 dark:text-green-400" size={20} />
                             Review Your Request
                         </h3>
                     </div>

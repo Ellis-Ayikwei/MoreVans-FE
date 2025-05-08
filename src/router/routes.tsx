@@ -62,6 +62,8 @@ import VehicleDetail from '../components/vehicle/VehicleDetail';
 import BiddingJobs from '../pages/provider/BiddingJobs';
 import WatchingJobs from '../pages/provider/WatchingJobs';
 import PricingAdmin from '../pages/admin/pricing';
+import BlogPostDetail from '../pages/BlogPostDetail';
+import Blog from '../pages/Blog';
 
 const userRole = localStorage.getItem('userRole') || '';
 const adminUsers = ['SUPER_ADMIN', 'ADMIN', 'UNDERWRITER', 'PREMIUM_ADMIN', 'SALES'];
@@ -91,17 +93,28 @@ const ConditionalDashboard = () => {
 };
 
 const routes = [
-    // // Public routes
-    // {
-    //     path: '/',
-    //     element: <Homepage />,
-    //     layout: 'blank',
-    // },
+    // Public routes
     {
         path: '/',
-        element: <Home />,
+        element: <Homepage />,
         layout: 'blank',
     },
+    {
+        path: '/blog',
+        element: <Blog />,
+        layout: 'blank',
+    },
+    {
+        path: '/blog/:id',
+        element: <BlogPostDetail />,
+        layout: 'blank',
+    },
+
+    // {
+    //     path: '/',
+    //     element: <Home />,
+    //     layout: 'blank',
+    // },
     {
         path: '/login',
         element: <Login />,

@@ -10,8 +10,7 @@ import ServiceDetailsStep from '../../components/ServiceRequest/ServiceDetailsSt
 import LocationsStep from '../../components/ServiceRequest/LocationsStep';
 import ScheduleStep from '../../components/ServiceRequest/ScheduleStep';
 import { ServiceRequest } from '../../types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faShieldAlt, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import { IconCheck, IconShieldCheck, IconThumbUp } from '@tabler/icons-react';
 import { getPricePreview, setCurrentStep, submitStepToAPI, resetForm, updateFormValues, setStepData } from '../../store/slices/createRequestSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
@@ -371,7 +370,7 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                             <div className="bg-white/15 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 transition-all hover:bg-white/20 group">
                                 <div className="flex items-center justify-center sm:justify-start">
                                     <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <FontAwesomeIcon icon={faCheckCircle} className="text-green-300" />
+                                        <IconCheck className="text-green-300" size={24} />
                                     </div>
                                     <span className="ml-3 text-white font-medium">Verified Providers</span>
                                 </div>
@@ -380,7 +379,7 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                             <div className="bg-white/15 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 transition-all hover:bg-white/20 group">
                                 <div className="flex items-center justify-center sm:justify-start">
                                     <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <FontAwesomeIcon icon={faShieldAlt} className="text-green-300" />
+                                        <IconShieldCheck className="text-green-300" size={24} />
                                     </div>
                                     <span className="ml-3 text-white font-medium">Insured Services</span>
                                 </div>
@@ -389,7 +388,7 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                             <div className="bg-white/15 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 transition-all hover:bg-white/20 group">
                                 <div className="flex items-center justify-center sm:justify-start">
                                     <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <FontAwesomeIcon icon={faThumbsUp} className="text-green-300" />
+                                        <IconThumbUp className="text-green-300" size={24} />
                                     </div>
                                     <span className="ml-3 text-white font-medium">Satisfaction Guaranteed</span>
                                 </div>
