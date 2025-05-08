@@ -5,9 +5,6 @@ import vehicleSlice from './slices/vehicleSlice';
 import paymentSlice from './slices/paymentSlice';
 import serviceRequestSlice from './slices/serviceRequestSice';
 
-import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-
 import authSlice from './authSlice';
 import createRequestSlice from './slices/createRequestSlice';
 import draftRequestsSlice from './slices/draftRequestsSlice';
@@ -32,9 +29,7 @@ export const store = configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
-            serializableCheck: {
-                ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-            },
+            serializableCheck: {},
         }),
 });
 
