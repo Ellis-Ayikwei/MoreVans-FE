@@ -38,11 +38,5 @@ export const store = configureStore({
         }),
 });
 
-export default store;
-
-const persistor = persistStore(store);
-
-export { persistor };
-
 export type IRootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;
