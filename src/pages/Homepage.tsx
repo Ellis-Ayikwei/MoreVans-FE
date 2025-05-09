@@ -289,9 +289,6 @@ const Homepage: React.FC = () => {
                 </div>
             </section>
 
-            {/* How It Works */}
-            <HowItWorks />
-
             {/* Featured Providers */}
             <FeaturedProviders providers={featuredProviders} />
 
