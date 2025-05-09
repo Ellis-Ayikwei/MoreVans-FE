@@ -4,7 +4,6 @@ import { useInView } from 'react-intersection-observer';
 import BookRepair from './BookRepair';
 import CheckStatus from './CheckStatus';
 import GetSupport from './GetSupport';
-import GetApp from './GetApp';
 import ViewPlans from './ViewPlans';
 import ContactModal from './ContactModal';
 import ReviewCarousel from './ReviewCarousel';
@@ -255,7 +254,7 @@ const Services: React.FC = () => {
                                         <div className="grid grid-cols-1 gap-4">
                                             {service.features.map((feature, idx) => (
                                                 <motion.div key={idx} className="flex items-center space-x-3 p-3 rounded-xl hover:bg-orange-50/50 transition-colors" whileHover={{ x: 4 }}>
-                                                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                                                    <span clFassName="flex-shrink-0 w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
                                                         <i className="fas fa-check text-[#dc711a] text-sm"></i>
                                                     </span>
                                                     <span className="text-gray-700 text-sm">{feature}</span>
@@ -298,14 +297,6 @@ const Services: React.FC = () => {
                     ))}
                 </motion.div>
             </div>
-
-            {/* Keep existing modals */}
-            <BookRepair isOpen={isBookRepairOpen} onClose={() => setIsBookRepairOpen(false)} />
-            <CheckStatus isOpen={isCheckStatusOpen} onClose={() => setIsCheckStatusOpen(false)} />
-            <GetSupport isOpen={isGetSupportOpen} onClose={() => setIsGetSupportOpen(false)} />
-            <GetApp isOpen={isGetAppOpen} onClose={() => setIsGetAppOpen(false)} />
-            <ViewPlans isOpen={isViewPlansOpen} onClose={() => setIsViewPlansOpen(false)} />
-            <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
 
             <ReviewCarousel />
         </section>

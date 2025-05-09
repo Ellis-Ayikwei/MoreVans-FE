@@ -89,8 +89,20 @@ const Blog: React.FC = () => {
             <Navbar isScrolled={isScrolled} />
 
             {/* Hero Section */}
-            <section className="bg-gradient-to-r from-primary to-primary-dark text-white py-24">
-                <div className="container mx-auto px-4">
+            <section className="relative bg-gradient-to-br from-primary/90 via-primary/80 to-primary/70 text-white py-24">
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-primary/70 z-10"></div>
+                    <img
+                        src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
+                        alt=""
+                        className="w-full h-full object-cover opacity-30 scale-105"
+                        style={{ objectPosition: '50% 65%' }}
+                        loading="eager"
+                    />
+                    {/* Animated grid pattern overlay */}
+                    <div className="absolute inset-0 bg-grid-pattern opacity-10 z-10"></div>
+                </div>
+                <div className="container mx-auto px-4 relative z-20">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl mx-auto text-center">
                         <div className="inline-block p-3 bg-white/10 rounded-full mb-6">
                             <FontAwesomeIcon icon={faNewspaper} className="text-3xl" />
@@ -114,7 +126,7 @@ const Blog: React.FC = () => {
             </section>
 
             {/* Categories */}
-            <div className="container mx-auto px-4 -mt-8">
+            <div className="container mx-auto px-4 mt-8 ">
                 <div className="flex flex-wrap justify-center gap-4">
                     {categories.map((category) => (
                         <motion.button

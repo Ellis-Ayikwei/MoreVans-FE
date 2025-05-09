@@ -2,6 +2,8 @@ import { lazy, useEffect, useState } from 'react';
 import AdminDashboard from '../pages/Dasboard/AdminDashboard';
 import Homepage from '../pages/Homepage';
 import HowItWorks from '../pages/HowItWorks';
+import About from '../pages/About';
+import Contact from '../pages/Contact';
 
 // import AnalyticsPage from '../pages/analytics';
 import Login from '../pages/auth/login';
@@ -64,6 +66,7 @@ import WatchingJobs from '../pages/provider/WatchingJobs';
 import PricingAdmin from '../pages/admin/pricing';
 import BlogPostDetail from '../pages/BlogPostDetail';
 import Blog from '../pages/Blog';
+import Services from '../pages/Services';
 
 const userRole = localStorage.getItem('userRole') || '';
 const adminUsers = ['SUPER_ADMIN', 'ADMIN', 'UNDERWRITER', 'PREMIUM_ADMIN', 'SALES'];
@@ -100,6 +103,16 @@ const routes = [
         layout: 'blank',
     },
     {
+        path: '/about',
+        element: <About />,
+        layout: 'blank',
+    },
+    {
+        path: '/contact',
+        element: <Contact />,
+        layout: 'blank',
+    },
+    {
         path: '/blog',
         element: <Blog />,
         layout: 'blank',
@@ -110,11 +123,11 @@ const routes = [
         layout: 'blank',
     },
 
-    // {
-    //     path: '/',
-    //     element: <Home />,
-    //     layout: 'blank',
-    // },
+    {
+        path: '/services',
+        element: <Services />,
+        layout: 'blank',
+    },
     {
         path: '/login',
         element: <Login />,
