@@ -91,7 +91,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button onClick={toggleMobileMenu} className="md:hidden text-gray-700 dark:text-gray-300">
+                    <button onClick={toggleMobileMenu} className={`md:hidden ${isScrolled ? "text-gray-700":"text-white"} dark:text-gray-300`}>
                         <FontAwesomeIcon icon={mobileMenuOpen ? faTimes : faBars} className="text-2xl" />
                     </button>
                 </div>

@@ -16,6 +16,9 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 // Tailwind css
 import './tailwind.css';
 
+// Custom component styles
+import './assets/css/service-cards.css';
+
 // i18n (needs to be bundled)
 import './i18n';
 

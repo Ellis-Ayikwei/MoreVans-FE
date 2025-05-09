@@ -59,7 +59,7 @@ const Hero: React.FC = () => {
         {
             id: 2,
             title: 'Office Moves',
-            description: 'Minimize business downtime',
+            description: 'Business relocations',
             image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
             badge: 'Business',
             progress: 60,
@@ -71,21 +71,21 @@ const Hero: React.FC = () => {
         },
         {
             id: 3,
-            title: 'Furniture Delivery',
-            description: 'Assembly & placement',
-            image: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-            badge: 'Single Items',
-            progress: 50,
+            title: 'Man & Van',
+            description: 'Small & flexible moves',
+            image: 'https://images.unsplash.com/photo-1586864387789-628af9feed72?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+            badge: 'Affordable',
+            progress: 65,
             delay: 0.2,
             icon: IconTruck,
-            iconColor: 'text-emerald-400',
-            hoverColor: 'group-hover:text-emerald-400',
-            badgeColor: 'bg-emerald-500/20 border-emerald-500/30',
+            iconColor: 'text-green-400',
+            hoverColor: 'group-hover:text-green-400',
+            badgeColor: 'bg-green-500/20 border-green-500/30',
         },
         {
             id: 4,
             title: 'Specialty Items',
-            description: 'Pianos, art & antiques',
+            description: 'Pianos & antiques',
             image: 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
             badge: 'Premium',
             progress: 80,
@@ -226,7 +226,7 @@ const Hero: React.FC = () => {
 
                 {/* Enhanced floating particles */}
                 <div className="absolute inset-0 z-10">
-                    {[...Array(15)].map((_, i) => (
+                    {[...Array(30)].map((_, i) => (
                         <motion.div
                             key={i}
                             className="absolute rounded-full bg-white"
@@ -252,26 +252,26 @@ const Hero: React.FC = () => {
                 </div>
             </div>
 
-            <div className="max-w-[100vw] mx-auto px-6 sm:px-6 lg:px-16 relative z-20">
+            <div className="max-w-[100vw] mx-auto px-2 sm:px-2 lg:px-16 relative z-20">
                 <div className="flex flex-col lg:flex-row items-center">
                     {/* Enhanced Content Column */}
                     <motion.div className="lg:w-1/2 mb-16 lg:mb-0 text-white px-4 lg:px-0" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
                         <div className="relative">
                             {/* Pre-heading accent */}
                             <motion.div
-                                className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-sm font-medium text-white mb-6 border border-white/20"
+                                className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs sm:text-sm font-medium text-white mb-4 sm:mb-6 border border-white/20 text-center"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3, duration: 0.6 }}
                             >
-                                <span className="flex items-center">
-                                    <span className="w-2 h-2 rounded-full bg-secondary mr-2 animate-pulse"></span>
+                                <span className="flex items-center justify-center">
+                                    <span className="w-2 h-2 rounded-full bg-secondary mr-1.5 animate-pulse"></span>
                                     Trusted by 15,000+ customers
                                 </span>
                             </motion.div>
 
                             {/* Main heading with enhanced animation */}
-                            <motion.h1 className="text-4xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/80">
+                            <motion.h1 className="text-5xl lg:text-7xl xl:text-8xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/80 text-center sm:text-left">
                                 <div className="overflow-hidden">
                                     <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}>
                                         Moving Made
@@ -279,7 +279,7 @@ const Hero: React.FC = () => {
                                 </div>
                                 <div className="overflow-hidden">
                                     <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.33, 1, 0.68, 1] }} className="relative">
-                                        <span className="relative inline-block text-white">
+                                        <span className="relative inline-block text-white text-6xl sm:text-8xl lg:text-9xl">
                                             Simple
                                             <motion.svg
                                                 initial={{ pathLength: 0 }}
@@ -299,7 +299,7 @@ const Hero: React.FC = () => {
 
                             {/* Enhanced description */}
                             <motion.p
-                                className="text-lg md:text-xl text-white/80 mb-8 max-w-xl"
+                                className="text-lg md:text-xl text-white/80 mb-8 max-w-xl text-center md:text-left"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.8, duration: 0.6 }}
@@ -308,11 +308,35 @@ const Hero: React.FC = () => {
                             </motion.p>
 
                             {/* Enhanced Trust Badges */}
-                            
+                              <motion.div className="flex justify-between gap-2 sm:gap-3 mb-8 sm:mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1 }}>
+                                <motion.div
+                                    className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
+                                    whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                                >
+                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary/20 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
+                                        <IconShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 text-secondary" />
+                                    </div>
+                                    <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Verified Providers</span>
+                                </motion.div>
+
+                               
+
+                                <motion.div
+                                    className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
+                                    whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                                >
+                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary/20 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
+                                        <IconClock className="w-3 h-3 sm:w-4 sm:h-4 text-secondary" />
+                                    </div>
+                                    <span className="text-xs sm:text-sm font-medium whitespace-nowrap">24/7 Support</span>
+                                </motion.div>
+                            </motion.div>
 
                             {/* Enhanced Quick Quote Form */}
                             <motion.div
-                                className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl"
+                                className="hidden lg:block bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 1.2, duration: 0.6 }}
@@ -522,11 +546,11 @@ const Hero: React.FC = () => {
                     {/* Enhanced Service Cards Column */}
                     <motion.div className="lg:w-1/2 w-full px-4 lg:px-8" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
                         {/* Hero service grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-6 sm:gap-8  mx-auto lg:mx-0">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 sm:gap-6 mx-auto lg:mx-0">
                             {serviceCards.map((card) => (
                                 <motion.div
                                     key={card.id}
-                                    className="rounded-2xl overflow-hidden relative group cursor-pointer h-[260px]"
+                                    className="rounded-xl overflow-hidden relative group cursor-pointer h-[200px] sm:h-[260px]"
                                     whileHover={{ y: -8, scale: 1.03 }}
                                     transition={{ type: 'spring', stiffness: 300, damping: 15 }}
                                     initial={{ opacity: 0, y: 30 }}
@@ -540,19 +564,19 @@ const Hero: React.FC = () => {
                                     {/* Hover reveal overlay with consistent color */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-full group-hover:translate-y-0"></div>
 
-                                    <div className="absolute inset-0 flex flex-col justify-end p-6 text-white group-hover:text-white transition-colors duration-500">
+                                    <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6 text-white group-hover:text-white transition-colors duration-500">
                                         <div
-                                            className={`absolute top-4 right-4 backdrop-blur-md rounded-full px-3 py-1 text-xs font-medium border border-white/20 shadow-lg group-hover:bg-white/10 transition-colors duration-500`}
+                                            className={`absolute top-3 right-3 sm:top-4 sm:right-4 backdrop-blur-md rounded-full px-2 py-1 text-xs font-medium border border-white/20 shadow-lg group-hover:bg-white/10 transition-colors duration-500`}
                                         >
                                             {card.badge}
                                         </div>
-                                        <h3 className="font-bold text-2xl transition-colors duration-300 mb-2 group-hover:text-white drop-shadow-lg group-hover:drop-shadow-none">{card.title}</h3>
-                                        <div className="flex items-center mb-3 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                                        <h3 className="font-bold text-lg sm:text-2xl transition-colors duration-300 group-hover:text-white drop-shadow-lg group-hover:drop-shadow-none">{card.title}</h3>
+                                        <div className="hidden group-hover:flex items-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 mt-1 sm:mt-2">
                                             <card.icon className="text-white mr-2 drop-shadow-lg group-hover:drop-shadow-none" />
-                                            <span className="text-sm font-medium drop-shadow-lg group-hover:drop-shadow-none text-white/90">{card.description}</span>
+                                            <span className="text-xs sm:text-sm font-medium drop-shadow-lg group-hover:drop-shadow-none text-white/90">{card.description}</span>
                                         </div>
                                         <motion.div
-                                            className="h-1.5 bg-gradient-to-r from-secondary to-secondary/50 rounded-full opacity-90 shadow-lg group-hover:from-white group-hover:to-white/50 transition-colors duration-500"
+                                            className="h-1 bg-gradient-to-r from-secondary to-secondary/50 rounded-full opacity-90 shadow-lg group-hover:from-white group-hover:to-white/50 transition-colors duration-500 mt-2 sm:mt-3"
                                             initial={{ width: '0%' }}
                                             whileInView={{ width: `${card.progress}%` }}
                                             viewport={{ once: true }}
@@ -568,48 +592,48 @@ const Hero: React.FC = () => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 1.2, duration: 0.6 }}
-                            className="bg-white/10 backdrop-blur-md p-4 sm:p-6 md:p-8 rounded-2xl shadow-xl border border-white/10 mt-8 sm:mt-10 transform mx-auto lg:mx-0 relative overflow-hidden"
+                            className="bg-white/10 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl shadow-xl border border-white/10 mt-6 sm:mt-8 transform mx-auto lg:mx-0 relative overflow-hidden"
                         >
                             {/* Natural decorative elements */}
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary/20 rounded-full blur-3xl"></div>
-                            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
+                            <div className="absolute -top-8 -right-8 w-32 h-32 bg-secondary/20 rounded-full blur-3xl"></div>
+                            <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
 
                             <div className="flex items-center justify-between relative z-10">
                                 <motion.div className="flex items-center" whileHover={{ x: 5 }}>
-                                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-secondary/20 flex items-center justify-center border border-secondary/30">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-secondary/20 flex items-center justify-center border border-secondary/30">
                                         <IconCheck className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
                                     </div>
-                                    <div className="ml-2 sm:ml-4">
+                                    <div className="ml-2 sm:ml-3">
                                         <p className="text-xs sm:text-sm text-white/70">Service Categories</p>
-                                        <p className="font-bold text-white text-base sm:text-xl">6+ Categories</p>
+                                        <p className="font-bold text-white text-sm sm:text-base">6+ Categories</p>
                                     </div>
                                 </motion.div>
 
-                                <div className="w-px h-12 sm:h-16 bg-white/20 mr-4"></div>
+                                <div className="w-px h-10 sm:h-12 bg-white/20 mr-3"></div>
 
                                 <motion.div className="flex items-center" whileHover={{ x: 5 }}>
-                                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
                                         <IconStar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                                     </div>
-                                    <div className="ml-2 sm:ml-4">
+                                    <div className="ml-2 sm:ml-3">
                                         <p className="text-xs sm:text-sm text-white/70">Customer Satisfaction</p>
-                                        <p className="font-bold text-white text-base sm:text-xl">98.3%</p>
+                                        <p className="font-bold text-white text-sm sm:text-base">98.3%</p>
                                     </div>
                                 </motion.div>
                             </div>
 
-                            <div className="mt-6 sm:mt-8 flex justify-center">
+                            <div className="mt-4 sm:mt-6 flex justify-center">
                                 <motion.button
                                     onClick={() => (window.location.href = '/services')}
-                                    className="flex items-center text-white rounded-full px-6 sm:px-8 py-3 sm:py-4 backdrop-blur-sm transition-all overflow-hidden group relative"
+                                    className="flex items-center text-white rounded-full px-4 sm:px-6 py-2 sm:py-3 backdrop-blur-sm transition-all overflow-hidden group relative"
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.98 }}
                                 >
                                     <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/40 to-secondary/40 group-hover:from-primary/50 group-hover:to-secondary/50 transition-colors"></span>
-                                    <span className="relative flex items-center text-sm sm:text-lg font-medium">
+                                    <span className="relative flex items-center text-xs sm:text-sm font-medium">
                                         View all services
                                         <motion.span className="ml-2" animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                                            <IconArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                                            <IconArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </motion.span>
                                     </span>
                                 </motion.button>
@@ -618,13 +642,13 @@ const Hero: React.FC = () => {
 
                         {/* Enhanced Customer satisfaction badge */}
                         <motion.div
-                            className="absolute -bottom-8 -right-8 lg:-bottom-10 lg:right-20 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full p-1.5 shadow-xl hidden sm:block"
+                            className="absolute -bottom-6 -right-6 lg:-bottom-8 lg:right-16 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full p-1 shadow-xl hidden sm:block"
                             initial={{ opacity: 0, scale: 0 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 1.4, duration: 0.8, type: 'spring' }}
                         >
                             <motion.div
-                                className="bg-white rounded-full p-4 flex items-center justify-center"
+                                className="bg-white rounded-full p-3 flex items-center justify-center"
                                 animate={{ rotate: [0, 10, 0] }}
                                 transition={{
                                     rotate: {
@@ -636,15 +660,15 @@ const Hero: React.FC = () => {
                                 }}
                             >
                                 <div className="text-center">
-                                    <div className="flex justify-center text-amber-500 text-xl mb-1">
-                                        <IconStar className="w-5 h-5 text-yellow-500" />
-                                        <IconStar className="w-5 h-5 text-yellow-500" />
-                                        <IconStar className="w-5 h-5 text-yellow-500" />
-                                        <IconStar className="w-5 h-5 text-yellow-500" />
-                                        <IconStarHalf className="w-5 h-5 text-yellow-500" />
+                                    <div className="flex justify-center text-amber-500 text-sm sm:text-base mb-1">
+                                        <IconStar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                                        <IconStar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                                        <IconStar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                                        <IconStar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                                        <IconStarHalf className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
                                     </div>
-                                    <p className="font-bold text-gray-800 text-base">15,742 Moves</p>
-                                    <p className="text-sm text-gray-600">and counting!</p>
+                                    <p className="font-bold text-gray-800 text-xs sm:text-sm">15,742 Moves</p>
+                                    <p className="text-xs text-gray-600">and counting!</p>
                                 </div>
                             </motion.div>
                         </motion.div>
@@ -668,7 +692,7 @@ const Hero: React.FC = () => {
 
             {/* Fixed scroll indicator animation and enhanced hero section */}
             <motion.div
-                className="absolute bottom-14 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white cursor-pointer z-20"
+                className="absolute hidden lg:block bottom-14 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white cursor-pointer z-20"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, y: [0, 10, 0] }}
                 transition={{
@@ -682,7 +706,7 @@ const Hero: React.FC = () => {
                 }}
                 onClick={() => (window.location.href = '#services')}
             >
-                <span className="text-xs mb-2 text-white/70">Scroll to explore</span>
+                <span className="text-xs mb-2 text-white/70 mx-auto justify-center">Scroll to explore</span>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                 </svg>

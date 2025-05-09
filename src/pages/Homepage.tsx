@@ -129,6 +129,42 @@ const Homepage: React.FC = () => {
             icon: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
             description: 'Secure short and long-term storage facilities with climate control and 24/7 security options',
         },
+        {
+            id: 7,
+            title: 'Man & Van Services',
+            icon: 'https://images.unsplash.com/photo-1586864387789-628af9feed72?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+            description: 'Flexible and affordable transport solutions for smaller moves and single item deliveries',
+        },
+        {
+            id: 8,
+            title: 'Student Moves',
+            icon: 'https://images.unsplash.com/photo-1519070994522-88c6b756330e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+            description: 'Specialized services for university moves with affordable rates and flexible scheduling',
+        },
+        {
+            id: 9,
+            title: 'Vehicle Transport',
+            icon: 'https://images.unsplash.com/photo-1563720223523-499a02716184?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+            description: 'Safe transportation of cars, motorcycles, and other vehicles nationwide or internationally',
+        },
+        {
+            id: 10,
+            title: 'Waste Removal',
+            icon: 'https://images.unsplash.com/photo-1613578723827-0d8f1ef2ad25?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+            description: 'Environmentally responsible disposal and recycling services for household and commercial waste',
+        },
+        {
+            id: 11,
+            title: 'Courier Services',
+            icon: 'https://images.unsplash.com/photo-1561169653-c8f5beef564d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+            description: 'Same-day and next-day delivery options for packages, documents, and time-sensitive items',
+        },
+        {
+            id: 12,
+            title: 'IKEA Delivery',
+            icon: 'https://images.unsplash.com/photo-1605371924599-2d0365da1ae0?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+            description: 'Specialized pickup, delivery, and assembly services for IKEA and other flat-pack furniture',
+        },
     ];
 
     // Enhanced featured providers with more realistic data
@@ -208,8 +244,11 @@ const Homepage: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
-        
+        <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 overflow-hidden">
+            <Navbar isScrolled={isScrolled} />
+
+            {/* Hero Section */}
+            <Hero />
 
             {/* Benefits */}
             <section className="py-16">
@@ -236,58 +275,85 @@ const Homepage: React.FC = () => {
             <section ref={servicesRef} className="py-16 bg-gray-50 dark:bg-gray-800">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Our Moving Services</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Moving Services</h2>
                         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
                             From single items to full house moves, we connect you with the right van operators for any transport need.
                         </p>
+                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {serviceTypes.map((service, index) => (
-                                <motion.div
-                                    key={service.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    transition={{
-                                        duration: 0.5,
-                                        delay: index * 0.1,
-                                        type: 'spring',
-                                        stiffness: 100,
-                                        damping: 20,
-                                    }}
-                                    viewport={{ once: true }}
-                                    className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-lg group hover:shadow-xl transition-all duration-300"
-                                >
-                                    <div className="h-48 overflow-hidden relative">
-                                        <motion.img
-                                            src={service.icon}
-                                            alt={service.title}
-                                            className="w-full h-full object-cover"
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ duration: 0.6, ease: 'easeOut' }}
-                                        />
-                                        {/* Add a subtle overlay on hover */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {serviceTypes.slice(0, 6).map((service, index) => (
+                            <motion.div
+                                key={service.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{
+                                    duration: 0.5,
+                                    delay: index * 0.1,
+                                    type: 'spring',
+                                    stiffness: 100,
+                                    damping: 20,
+                                }}
+                                viewport={{ once: true }}
+                                className="service-card bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-lg group hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
+                            >
+                                <div className="relative h-56 overflow-hidden">
+                                    <motion.img
+                                        src={service.icon}
+                                        alt={service.title}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
+                                    <div className="absolute top-4 right-4">
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            {index % 3 === 0 ? 'Popular' : index % 3 === 1 ? 'Best Value' : 'Premium'}
+                                        </span>
                                     </div>
-                                    <div className="p-6">
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                            {service.title}
-                                        </h3>
-                                        <p className="text-gray-600 dark:text-gray-300 mb-4">{service.description}</p>
+                                    <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                        <h3 className="text-xl md:text-2xl font-bold text-white group-hover:text-blue-200 transition-colors">{service.title}</h3>
+                                    </div>
+                                </div>
+                                <div className="p-6 flex-grow flex flex-col justify-between">
+                                    <div>
+                                        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm md:text-base">{service.description}</p>
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full">Fast Service</span>
+                                            <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full">Insured</span>
+                                            <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full">Rated {4 + (index % 2) / 10}/5</span>
+                                        </div>
+                                    </div>
+                                    <Link to={`/services/${service.id}`}>
                                         <motion.div
-                                            className="inline-flex items-center font-medium text-blue-600 dark:text-blue-400 group-hover:translate-x-2 transition-transform duration-300"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ type: 'tween' }}
+                                            className="inline-flex items-center justify-center w-full px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg font-medium group-hover:bg-blue-600 group-hover:text-white transition-all duration-300"
+                                            whileHover={{ scale: 1.02 }}
+                                            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                                         >
-                                            Learn more
-                                            <FontAwesomeIcon icon={faChevronRight} className="ml-2 text-sm" />
+                                            <span>Explore {service.title}</span>
+                                            <FontAwesomeIcon icon={faChevronRight} className="ml-2 text-sm transition-transform duration-300 group-hover:translate-x-1" />
                                         </motion.div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
+                                    </Link>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                    
+                    <div className="mt-12 text-center">
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="inline-block"
+                        >
+                            <Link to="/services" className="px-8 py-3 bg-primary hover:bg-blue-700 text-white text-lg font-semibold rounded-lg shadow-lg transition-all duration-300 flex items-center gap-2 mx-auto">
+                                View All Services
+                                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                            </Link>
+                        </motion.div>
                     </div>
                 </div>
             </section>
+
+            {/* How It Works */}
+            <HowItWorks />
 
             {/* Featured Providers */}
             <FeaturedProviders providers={featuredProviders} />
