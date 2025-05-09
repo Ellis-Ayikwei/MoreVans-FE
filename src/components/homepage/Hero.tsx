@@ -308,40 +308,7 @@ const Hero: React.FC = () => {
                             </motion.p>
 
                             {/* Enhanced Trust Badges */}
-                            <motion.div className="flex justify-between gap-2 sm:gap-3 mb-8 sm:mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1 }}>
-                                <motion.div
-                                    className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
-                                    whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                                >
-                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary/20 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
-                                        <IconShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 text-secondary" />
-                                    </div>
-                                    <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Verified Providers</span>
-                                </motion.div>
-
-                                <motion.div
-                                    className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
-                                    whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                                >
-                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary/20 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
-                                        <IconCertificate className="w-3 h-3 sm:w-4 sm:h-4 text-secondary" />
-                                    </div>
-                                    <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Licensed & Insured</span>
-                                </motion.div>
-
-                                <motion.div
-                                    className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
-                                    whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                                >
-                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary/20 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
-                                        <IconClock className="w-3 h-3 sm:w-4 sm:h-4 text-secondary" />
-                                    </div>
-                                    <span className="text-xs sm:text-sm font-medium whitespace-nowrap">24/7 Support</span>
-                                </motion.div>
-                            </motion.div>
+                            
 
                             {/* Enhanced Quick Quote Form */}
                             <motion.div
