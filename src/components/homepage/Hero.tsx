@@ -252,7 +252,7 @@ const Hero: React.FC = () => {
                 </div>
             </div>
 
-            <div className="max-w-[100vw] mx-auto px-16 sm:px-6 lg:px-16 relative z-20">
+            <div className="max-w-[100vw] mx-auto px-6 sm:px-6 lg:px-16 relative z-20">
                 <div className="flex flex-col lg:flex-row items-center">
                     {/* Enhanced Content Column */}
                     <motion.div className="lg:w-1/2 mb-16 lg:mb-0 text-white px-4 lg:px-0" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
@@ -555,7 +555,7 @@ const Hero: React.FC = () => {
                     {/* Enhanced Service Cards Column */}
                     <motion.div className="lg:w-1/2 w-full px-4 lg:px-8" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
                         {/* Hero service grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8  mx-auto lg:mx-0">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-6 sm:gap-8  mx-auto lg:mx-0">
                             {serviceCards.map((card) => (
                                 <motion.div
                                     key={card.id}
@@ -601,7 +601,7 @@ const Hero: React.FC = () => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 1.2, duration: 0.6 }}
-                            className="bg-white/10 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-xl border border-white/10 mt-8 sm:mt-10 transform  mx-auto lg:mx-0 relative overflow-hidden"
+                            className="bg-white/10 backdrop-blur-md p-4 sm:p-6 md:p-8 rounded-2xl shadow-xl border border-white/10 mt-8 sm:mt-10 transform mx-auto lg:mx-0 relative overflow-hidden"
                         >
                             {/* Natural decorative elements */}
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary/20 rounded-full blur-3xl"></div>
@@ -609,40 +609,40 @@ const Hero: React.FC = () => {
 
                             <div className="flex items-center justify-between relative z-10">
                                 <motion.div className="flex items-center" whileHover={{ x: 5 }}>
-                                    <div className="w-14 h-14 rounded-full bg-secondary/20 flex items-center justify-center border border-secondary/30">
-                                        <IconCheck className="w-5 h-5 text-secondary" />
+                                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-secondary/20 flex items-center justify-center border border-secondary/30">
+                                        <IconCheck className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
                                     </div>
-                                    <div className="ml-4">
-                                        <p className="text-white/70">Service Categories</p>
-                                        <p className="font-bold text-white text-xl">6+ Categories</p>
+                                    <div className="ml-2 sm:ml-4">
+                                        <p className="text-xs sm:text-sm text-white/70">Service Categories</p>
+                                        <p className="font-bold text-white text-base sm:text-xl">6+ Categories</p>
                                     </div>
                                 </motion.div>
 
-                                <div className="w-px h-16 bg-white/20"></div>
+                                <div className="w-px h-12 sm:h-16 bg-white/20 mr-4"></div>
 
                                 <motion.div className="flex items-center" whileHover={{ x: 5 }}>
-                                    <div className="w-14 h-14 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
-                                        <IconStar className="w-5 h-5 text-yellow-400" />
+                                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                                        <IconStar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                                     </div>
-                                    <div className="ml-4">
-                                        <p className="text-white/70">Customer Satisfaction</p>
-                                        <p className="font-bold text-white text-xl">98.3%</p>
+                                    <div className="ml-2 sm:ml-4">
+                                        <p className="text-xs sm:text-sm text-white/70">Customer Satisfaction</p>
+                                        <p className="font-bold text-white text-base sm:text-xl">98.3%</p>
                                     </div>
                                 </motion.div>
                             </div>
 
-                            <div className="mt-8 flex justify-center">
+                            <div className="mt-6 sm:mt-8 flex justify-center">
                                 <motion.button
                                     onClick={() => (window.location.href = '/services')}
-                                    className="flex items-center text-white rounded-full px-8 py-4 backdrop-blur-sm transition-all overflow-hidden group relative"
+                                    className="flex items-center text-white rounded-full px-6 sm:px-8 py-3 sm:py-4 backdrop-blur-sm transition-all overflow-hidden group relative"
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.98 }}
                                 >
                                     <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/40 to-secondary/40 group-hover:from-primary/50 group-hover:to-secondary/50 transition-colors"></span>
-                                    <span className="relative flex items-center text-lg font-medium">
+                                    <span className="relative flex items-center text-sm sm:text-lg font-medium">
                                         View all services
                                         <motion.span className="ml-2" animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                                            <IconArrowRight className="w-6 h-6" />
+                                            <IconArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
                                         </motion.span>
                                     </span>
                                 </motion.button>
