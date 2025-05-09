@@ -206,7 +206,7 @@ const Services: React.FC = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300"
+                                className="service-card bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300"
                             >
                                 <div className="relative h-48">
                                     <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
@@ -373,6 +373,13 @@ const Services: React.FC = () => {
             </section>
 
             <Footer />
+            <style jsx>{`
+                @media (max-width: 768px) {
+                    .service-card {
+                        font-size: 0.875rem; /* Smaller font size for smaller devices */
+                    }
+                }
+            `}</style>
         </div>
     );
 };

@@ -142,7 +142,7 @@ const Footer: React.FC = () => {
             {/* Trust Badges */}
             <div className="bg-gray-800 py-6">
                 <div className="container mx-auto px-4">
-                    <div className="flex flex-wrap justify-center items-center gap-8">
+                    <div className="flex flex-wrap justify-center items-center gap-8 overflow-hidden max-w-full">
                         <img src="/trust-badges/trustpilot.png" alt="Trustpilot" className="h-8" />
                         <img src="/trust-badges/verified.png" alt="Verified Business" className="h-8" />
                         <img src="/trust-badges/secure.png" alt="Secure Payment" className="h-8" />
