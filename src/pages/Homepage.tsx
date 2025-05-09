@@ -209,7 +209,7 @@ const Homepage: React.FC = () => {
 
     return (
         <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">
-            <Hero />
+        
 
             {/* Benefits */}
             <section className="py-16">
