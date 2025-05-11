@@ -21,7 +21,7 @@ interface Step1Payload {
     contact_name: string;
     contact_phone: string;
     contact_email: string;
-    request_type: 'instant' | 'bidding' | 'journey';
+    request_type: 'instant' | 'journey';
 }
 
 interface Step2Payload {
@@ -220,13 +220,11 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
     const { currentStep, formValues, isLoading, request_id } = useSelector((state: IRootState) => state.serviceRequest);
-    const isJourneyRequest = formValues.request_type === 'journey';
 
     // Add state for modals and price forecast
     const [showPreAnimation, setShowPreAnimation] = useState(false);
     const [showPriceModal, setShowPriceModal] = useState(false);
     const [priceForecast, setPriceForecast] = useState<any>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Handle form value changes
     const handleFormChange = (values: any) => {
@@ -239,69 +237,16 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
     };
 
     // Adjust StepIndicator count based on request type
-    const totalSteps = isJourneyRequest ? 3 : 4;
+    const totalSteps = 4;
 
     const handleError = (error: any) => {
         console.error('Error:', error);
         showMessage('An error occurred. Please try again.', 'error');
     };
 
-    const handleNextStep = async (values: any) => {
-        try {
-            setIsSubmitting(true);
-
-            // Update form state before API call
-            handleFormChange(values);
-
-            // Skip API call for step 2 if request type is instant
-            if (currentStep === 2 && values.request_type === 'instant') {
-                dispatch(
-                    setStepData({
-                        step: currentStep,
-                        data: {
-                            ...values,
-                            journey_stops: values.journey_stops || [],
-                            moving_items: values.moving_items || [],
-                        },
-                    })
-                );
-                dispatch(setCurrentStep(Math.min(currentStep + 1, totalSteps)));
-                window.scrollTo(0, 0);
-                return;
-            }
-
-            // Format the payload based on the current step
-            const formattedPayload = formatStepPayload(currentStep, values);
-
-            // Submit the current step to the API
-            const result = await dispatch(
-                submitStepToAPI({
-                    step: currentStep,
-                    payload: formattedPayload,
-                    isEditing,
-                    request_id: id || values.id,
-                })
-            ).unwrap();
-
-            // Handle step 4 submission (Get Prices)
-            if (currentStep === totalSteps) {
-                if (result.data?.price_forecast) {
-                    setPriceForecast(result.data.price_forecast);
-                    setShowPriceModal(true);
-                } else {
-                    showMessage('Unable to get price forecast. Please try again.', 'error');
-                }
-                return; // Stay on current step
-            }
-
-            // For all other steps, move to next step
-            dispatch(setCurrentStep(Math.min(currentStep + 1, totalSteps)));
-            window.scrollTo(0, 0);
-        } catch (error: any) {
-            handleError(error);
-        } finally {
-            setIsSubmitting(false);
-        }
+    const handleNextStep = () => {
+        dispatch(setCurrentStep(Math.min(currentStep + 1, totalSteps)));
+        window.scrollTo(0, 0);
     };
 
     const handlePreviousStep = () => {
@@ -314,10 +259,6 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
         showMessage(isEditing ? 'Request updated successfully.' : 'Request created successfully.', 'success');
         dispatch(resetForm());
         navigate(isEditing ? `/account/bookings/${request_id}` : '/my-bookings');
-    };
-
-    const handleStepSubmit = async (values: any) => {
-        await handleNextStep(values);
     };
 
     const { previewImages, handleImageUpload, removeImage } = useImageUpload(formValues.photo_urls || []);
@@ -400,13 +341,13 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
 
             <div className="w-full max-w-7xl mx-auto">
                 <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 sm:p-8 relative">
-                    {isLoading ? (
+                    {isLoading && currentStep != 4 ? (
                         <LoadingSpinner message="Loading your request details..." />
                     ) : (
                         <>
                             <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-                            <Formik initialValues={formValues} validationSchema={getCurrentValidationSchema()} onSubmit={handleStepSubmit} enableReinitialize>
+                            <Formik initialValues={formValues} validationSchema={getCurrentValidationSchema()} onSubmit={() => {}} enableReinitialize>
                                 {(formikProps) => (
                                     <Form className="space-y-6" noValidate>
                                         {currentStep === 1 && (
@@ -417,9 +358,11 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                                                 setFieldValue={formikProps.setFieldValue}
                                                 setTouched={formikProps.setTouched}
                                                 validateForm={formikProps.validateForm}
-                                                onNext={() => handleStepSubmit(formikProps.values)}
+                                                onNext={handleNextStep}
                                                 errors={formikProps.errors}
                                                 touched={formikProps.touched}
+                                                isEditing={isEditing}
+                                                stepNumber={1}
                                             />
                                         )}
 
@@ -429,20 +372,32 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                                                 handleChange={formikProps.handleChange}
                                                 handleBlur={formikProps.handleBlur}
                                                 setFieldValue={formikProps.setFieldValue}
-                                                onNext={() => handleStepSubmit(formikProps.values)}
+                                                setTouched={formikProps.setTouched}
+                                                validateForm={formikProps.validateForm}
+                                                onNext={handleNextStep}
                                                 onBack={handlePreviousStep}
                                                 errors={formikProps.errors}
                                                 touched={formikProps.touched}
+                                                isEditing={isEditing}
+                                                stepNumber={2}
                                             />
                                         )}
 
-                                        {currentStep === 3 && !isJourneyRequest && (
+                                        {currentStep === 3 && (
                                             <ServiceDetailsStep
                                                 values={formikProps.values}
+                                                handleChange={formikProps.handleChange}
+                                                handleBlur={formikProps.handleBlur}
                                                 setFieldValue={formikProps.setFieldValue}
-                                                onNext={() => handleStepSubmit(formikProps.values)}
+                                                setTouched={formikProps.setTouched}
+                                                validateForm={formikProps.validateForm}
+                                                errors={formikProps.errors}
+                                                touched={formikProps.touched}
+                                                onNext={handleNextStep}
                                                 onBack={handlePreviousStep}
                                                 isLoading={isLoading}
+                                                isEditing={isEditing}
+                                                stepNumber={3}
                                             />
                                         )}
 
@@ -452,17 +407,16 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                                                 handleChange={formikProps.handleChange}
                                                 handleBlur={formikProps.handleBlur}
                                                 setFieldValue={formikProps.setFieldValue}
+                                                setTouched={formikProps.setTouched}
+                                                validateForm={formikProps.validateForm}
                                                 onBack={handlePreviousStep}
                                                 isEditing={isEditing}
                                                 stepNumber={totalSteps}
                                                 errors={formikProps.errors}
                                                 touched={formikProps.touched}
-                                                isLoading={isSubmitting}
-                                                showPreAnimation={showPreAnimation}
-                                                showPriceModal={showPriceModal}
                                                 priceForecast={priceForecast}
+                                                setPriceForecast={setPriceForecast}
                                                 onPriceAccept={handlePriceAccept}
-                                                onSubmit={() => handleStepSubmit(formikProps.values)}
                                             />
                                         )}
                                     </Form>

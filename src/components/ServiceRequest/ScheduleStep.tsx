@@ -5,7 +5,7 @@ import { IconCalendar, IconCalendarCheck, IconClock, IconClipboardCheck, IconMap
 import { ErrorMessage } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
-import { submitStepToAPI, resetForm, setCurrentStep } from '../../store/slices/createRequestSlice';
+import { submitStepToAPI, resetForm, setCurrentStep, getPricePreview, updateFormValues } from '../../store/slices/createRequestSlice';
 import { useNavigate } from 'react-router-dom';
 import PriceForecastModal from '../Booking/PriceForecastModal';
 import PreAnimationModal from '../Booking/PreAnimationModal';
@@ -52,38 +52,20 @@ interface PriceForecastResponse {
     };
 }
 
-interface RequestItem {
-    id: string;
-    name: string;
-    description?: string;
-    quantity: number;
-    fragile: boolean;
-    needs_disassembly: boolean;
-    category?: string;
-    weight?: string;
-    dimensions?: string;
-    value?: string;
-    notes?: string;
-    photos?: string[];
-}
-
-// Update the props interface to include formik values and other required props
 interface ScheduleStepProps {
     values: any;
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleBlur: (e: React.FocusEvent<any>) => void;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+    setTouched: (touched: { [field: string]: boolean }) => void;
+    validateForm: () => Promise<any>;
     onBack: () => void;
-    isEditing?: boolean;
-    stepNumber?: number;
+    onNext: () => void;
     errors: any;
     touched: any;
-    isLoading: boolean;
-    showPreAnimation: boolean;
-    showPriceModal: boolean;
-    priceForecast: PriceForecastResponse['data']['price_forecast'] | null;
+    isEditing?: boolean;
+    stepNumber: number;
     onPriceAccept: (staffCount: string, price: number) => void;
-    onSubmit: () => void;
 }
 
 const ScheduleStep: React.FC<ScheduleStepProps> = ({
@@ -91,25 +73,106 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
     handleChange,
     handleBlur,
     setFieldValue,
+    setTouched,
+    validateForm,
     onBack,
-    isEditing = false,
-    stepNumber = 4,
+    onNext,
     errors,
     touched,
-    isLoading,
-    showPreAnimation,
-    showPriceModal,
-    priceForecast,
+    isEditing = false,
+    stepNumber,
     onPriceAccept,
-    onSubmit,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { request_id } = useSelector((state: IRootState) => state.serviceRequest);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPriceModal, setShowPriceModal] = useState(false);
+    const [priceForecast, setPriceForecast] = useState<any>(null);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [selectedPrice, setSelectedPrice] = useState<number>(0);
     const [selectedStaffCount, setSelectedStaffCount] = useState<number>(0);
-    const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(null);
+    const [showLoading, setShowLoading] = useState<boolean>(false);
+
+    const handleSubmit = async () => {
+        try {
+            setShowLoading(true);
+            setIsSubmitting(true);
+            console.log('validation values', values);
+            const errors = await validateForm();
+            console.log('after validation');
+            console.log('the errors', errors);
+            if (Object.keys(errors).length > 0) {
+                setTouched(
+                    Object.keys(errors).reduce((acc, key) => {
+                        acc[key] = true;
+                        return acc;
+                    }, {} as { [key: string]: boolean })
+                );
+                setShowLoading(false);
+                return;
+            }
+
+            // Update form values before submission
+            dispatch(
+                updateFormValues({
+                    ...values,
+                    step: stepNumber,
+                })
+            );
+
+            const result = await dispatch(
+                submitStepToAPI({
+                    step: stepNumber,
+                    payload: {
+                        preferred_date: values.preferred_date,
+                        preferred_time: values.preferred_time,
+                        is_flexible: values.is_flexible,
+                        service_priority: values.service_speed,
+                    },
+                    isEditing,
+                    request_id: values.request_id,
+                })
+            ).unwrap();
+
+            if (result.status === 200 || result.status === 201) {
+                if (result.data.price_forecast) {
+                    const forecastData = result.data.price_forecast;
+                    console.log('Setting forecast data:', forecastData);
+                    setPriceForecast(forecastData);
+                    // Keep loading state true for animation
+                    setTimeout(() => {
+                        setShowLoading(false);
+                        setShowPriceModal(true);
+                    }, 3000); // Increased delay to allow animation to complete
+                } else {
+                    console.error('No price forecast in response:', result.data);
+                    showMessage('Failed to get price forecast. Please try again.', 'error');
+                    setShowLoading(false);
+                }
+            } else {
+                console.error('API response error:', result);
+                showMessage('Failed to save schedule details. Please try again.', 'error');
+                setShowLoading(false);
+            }
+        } catch (error: any) {
+            showMessage('An error occurred. Please try again.', 'error');
+            setShowLoading(false);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handlePriceSelect = (staffCount: string, price: number) => {
+        setSelectedPrice(price);
+        setSelectedStaffCount(parseInt(staffCount));
+        setShowPriceModal(false);
+        setShowConfirmationModal(true);
+    };
+
+    const handlePriceAccept = () => {
+        onPriceAccept(selectedStaffCount.toString(), selectedPrice);
+    };
 
     // Add this helper function inside your component
     const requiresPropertyDetails = (serviceType: string) => {
@@ -119,14 +182,6 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
     // Add these debug logs at the beginning of your component
     // console.log("Journey items:", values.journey_stops?.map(stop => stop.type === 'pickup' ? stop.items : []));
     // console.log("Moving items:", values.moving_items);
-
-    const handlePriceAccept = (staffCount: string, price: number) => {
-        setSelectedPrice(price);
-        const staffCountNumber = parseInt(staffCount.split('_')[1], 10);
-        setSelectedStaffCount(staffCountNumber);
-        setShowConfirmationModal(true);
-        onPriceAccept(staffCount, price);
-    };
 
     return (
         <div className="space-y-6 animate-fadeIn">
@@ -560,15 +615,11 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                 </div>
             </div>
 
-            <StepNavigation onBack={onBack} nextLabel={isEditing ? 'Update Request' : 'Get Prices'} isLastStep={true} isSubmitting={isLoading} handleSubmit={onSubmit} />
+            {showLoading && <PreAnimationModal isOpen={showLoading} onClose={() => setShowLoading(false)} onComplete={() => setShowLoading(false)} isLoading={showLoading} />}
 
-            {showPreAnimation && <PreAnimationModal isOpen={showPreAnimation} onClose={() => {}} onComplete={() => {}} isLoading={true} />}
+            <StepNavigation onBack={onBack} onNext={onNext} handleSubmit={handleSubmit} nextLabel={isEditing ? 'Update & Get Prices' : 'Get Prices'} isLastStep={true} isSubmitting={isSubmitting} />
 
-            {showPriceModal && priceForecast && (
-                <div onClick={(e) => e.stopPropagation()}>
-                    <PriceForecastModal isOpen={showPriceModal} onClose={() => {}} priceForecast={priceForecast} request_id={values.id} onAccept={handlePriceAccept} />
-                </div>
-            )}
+            <PriceForecastModal isOpen={showPriceModal} onClose={() => setShowPriceModal(false)} priceForecast={priceForecast} request_id={values.id} onAccept={handlePriceSelect} />
 
             <ConfirmationModal
                 isOpen={showConfirmationModal}
@@ -587,6 +638,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                     pickupLocation: values.pickup_location,
                     dropoffLocation: values.dropoff_location,
                 }}
+                onConfirm={handlePriceAccept}
             />
         </div>
     );

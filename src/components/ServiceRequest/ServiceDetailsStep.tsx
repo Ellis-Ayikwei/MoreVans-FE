@@ -8,10 +8,11 @@ import { get } from 'sortablejs';
 import { getItemIcon } from '../../utilities/getItemIcon';
 import { commonItems } from '../../data/commonItems';
 import CommonItemsModal from './CommonItemsModal';
-import { setCurrentStep, submitStepToAPI } from '../../store/slices/createRequestSlice';
+import { setCurrentStep, submitStepToAPI, updateFormValues } from '../../store/slices/createRequestSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Field, FieldArray } from 'formik';
 import { faBox, faCamera, faCheckCircle, faChevronDown, faChevronUp, faClipboardList, faCouch, faFileUpload, faImage, faInfoCircle, faList, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
+import showMessage from '../../helper/showMessage';
 
 const itemTypes = [
     'Residential Moving',
@@ -50,17 +51,37 @@ interface MovingItem {
 
 interface ServiceDetailsStepProps {
     values: any;
-    setFieldValue: (field: string, value: any) => void;
+    handleChange: (e: React.ChangeEvent<any>) => void;
+    handleBlur: (e: React.FocusEvent<any>) => void;
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+    setTouched: (touched: { [field: string]: boolean }) => void;
+    validateForm: () => Promise<any>;
     onNext: () => void;
     onBack: () => void;
-    isLoading: boolean;
+    errors: any;
+    touched: any;
+    isEditing?: boolean;
+    stepNumber: number;
 }
 
-const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({ values, setFieldValue, onNext, onBack, isLoading }) => {
+const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({
+    values,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    setTouched,
+    validateForm,
+    onNext,
+    onBack,
+    errors,
+    touched,
+    isEditing = false,
+    stepNumber,
+}) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { currentStep } = useSelector((state: IRootState) => state.serviceRequest);
     const [showCommonItems, setShowCommonItems] = useState(false);
     const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const scrollToPosition = (id: string) => {
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -69,24 +90,63 @@ const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({ values, setFiel
     console.log('the values', values);
     // alert(`the values ${values.request_type === 'instant'}`);
 
-    const handleNext = async (values: any) => {
+    const handleSubmit = async () => {
         try {
+            setIsSubmitting(true);
+            console.log('values before validation', values);
+            const errors = await validateForm();
+            console.log('values after validation', values);
+            console.log('errors', errors);
+            if (Object.keys(errors).length > 0) {
+                setTouched(
+                    Object.keys(errors).reduce((acc, key) => {
+                        acc[key] = true;
+                        return acc;
+                    }, {} as { [key: string]: boolean })
+                );
+                return;
+            }
+
+            dispatch(updateFormValues(values));
+
             const result = await dispatch(
                 submitStepToAPI({
-                    step: currentStep,
-                    payload: values,
-                    isEditing: false,
-                    request_id: '',
+                    step: stepNumber,
+                    payload: {
+                        moving_items: values.moving_items.map((item: any) => ({
+                            name: item.name,
+                            category: item.category,
+                            quantity: item.quantity,
+                            weight: item.weight,
+                            dimensions: item.dimensions,
+                            value: item.value,
+                            fragile: item.fragile,
+                            needs_disassembly: item.needs_disassembly,
+                            notes: item.notes,
+                            photo: item.photo,
+                        })),
+                        inventory_list: values.inventory_list,
+                        photo_urls: values.photo_urls,
+                        special_handling: values.special_handling,
+                        is_flexible: values.is_flexible,
+                        needs_insurance: values.needs_insurance,
+                        needs_disassembly: values.needs_disassembly,
+                        is_fragile: values.is_fragile,
+                    },
+                    isEditing,
+                    request_id: values.id,
                 })
             ).unwrap();
 
-            // Move to next step if successful
-            if (result.success) {
-                dispatch(setCurrentStep(Math.min(currentStep + 1, 4)));
-                window.scrollTo(0, 0);
+            if (result.status === 200) {
+                onNext();
+            } else {
+                showMessage('Failed to save service details. Please try again.', 'error');
             }
-        } catch (error) {
-            console.error('Error submitting step:', error);
+        } catch (error: any) {
+            showMessage('An error occurred. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -481,16 +541,7 @@ const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({ values, setFiel
                 </div>
             </div>
 
-            <StepNavigation
-                onBack={onBack}
-                onNext={onNext}
-                showBackButton={currentStep > 1}
-                isLastStep={currentStep === 4}
-                isSubmitting={isLoading}
-                handleSubmit={onNext}
-                backLabel={currentStep === 1 ? 'Cancel' : 'Previous'}
-                nextLabel={currentStep === 4 ? 'Submit Request' : 'Next'}
-            />
+            <StepNavigation onBack={onBack} onNext={onNext} handleSubmit={handleSubmit} nextLabel={isEditing ? 'Update & Continue' : 'Continue'} isLastStep={false} isSubmitting={isSubmitting} />
         </div>
     );
 };

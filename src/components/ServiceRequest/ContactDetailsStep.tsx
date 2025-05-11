@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Field, ErrorMessage, FormikProps } from 'formik';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTag, faGavel, faRoute, faLocationDot, faCar, faBuilding, faElevator, faUser, faPhone, faEnvelope, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
@@ -7,23 +7,40 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../store';
 import StepNavigation from './stepNavigation';
 import { v4 as uuidv4 } from 'uuid';
+import { submitStepToAPI, updateFormValues } from '../../store/slices/createRequestSlice';
+import showMessage from '../../helper/showMessage';
 
 const propertyTypes = ['house', 'apartment', 'office', 'storage'];
 
 interface ContactDetailsStepProps {
-    values: ServiceRequest;
+    values: any;
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleBlur: (e: React.FocusEvent<any>) => void;
-    setFieldValue: (field: string, value: any) => void;
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+    setTouched: (touched: { [field: string]: boolean }) => void;
+    validateForm: () => Promise<any>;
     onNext: () => void;
     errors: any;
     touched: any;
-    validateForm: () => Promise<any>;
-    setTouched: (touched: { [field: string]: boolean }, shouldValidate?: boolean) => void;
+    isEditing?: boolean;
+    stepNumber: number;
 }
 
-const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ values, handleChange, handleBlur, setFieldValue, onNext, errors, touched, validateForm, setTouched }) => {
+const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
+    values,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    setTouched,
+    validateForm,
+    onNext,
+    errors,
+    touched,
+    isEditing = false,
+    stepNumber,
+}) => {
     const dispatch = useDispatch<AppDispatch>();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleRequestTypeChange = (type: 'instant' | 'bidding' | 'journey') => {
         setFieldValue('request_type', type);
@@ -71,42 +88,43 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ values, handleC
         }
     }, [setFieldValue, values.service_type]);
 
-    const handleNextClick = async () => {
-        // Mark all fields as touched to show validation errors
-        const touchedFields: { [key: string]: boolean } = {
-            request_type: true,
-            service_type: true,
-        };
-
-        // If it's an instant request, mark location fields as touched
-        if (values.request_type === 'instant') {
-            touchedFields.pickup_location = true;
-            touchedFields.dropoff_location = true;
-            touchedFields.pickup_floor = true;
-            touchedFields.dropoff_floor = true;
-            touchedFields.pickup_unit_number = true;
-            touchedFields.dropoff_unit_number = true;
-            touchedFields.pickup_parking_info = true;
-            touchedFields.dropoff_parking_info = true;
-
-            // If it's a residential or office move, mark property details as touched
-            if (values.service_type && ['Residential Moving', 'Office Relocation'].includes(values.service_type)) {
-                touchedFields.pickup_number_of_floors = true;
-                touchedFields.dropoff_number_of_floors = true;
-                touchedFields.pickup_has_elevator = true;
-                touchedFields.dropoff_has_elevator = true;
+    const handleSubmit = async () => {
+        try {
+            setIsSubmitting(true);
+            const errors = await validateForm();
+            if (Object.keys(errors).length > 0) {
+                setTouched(
+                    Object.keys(errors).reduce((acc, key) => {
+                        acc[key] = true;
+                        return acc;
+                    }, {} as { [key: string]: boolean })
+                );
+                return;
             }
-        }
+            dispatch(updateFormValues(values));
+            const result = await dispatch(
+                submitStepToAPI({
+                    step: stepNumber,
+                    payload: {
+                        contact_name: values.contact_name,
+                        contact_phone: values.contact_phone,
+                        contact_email: values.contact_email,
+                        request_type: values.request_type,
+                    },
+                    isEditing,
+                    request_id: values.id,
+                })
+            ).unwrap();
 
-        // Mark all fields as touched and trigger validation
-        setTouched(touchedFields, true);
-
-        // Validate the form
-        const validationErrors = await validateForm();
-
-        // If there are no errors, proceed to next step
-        if (Object.keys(validationErrors).length === 0) {
-            onNext();
+            if (result.status === 201) {
+                onNext();
+            } else {
+                showMessage('Failed to save contact details. Please try again.', 'error');
+            }
+        } catch (error: any) {
+            showMessage('An error occurred. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -503,7 +521,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ values, handleC
                 </div>
             )}
 
-            <StepNavigation onNext={handleNextClick} showBackButton={false} />
+            <StepNavigation onBack={() => {}} onNext={onNext} handleSubmit={handleSubmit} nextLabel={isEditing ? 'Update & Continue' : 'Continue'} isLastStep={false} isSubmitting={isSubmitting} />
         </div>
     );
 };

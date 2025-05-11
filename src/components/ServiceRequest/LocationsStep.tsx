@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ErrorMessage, Field, useFormikContext } from 'formik';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -64,27 +64,35 @@ import { useDispatch } from 'react-redux';
 import { IRootState } from '../../store';
 import { useSelector } from 'react-redux';
 import { setStepData, updateFormValues } from '../../store/slices/createRequestSlice';
+import { AppDispatch } from '../../store';
+import { submitStepToAPI } from '../../store/slices/createRequestSlice';
+import showMessage from '../../helper/showMessage';
 
 const propertyTypes = ['house', 'apartment', 'office', 'storage'];
 const vehicleTypes = ['motorcycle', 'car', 'suv', 'truck', 'van'];
 const storageDurations = ['<1 month', '1-3 months', '3-6 months', '6+ months'];
 
 interface LocationsStepProps {
-    onNext: () => void;
-    onBack: () => void;
     values: any;
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleBlur: (e: React.FocusEvent<any>) => void;
-    setFieldValue: (field: string, value: any) => void;
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+    setTouched: (touched: { [field: string]: boolean }) => void;
+    validateForm: () => Promise<any>;
+    onNext: () => void;
+    onBack: () => void;
     errors: any;
     touched: any;
+    isEditing?: boolean;
+    stepNumber: number;
 }
 
-const LocationsStep: React.FC<LocationsStepProps> = ({ onNext, onBack, values, handleChange, handleBlur, setFieldValue, errors, touched }) => {
+const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, handleBlur, setFieldValue, setTouched, validateForm, onNext, onBack, errors, touched, isEditing = false, stepNumber }) => {
     const { addStop, updateStop, removeStop, currentRequest } = useServiceRequest();
-    const dispatch = useDispatch();
-    const { formValues, isEditing } = useSelector((state: IRootState) => state.serviceRequest);
+    const dispatch = useDispatch<AppDispatch>();
+    const { formValues, isEditing: formikIsEditing } = useSelector((state: IRootState) => state.serviceRequest);
     const isInstant = formValues.request_type === 'instant';
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     console.log('formValues', formValues);
     console.log('values', values);
@@ -158,29 +166,63 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ onNext, onBack, values, h
         }
     };
 
-    const handleNext = async () => {
+    const handleSubmit = async () => {
         try {
-            // Validate form values
-            // if (!values.pickup_location || !values.dropoff_location) {
-            //     console.error('Required fields are missing');
-            //     return;
-            // }
-            console.log('values from handleNext ---------', values);
-            // Update step data in Redux
-            dispatch(setStepData({ step: 2, data: values }));
-
-            // Call the parent's onNext handler
-            if (onNext) {
-                await onNext();
+            setIsSubmitting(true);
+            // Skip API submission for instant requests
+            dispatch(updateFormValues(values));
+            if (values.request_type === 'instant') {
+                onNext();
+                return;
             }
-        } catch (error) {
-            console.error('Error moving to next step:', error);
-        }
-    };
+            console.log('values for step 2', values);
+            const errors = await validateForm();
+            console.log('validation errors', errors);
+            console.log('after validation', values);
+            if (Object.keys(errors).length > 0) {
+                setTouched(
+                    Object.keys(errors).reduce((acc, key) => {
+                        acc[key] = true;
+                        return acc;
+                    }, {} as { [field: string]: boolean })
+                );
+                return;
+            }
 
-    const handleBack = () => {
-        if (onBack) {
-            onBack();
+            const result = await dispatch(
+                submitStepToAPI({
+                    step: stepNumber,
+                    payload: {
+                        pickup_location: values.pickup_location,
+                        pickup_unit_number: values.pickup_unit_number,
+                        pickup_floor: values.pickup_floor,
+                        pickup_number_of_floors: values.pickup_number_of_floors,
+                        pickup_parking_info: values.pickup_parking_info,
+                        pickup_has_elevator: values.pickup_has_elevator,
+                        dropoff_location: values.dropoff_location,
+                        dropoff_unit_number: values.dropoff_unit_number,
+                        dropoff_floor: values.dropoff_floor,
+                        dropoff_number_of_floors: values.dropoff_number_of_floors,
+                        dropoff_parking_info: values.dropoff_parking_info,
+                        dropoff_has_elevator: values.dropoff_has_elevator,
+                        property_type: values.property_type,
+                        dropoff_property_type: values.dropoff_property_type,
+                        journey_stops: values.journey_stops,
+                    },
+                    isEditing,
+                    request_id: values.id,
+                })
+            ).unwrap();
+
+            if (result.data.success) {
+                onNext();
+            } else {
+                showMessage('Failed to save location details. Please try again.', 'error');
+            }
+        } catch (error: any) {
+            showMessage('An error occurred. Please try again212.', 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -313,7 +355,14 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ onNext, onBack, values, h
                         </div>
                     </div>
 
-                    <StepNavigation onNext={handleNext} onBack={handleBack} showBackButton={true} isLastStep={false} isSubmitting={false} />
+                    <StepNavigation
+                        onBack={onBack}
+                        onNext={onNext}
+                        handleSubmit={handleSubmit}
+                        nextLabel={isEditing ? 'Update & Continue' : 'Continue'}
+                        isLastStep={false}
+                        isSubmitting={isSubmitting}
+                    />
                 </div>
             </div>
         </div>

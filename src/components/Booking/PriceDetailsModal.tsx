@@ -16,48 +16,56 @@ import {
     BuildingOfficeIcon,
     MapPinIcon,
     DocumentCheckIcon,
+    CalendarIcon,
+    CloudIcon,
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../helper/axiosInstance';
 import ConfirmationModal from './ConfirmationModal';
+import { formatCurrency } from '../../helper/formatCurrency';
 
 interface StaffPrice {
-    total_price: number;
-    currency: string;
-    price_breakdown: {
+    staff_count: number;
+    price: number;
+    components: {
         base_price: number;
         distance_cost: number;
         weight_cost: number;
+        property_cost: number;
         staff_cost: number;
-        [key: string]: number;
+        vehicle_cost: number;
+        service_cost: number;
+        time_cost: number;
+        weather_cost: number;
+        insurance_cost: number;
+        fuel_surcharge: number;
+        carbon_offset: number;
+    };
+    multipliers: {
+        service_multiplier: number;
+        time_multiplier: number;
+        weather_multiplier: number;
+        vehicle_multiplier: number;
     };
 }
 
 interface DayPrice {
     date: string;
-    day_of_week: string;
+    day: number;
     is_weekend: boolean;
     is_holiday: boolean;
-    weather_condition: string;
-    traffic_multiplier: number;
-    staff_prices: {
-        [key: string]: StaffPrice;
-    };
-    request_id: string;
+    holiday_name: string | null;
+    weather_type: string;
+    staff_prices: StaffPrice[];
+    status: string;
+    request_id?: string;
 }
 
 interface PriceDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
     dayPrice: DayPrice;
-    onAccept: (staffCount: string, price: number) => void;
+    onAccept: (staffCount: string) => void;
 }
-
-export const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-        style: 'currency',
-        currency: 'GBP',
-    }).format(amount);
-};
 
 const StaffCountIcon: React.FC<{ count: number }> = ({ count }) => {
     const users = Array.from({ length: count }, (_, i) => i);
@@ -149,222 +157,156 @@ const LoadingModal: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
 };
 
 const PriceDetailsModal: React.FC<PriceDetailsModalProps> = ({ isOpen, onClose, dayPrice, onAccept }) => {
-    console.log('the day price 1', dayPrice);
     const [selectedStaff, setSelectedStaff] = useState<string>('staff_1');
-    const [showBreakdown, setShowBreakdown] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [selectedPrice, setSelectedPrice] = useState<StaffPrice | null>(null);
     const [showLoadingModal, setShowLoadingModal] = useState(false);
-    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (isOpen) {
-            setIsLoading(true);
-            const timer = setTimeout(() => {
-                setIsLoading(false);
-            }, 2000);
-            return () => clearTimeout(timer);
+        if (dayPrice && dayPrice.staff_prices.length > 0) {
+            const staffIndex = parseInt(selectedStaff.split('_')[1]) - 1;
+            setSelectedPrice(dayPrice.staff_prices[staffIndex as number]);
         }
-    }, [isOpen]);
+    }, [dayPrice, selectedStaff]);
 
     const handleAccept = async () => {
         try {
             setShowLoadingModal(true);
-            setError(null);
-
-            const selectedPrice = dayPrice.staff_prices[selectedStaff];
             const staffCount = selectedStaff;
-            console.log('Selected day price:', dayPrice);
-            console.log('Selected staff and price:', staffCount, selectedPrice);
-
             const response = await axiosInstance.post(`/requests/${dayPrice.request_id}/submit/`, {
                 staff_count: staffCount,
-                total_price: selectedPrice.total_price,
-                price_breakdown: selectedPrice.price_breakdown,
+                total_price: selectedPrice?.price || 0,
                 requestid: dayPrice.request_id,
             });
 
             if (response.status === 200) {
                 setShowLoadingModal(false);
-                onAccept(staffCount, selectedPrice.total_price);
+                onAccept(staffCount);
             }
         } catch (err) {
-            setError('Failed to confirm price. Please try again.');
             console.error('Error confirming price:', err);
             setShowLoadingModal(false);
         }
     };
 
+    const handleStaffSelect = (staff: string) => {
+        setSelectedStaff(staff);
+        const staffIndex = parseInt(staff.split('_')[1]) - 1;
+        setSelectedPrice(dayPrice.staff_prices[staffIndex as number]);
+    };
+
     if (!isOpen) return null;
-
-    const staffOptions = Object.keys(dayPrice.staff_prices);
-    const selectedPrice = dayPrice.staff_prices[selectedStaff];
-
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                duration: 0.3,
-                when: 'beforeChildren',
-                staggerChildren: 0.1,
-            },
-        },
-        exit: {
-            opacity: 0,
-            transition: {
-                duration: 0.2,
-                when: 'afterChildren',
-            },
-        },
-    };
-
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: {
-                duration: 0.3,
-            },
-        },
-    };
 
     return (
         <>
             <LoadingModal isOpen={showLoadingModal} />
 
             <AnimatePresence>
-                {!isLoading && (
-                    <motion.div variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="fixed inset-0 z-[60] overflow-y-auto">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.75 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-gray-900" onClick={onClose} />
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.75 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-gradient-to-br from-gray-900 to-gray-800"
-                            onClick={onClose}
-                        />
-
-                        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                            <motion.div
-                                variants={itemVariants}
-                                className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-[61]"
-                            >
-                                <div className="bg-white px-6 pt-6 pb-4">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <motion.h3 variants={itemVariants} className="text-2xl font-bold text-gray-900">
-                                            {format(new Date(dayPrice.date), 'EEEE, MMMM d, yyyy')}
-                                        </motion.h3>
-                                        <motion.button
-                                            whileHover={{ scale: 1.1, rotate: 90 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={onClose}
-                                            className="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors duration-200"
-                                        >
-                                            <XCircleIcon className="h-6 w-6" />
-                                        </motion.button>
-                                    </div>
-
-                                    {/* Staff Selection Tabs */}
-                                    <motion.div variants={itemVariants} className="mb-6">
-                                        <nav className="flex space-x-2" aria-label="Staff selection">
-                                            {staffOptions.map((staff) => {
-                                                const staffCount = parseInt(staff.split('_')[1]);
-                                                return (
-                                                    <motion.button
-                                                        key={staff}
-                                                        whileHover={{ scale: 1.05 }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => setSelectedStaff(staff)}
-                                                        className={`${
-                                                            selectedStaff === staff ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                        } px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex-1 flex items-center justify-center space-x-2`}
-                                                    >
-                                                        <StaffCountIcon count={staffCount} />
-                                                        <span>{staff.replace('_', ' ').toUpperCase()}</span>
-                                                    </motion.button>
-                                                );
-                                            })}
-                                        </nav>
-                                    </motion.div>
-
-                                    {/* Main Price Display */}
-                                    <motion.div variants={itemVariants} className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-6 rounded-xl mb-6 shadow-inner">
-                                        <div className="flex items-start justify-between">
-                                            <div>
-                                                <div className="text-4xl font-bold text-gray-900 mb-2">{formatCurrency(selectedPrice.total_price)}</div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {dayPrice.is_weekend && (
-                                                        <motion.span whileHover={{ scale: 1.05 }} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium shadow-sm">
-                                                            Weekend Rate
-                                                        </motion.span>
-                                                    )}
-                                                    {dayPrice.is_holiday && (
-                                                        <motion.span whileHover={{ scale: 1.05 }} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
-                                                            Holiday Rate
-                                                        </motion.span>
-                                                    )}
-                                                    {dayPrice.weather_condition !== 'normal' && (
-                                                        <motion.span whileHover={{ scale: 1.05 }} className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium shadow-sm">
-                                                            {dayPrice.weather_condition}
-                                                        </motion.span>
-                                                    )}
-                                                    {dayPrice.traffic_multiplier > 1 && (
-                                                        <motion.span whileHover={{ scale: 1.05 }} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium shadow-sm">
-                                                            Traffic x{dayPrice.traffic_multiplier}
-                                                        </motion.span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col items-end space-y-4">
-                                                <motion.div whileHover={{ scale: 1.05 }} className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-lg">
-                                                    <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
-                                                    <span className="text-green-700 font-medium">42% saving vs other companies</span>
-                                                </motion.div>
-                                                <motion.div whileHover={{ scale: 1.05 }} className="flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-lg">
-                                                    <ShieldCheckIcon className="h-5 w-5 text-blue-600" />
-                                                    <span className="text-blue-700 font-medium">Money Back Guarantee & Free Cancellation!</span>
-                                                </motion.div>
-                                            </div>
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-10"
+                        >
+                            {/* Header Section */}
+                            <div className="bg-white px-6 pt-6 pb-4 border-b border-gray-200">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="p-2 bg-blue-50 rounded-xl">
+                                            <DocumentCheckIcon className="h-8 w-8 text-blue-600" />
                                         </div>
-                                    </motion.div>
-
-                                    {/* Price Breakdown Toggle */}
-                                    <motion.div variants={itemVariants} className="flex items-center justify-between mb-4 cursor-pointer" onClick={() => setShowBreakdown(!showBreakdown)}>
-                                        <h4 className="text-lg font-semibold text-gray-900">Price Breakdown</h4>
-                                        <InformationCircleIcon className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${showBreakdown ? 'rotate-180' : ''}`} />
-                                    </motion.div>
-
-                                    {/* Price Breakdown Content */}
-                                    <AnimatePresence>
-                                        {showBreakdown && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                                className="overflow-hidden"
-                                            >
-                                                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-                                                    {Object.entries(selectedPrice.price_breakdown).map(([key, value]) => (
-                                                        <motion.div key={key} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex justify-between items-center">
-                                                            <span className="text-gray-600 capitalize">{key.replace('_', ' ')}</span>
-                                                            <span className="text-gray-900 font-medium">{formatCurrency(value)}</span>
-                                                        </motion.div>
-                                                    ))}
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                        <h3 className="text-2xl font-bold text-gray-900">Select Staff & Confirm Price</h3>
+                                    </div>
+                                    <motion.button
+                                        whileHover={{ scale: 1.1, rotate: 90 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={onClose}
+                                        className="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors duration-200"
+                                    >
+                                        <XCircleIcon className="h-6 w-6" />
+                                    </motion.button>
                                 </div>
 
+                                {/* Date and Status Badges */}
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    <div className="flex items-center px-3 py-1.5 bg-gray-100 rounded-lg">
+                                        <CalendarIcon className="h-4 w-4 text-gray-600 mr-2" />
+                                        <span className="text-sm text-gray-700">{format(new Date(dayPrice.date), 'EEEE, MMMM d, yyyy')}</span>
+                                    </div>
+                                    {dayPrice.is_holiday && (
+                                        <div className="flex items-center px-3 py-1.5 bg-red-50 rounded-lg">
+                                            <ClipboardDocumentCheckIcon className="h-4 w-4 text-red-600 mr-2" />
+                                            <span className="text-sm text-red-700">{dayPrice.holiday_name || 'Holiday'}</span>
+                                        </div>
+                                    )}
+                                    {dayPrice.is_weekend && (
+                                        <div className="flex items-center px-3 py-1.5 bg-yellow-50 rounded-lg">
+                                            <ClockIcon className="h-4 w-4 text-yellow-600 mr-2" />
+                                            <span className="text-sm text-yellow-700">Weekend Rate</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="bg-white px-6 py-6">
+                                {/* Staff Selection */}
+                                <div className="mb-8">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-4">Select Staff Count</h4>
+                                    <div className="grid grid-cols-4 gap-4">
+                                        {dayPrice.staff_prices.map((_, index) => {
+                                            const staffOption = `staff_${index + 1}`;
+                                            return (
+                                                <motion.button
+                                                    key={staffOption}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => handleStaffSelect(staffOption)}
+                                                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                                                        selectedStaff === staffOption
+                                                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg shadow-blue-100'
+                                                            : 'border-gray-200 hover:border-blue-300 text-gray-700 hover:shadow-md'
+                                                    }`}
+                                                >
+                                                    <div className="flex flex-col items-center">
+                                                        <div className="flex -space-x-2 mb-3">
+                                                            {Array.from({ length: index + 1 }).map((_, i) => (
+                                                                <div
+                                                                    key={i}
+                                                                    className={`w-7 h-7 rounded-full border-2 flex items-center justify-center ${
+                                                                        selectedStaff === staffOption ? 'bg-blue-100 border-blue-200' : 'bg-gray-50 border-gray-100'
+                                                                    }`}
+                                                                >
+                                                                    <UserIcon className={`w-4 h-4 ${selectedStaff === staffOption ? 'text-blue-600' : 'text-gray-600'}`} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-sm font-medium">{index + 1} Staff</span>
+                                                    </div>
+                                                </motion.button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Total Price Display */}
+                                {selectedPrice && (
+                                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-gray-50 rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+                                        <div className="flex justify-between items-center">
+                                            <h4 className="text-lg font-semibold text-gray-900">Total Price</h4>
+                                            <span className="text-3xl font-bold text-blue-600">{formatCurrency(selectedPrice.price)}</span>
+                                        </div>
+                                    </motion.div>
+                                )}
+
                                 {/* Action Buttons */}
-                                <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-4">
+                                <div className="flex justify-end space-x-4">
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={onClose}
-                                        className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200"
+                                        className="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200"
                                     >
                                         Cancel
                                     </motion.button>
@@ -372,23 +314,15 @@ const PriceDetailsModal: React.FC<PriceDetailsModalProps> = ({ isOpen, onClose, 
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={handleAccept}
-                                        disabled={isLoading}
-                                        className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center space-x-2 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-100 transition-all duration-200"
                                     >
-                                        {isLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <CheckCircleIcon className="h-5 w-5" />}
-                                        <span>{isLoading ? 'Confirming...' : 'Accept Price'}</span>
+                                        Accept Price
                                     </motion.button>
                                 </div>
-
-                                {error && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-                                        {error}
-                                    </motion.div>
-                                )}
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
+                            </div>
+                        </motion.div>
+                    </div>
+                </motion.div>
             </AnimatePresence>
         </>
     );

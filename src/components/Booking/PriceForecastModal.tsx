@@ -3,38 +3,56 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XCircleIcon, CalendarIcon, UserIcon, TruckIcon, ClipboardDocumentCheckIcon, ClockIcon, BuildingOfficeIcon, MapPinIcon, DocumentCheckIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import PriceDetailsModal from './PriceDetailsModal';
+import PreAnimationModal from './PreAnimationModal';
+import { formatCurrency } from '../../helper/formatCurrency';
 
 interface StaffPrice {
-    total_price: number;
-    currency: string;
-    price_breakdown: {
+    staff_count: number;
+    price: number;
+    components: {
         base_price: number;
         distance_cost: number;
         weight_cost: number;
+        property_cost: number;
         staff_cost: number;
-        [key: string]: number;
+        vehicle_cost: number;
+        service_cost: number;
+        time_cost: number;
+        weather_cost: number;
+        insurance_cost: number;
+        fuel_surcharge: number;
+        carbon_offset: number;
+    };
+    multipliers: {
+        service_multiplier: number;
+        time_multiplier: number;
+        weather_multiplier: number;
+        vehicle_multiplier: number;
     };
 }
 
 interface DayPrice {
     date: string;
-    day_of_week: string;
+    day: number;
     is_weekend: boolean;
     is_holiday: boolean;
-    weather_condition: string;
-    traffic_multiplier: number;
-    staff_prices: {
-        [key: string]: StaffPrice;
-    };
+    holiday_name: string | null;
+    weather_type: string;
+    staff_prices: StaffPrice[];
+    status: string;
 }
 
 interface PriceForecast {
+    pricing_configuration: string;
+    base_parameters: {
+        distance: number;
+        weight: number;
+        service_level: string;
+        property_type: string;
+        vehicle_type: string;
+    };
     monthly_calendar: {
         [key: string]: DayPrice[];
-    };
-    date_range: {
-        start_date: string;
-        end_date: string;
     };
 }
 
@@ -61,85 +79,12 @@ const StaffCountIcon: React.FC<{ count: number }> = ({ count }) => {
     );
 };
 
-const LoadingModal: React.FC<{ isOpen: boolean; onComplete: () => void }> = ({ isOpen, onComplete }) => {
-    const [step, setStep] = useState(0);
-    const steps = [
-        { icon: TruckIcon, label: 'Checking Vehicle Availability', bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },
-        { icon: ClipboardDocumentCheckIcon, label: 'Verifying Route', bgColor: 'bg-green-50', iconColor: 'text-green-600' },
-        { icon: ClockIcon, label: 'Calculating Time', bgColor: 'bg-yellow-50', iconColor: 'text-yellow-600' },
-        { icon: BuildingOfficeIcon, label: 'Confirming Location', bgColor: 'bg-purple-50', iconColor: 'text-purple-600' },
-        { icon: MapPinIcon, label: 'Checking Traffic', bgColor: 'bg-red-50', iconColor: 'text-red-600' },
-        { icon: DocumentCheckIcon, label: 'Finalizing Details', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600' },
-    ];
-
-    React.useEffect(() => {
-        if (isOpen) {
-            const interval = setInterval(() => {
-                setStep((prev) => {
-                    if (prev >= steps.length - 1) {
-                        clearInterval(interval);
-                        onComplete();
-                        return prev;
-                    }
-                    return prev + 1;
-                });
-            }, 500);
-            return () => clearInterval(interval);
-        } else {
-            setStep(0);
-        }
-    }, [isOpen, onComplete]);
-
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-75">
-                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }} className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-                        <div className="flex flex-col items-center space-y-6">
-                            <div className="text-center space-y-2">
-                                <h3 className="text-xl font-semibold text-gray-900">Preparing Your Quote</h3>
-                                <p className="text-gray-600">We're gathering all the necessary information...</p>
-                            </div>
-
-                            <div className="w-full">
-                                <div className="grid grid-cols-3 gap-4">
-                                    {steps.map(({ icon: Icon, label, bgColor, iconColor }, index) => (
-                                        <motion.div
-                                            key={label}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.1 }}
-                                            className="flex flex-col items-center space-y-2"
-                                        >
-                                            <div className={`p-3 rounded-full ${bgColor}`}>
-                                                <Icon className={`h-6 w-6 ${iconColor}`} />
-                                            </div>
-                                            <AnimatePresence>
-                                                {index <= step && (
-                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="text-green-600">
-                                                        <CheckCircleIcon className="h-5 w-5" />
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                            <span className="text-xs text-gray-600 text-center">{label}</span>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 3, ease: 'linear' }} className="h-1 bg-blue-600 rounded-full" />
-                        </div>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
-};
-
 const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose, priceForecast, request_id, onAccept }) => {
     const [selectedDay, setSelectedDay] = useState<DayPrice | null>(null);
     const [selectedStaff, setSelectedStaff] = useState<string>('staff_1');
     const [showLoading, setShowLoading] = useState(false);
+
+    console.log('the price forecast', priceForecast);
 
     useEffect(() => {
         if (isOpen) {
@@ -151,27 +96,26 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
         }
     }, [isOpen]);
 
-    if (!isOpen) return null;
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-GB', {
-            style: 'currency',
-            currency: 'GBP',
-        }).format(amount);
-    };
+    if (!isOpen || !priceForecast) return null;
 
     const getStaffOptions = () => {
+        if (!priceForecast?.monthly_calendar) return [];
         const firstMonth = Object.values(priceForecast.monthly_calendar)[0];
         if (!firstMonth || firstMonth.length === 0) return [];
-        return Object.keys(firstMonth[0].staff_prices);
+        const firstDay = firstMonth[0];
+        if (!firstDay?.staff_prices || firstDay.staff_prices.length === 0) return [];
+        return firstDay.staff_prices.map((_, index) => `staff_${index + 1}`);
     };
 
     const handleAccept = (staffCount: string) => {
         if (selectedDay) {
-            const selectedPrice = selectedDay.staff_prices[staffCount];
-            console.log('Selected day:', selectedDay);
-            console.log('Selected price:', staffCount, selectedPrice);
-            onAccept(staffCount, selectedPrice.total_price);
+            const staffIndex = parseInt(staffCount.split('_')[1]) - 1;
+            const selectedPrice = selectedDay.staff_prices[staffIndex as number];
+            if (selectedPrice) {
+                console.log('Selected day:', selectedDay);
+                console.log('Selected price:', staffCount, selectedPrice);
+                onAccept(staffCount, selectedPrice.price);
+            }
         }
     };
 
@@ -210,19 +154,21 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
 
     // Find the best price for each day
     const getBestPrice = (day: DayPrice) => {
-        const prices = Object.values(day.staff_prices).map((price) => price.total_price);
-        return Math.min(...prices);
+        if (!day.staff_prices || day.staff_prices.length === 0) return Infinity;
+        const prices = day.staff_prices.map((price) => price.price).filter((price) => !isNaN(price));
+        return prices.length > 0 ? Math.min(...prices) : Infinity;
     };
 
     // Find which staff option has the best price for a day
     const getBestStaffOption = (day: DayPrice) => {
+        if (!day.staff_prices || day.staff_prices.length === 0) return '';
         let bestStaff = '';
         let bestPrice = Infinity;
 
-        Object.entries(day.staff_prices).forEach(([staff, price]) => {
-            if (price.total_price < bestPrice) {
-                bestPrice = price.total_price;
-                bestStaff = staff;
+        day.staff_prices.forEach((price, index) => {
+            if (price.price < bestPrice && !isNaN(price.price)) {
+                bestPrice = price.price;
+                bestStaff = `staff_${index + 1}`;
             }
         });
 
@@ -241,7 +187,7 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
                 body: JSON.stringify({
                     date: day.date,
                     staff_option: staffOption,
-                    price: day.staff_prices[staffOption].total_price,
+                    price: day.staff_prices[parseInt(staffOption.split('_')[1]) - 1].price,
                 }),
             });
 
@@ -260,7 +206,6 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
     return (
         <>
             <AnimatePresence>
-                {showLoading && <LoadingModal isOpen={showLoading} onComplete={() => setShowLoading(false)} />}
                 <motion.div variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="fixed inset-0 z-50 overflow-y-auto">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.75 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-gradient-to-br from-gray-900 to-gray-800" onClick={onClose} />
                     <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -320,9 +265,10 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
                                                 <h4 className="text-lg font-semibold text-gray-900 sticky top-0 bg-white py-2 z-10">{format(new Date(month + '-01'), 'MMMM yyyy')}</h4>
                                                 <div className="grid grid-cols-7 gap-2">
                                                     {days.map((day) => {
-                                                        const staffPrice = day.staff_prices[selectedStaff];
+                                                        const staffIndex = parseInt(selectedStaff.split('_')[1]) - 1;
+                                                        const staffPrice = day.staff_prices?.[staffIndex as number];
                                                         const bestPrice = getBestPrice(day);
-                                                        const isBestPrice = staffPrice?.total_price === bestPrice;
+                                                        const isBestPrice = staffPrice?.price === bestPrice && !isNaN(staffPrice.price);
                                                         const bestStaff = getBestStaffOption(day);
 
                                                         return (
@@ -331,21 +277,21 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
                                                                 whileHover={{ scale: 1.05, y: -5 }}
                                                                 whileTap={{ scale: 0.95 }}
                                                                 onClick={() => {
-                                                                    console.log('the day price 2', day);
-                                                                    setSelectedDay(day);
-                                                                    handlePriceSelect(day, selectedStaff);
+                                                                    if (staffPrice && !isNaN(staffPrice.price)) {
+                                                                        setSelectedDay(day);
+                                                                        handlePriceSelect(day, selectedStaff);
+                                                                    }
                                                                 }}
                                                                 className={`p-3 rounded-xl cursor-pointer transition-all duration-200 ${
                                                                     day.is_weekend || day.is_holiday ? 'bg-yellow-50 hover:bg-yellow-100 shadow-sm' : 'bg-gray-50 hover:bg-gray-100 shadow-sm'
-                                                                }`}
+                                                                } ${!staffPrice || isNaN(staffPrice.price) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             >
                                                                 <div className="flex flex-col items-center">
-                                                                    <div className="text-sm font-medium text-gray-900">{format(new Date(day.date), 'd')}</div>
                                                                     <div className="text-xs text-gray-500 mb-2">{format(new Date(day.date), 'EEE')}</div>
-                                                                    {staffPrice && (
+                                                                    {staffPrice && !isNaN(staffPrice.price) && (
                                                                         <div className="flex flex-col items-center">
                                                                             <motion.div whileHover={{ scale: 1.1 }} className="text-sm font-semibold text-blue-600">
-                                                                                {formatCurrency(staffPrice.total_price)}
+                                                                                {formatCurrency(staffPrice.price)}
                                                                             </motion.div>
                                                                             {isBestPrice && (
                                                                                 <motion.div
@@ -360,7 +306,7 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
                                                                     )}
                                                                     {day.is_holiday && (
                                                                         <motion.div whileHover={{ scale: 1.1 }} className="mt-1 text-xs text-red-500">
-                                                                            Holiday
+                                                                            {day.holiday_name || 'Holiday'}
                                                                         </motion.div>
                                                                     )}
                                                                 </div>
@@ -378,9 +324,7 @@ const PriceForecastModal: React.FC<PriceForecastModalProps> = ({ isOpen, onClose
                 </motion.div>
             </AnimatePresence>
             <AnimatePresence>
-                {selectedDay && (
-                    <PriceDetailsModal isOpen={!!selectedDay} onClose={() => setSelectedDay(null)} dayPrice={{ ...selectedDay, request_id: selectedDay.request_id }} onAccept={handleAccept} />
-                )}
+                {selectedDay && <PriceDetailsModal isOpen={!!selectedDay} onClose={() => setSelectedDay(null)} dayPrice={{ ...selectedDay, request_id }} onAccept={handleAccept} />}
             </AnimatePresence>
         </>
     );

@@ -10,6 +10,7 @@ interface PreAnimationModalProps {
 }
 
 const PreAnimationModal: React.FC<PreAnimationModalProps> = ({ isOpen, onClose, onComplete, isLoading }) => {
+    console.log('the preanimation...................');
     const [step, setStep] = useState(0);
     const steps = [
         { icon: TruckIcon, label: 'Checking Vehicle Availability', bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },

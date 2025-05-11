@@ -127,6 +127,7 @@ export const submitStepToAPI = createAsyncThunk(
             }
 
             const { data } = response;
+            console.log('the response', response);
             console.log(' the data from the api ', data);
 
             // Save draft if this is a new request
@@ -138,6 +139,7 @@ export const submitStepToAPI = createAsyncThunk(
 
             return {
                 step,
+                status: response.status,
                 data: response.data,
                 isEditing,
             };
@@ -160,10 +162,6 @@ export const getPricePreview = createAsyncThunk('serviceRequest/getPricePreview'
         return rejectWithValue(error.response?.data || 'Error getting price preview');
     }
 });
-
-const getTotalSteps = (requestType: string): number => {
-    return requestType === 'instant' ? 3 : 4;
-};
 
 const initialState: ServiceRequestState = {
     formValues: initialValues,
@@ -212,11 +210,6 @@ const serviceRequestSlice = createSlice({
                         ...values,
                     };
                 }
-            }
-
-            // Adjust current step if needed
-            if (values.request_type === 'instant' && state.currentStep > 3) {
-                state.currentStep = 3;
             }
         },
         setCurrentStep: (state, action: PayloadAction<number>) => {
