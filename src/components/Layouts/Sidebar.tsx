@@ -161,7 +161,7 @@ const Sidebar = () => {
         {
             name: 'account-settings',
             path: '/profile',
-            icon: <IconSettings className="!w-8 !h-8 text-white" />,
+            icon: <IconSettings className="!w-8 !h-8 !text-white" />,
             label: 'Account Settings ',
             children: null,
         },

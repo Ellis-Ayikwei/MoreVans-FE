@@ -3,9 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { IconArrowLeft } from '@tabler/icons-react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShieldAlt, faTruck, faClock, faStar, faHandshake, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { IconArrowLeft, IconShieldLock, IconTruck, IconClock, IconStar, IconUsers, IconMapPin } from '@tabler/icons-react';
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -17,32 +15,32 @@ interface AuthLayoutProps {
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, showBackButton = true }) => {
     const features = [
         {
-            icon: faShieldAlt,
+            icon: IconShieldLock,
             title: 'Secure & Reliable',
             description: 'Your data is protected with enterprise-grade security',
         },
         {
-            icon: faTruck,
+            icon: IconTruck,
             title: 'Nationwide Coverage',
             description: 'Access to trusted van operators across the UK',
         },
         {
-            icon: faClock,
+            icon: IconClock,
             title: 'Quick & Efficient',
             description: 'Fast booking and real-time tracking',
         },
         {
-            icon: faStar,
+            icon: IconStar,
             title: 'Verified Providers',
             description: 'All our van operators are thoroughly vetted',
         },
         {
-            icon: faHandshake,
+            icon: IconUsers,
             title: 'Trusted Platform',
             description: 'Join thousands of satisfied customers',
         },
         {
-            icon: faMapMarkerAlt,
+            icon: IconMapPin,
             title: 'Local & National',
             description: 'Services available in your area and beyond',
         },
@@ -151,7 +149,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, show
                                     transition={{ duration: 0.5, delay: 1 + index * 0.1 }}
                                 >
                                     <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                                        <FontAwesomeIcon icon={feature.icon} className="w-7 h-7 text-white" />
+                                        <feature.icon className="w-7 h-7 text-white" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-xl font-semibold text-white mb-2">{feature.title}</h4>
@@ -164,18 +162,18 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, show
                 </motion.div>
 
                 {/* Right Side - Auth Form */}
-                <div className="flex-1 flex flex-col lg:items-center lg:justify-center">
+                <div className="flex-1 flex flex-col lg:items-center lg:justify-center ">
                     {/* Main Content */}
                     <motion.div
-                        className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8 -mt-8 sm:mt-0 lg:mt-0"
+                        className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8 -mt-8 sm:mt-0 lg:mt-0  w-full "
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
                     >
-                        <div className="sm:mx-auto w-full max-w-[700px] lg:max-w-[720px]">
+                        <div className="sm:mx-auto mt-20 md:mt-0">
                             {/* Logo */}
-                            <motion.div className="flex justify-center mb-8" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 0.5 }}>
-                                <img src="/assets/images/morevanstext.png" alt="MoreVans" className="h-16 w-auto" />
+                            <motion.div className="flex justify-center mb-4" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 0.5 }}>
+                                <img src="/assets/images/morevanstext.png" alt="MoreVans" className="h-28 w-auto" />
                             </motion.div>
 
                             <motion.h2 className="text-3xl font-bold text-white text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
@@ -190,7 +188,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, show
 
                         {/* Mobile App-like Container */}
                         <motion.div
-                            className="mt-8 sm:mx-auto w-full max-w-[700px] lg:max-w-[720px]"
+                            className="mt-8 sm:mx-auto w-full max-w-[600px] lg:max-w-[620px]"
                             initial={{ y: '100%' }}
                             animate={{ y: 0 }}
                             transition={{
@@ -200,7 +198,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, show
                                 delay: 0.7,
                             }}
                         >
-                            <div className="bg-white/10 backdrop-blur-lg rounded-t-3xl sm:rounded-2xl shadow-xl border border-white/20 p-6 sm:p-8">{children}</div>
+                            <div className="bg-red-500/10 bottom-0 backdrop-blur-lg rounded-t-3xl sm:rounded-2xl shadow-xl border border-white/20 p-6 sm:p-8">{children}</div>
                         </motion.div>
                     </motion.div>
                 </div>

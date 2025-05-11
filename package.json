@@ -28,6 +28,7 @@
         "@mantine/hooks": "^7.13.3",
         "@mantine/notifications": "^7.13.3",
         "@popperjs/core": "^2.11.6",
+        "@react-google-maps/api": "^2.20.6",
         "@react-pdf/renderer": "^4.0.0",
         "@reduxjs/toolkit": "^1.8.5",
         "@tabler/icons-react": "^3.31.0",

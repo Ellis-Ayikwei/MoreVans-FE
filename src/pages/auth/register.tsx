@@ -1,12 +1,10 @@
 'use client';
 
-import { faFacebookF, faGoogle } from '@fortawesome/free-brands-svg-icons';
-import { faEnvelope, faLock, faPhone, faUser } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import { IconUser, IconMail, IconPhone, IconLock, IconBrandGoogle, IconBrandFacebook } from '@tabler/icons-react';
 import AuthLayout from '../../components/Auth/AuthLayout';
 
 interface RegisterFormValues {
@@ -92,23 +90,23 @@ const Register: React.FC = () => {
                 onSubmit={handleSubmit}
             >
                 {({ isSubmitting }) => (
-                    <Form className="space-y-6">
+                    <Form className="space-y-4 sm:space-y-6">
                         {/* Name Fields Row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="firstName" className="block text-sm font-medium text-white">
                                     First Name
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FontAwesomeIcon icon={faUser} className="h-5 w-5 test-white-400" />
+                                        <IconUser className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <Field
                                         id="firstName"
                                         name="firstName"
                                         type="text"
                                         autoComplete="given-name"
-                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="First Name"
                                     />
                                 </div>
@@ -121,14 +119,14 @@ const Register: React.FC = () => {
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FontAwesomeIcon icon={faUser} className="h-5 w-5 test-white-400" />
+                                        <IconUser className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <Field
                                         id="lastName"
                                         name="lastName"
                                         type="text"
                                         autoComplete="family-name"
-                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Last Name"
                                     />
                                 </div>
@@ -137,21 +135,21 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Contact Fields Row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-white">
                                     Email Address
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 test-white-400" />
+                                        <IconMail className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <Field
                                         id="email"
                                         name="email"
                                         type="email"
                                         autoComplete="email"
-                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Email Address"
                                     />
                                 </div>
@@ -164,14 +162,14 @@ const Register: React.FC = () => {
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FontAwesomeIcon icon={faPhone} className="h-5 w-5 test-white-400" />
+                                        <IconPhone className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <Field
                                         id="phone"
                                         name="phone"
                                         type="tel"
                                         autoComplete="tel"
-                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Phone Number"
                                     />
                                 </div>
@@ -180,21 +178,21 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Password Fields Row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-white">
                                     Password
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FontAwesomeIcon icon={faLock} className="h-5 w-5 test-white-400" />
+                                        <IconLock className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <Field
                                         id="password"
                                         name="password"
                                         type="password"
                                         autoComplete="new-password"
-                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Password"
                                     />
                                 </div>
@@ -207,14 +205,14 @@ const Register: React.FC = () => {
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FontAwesomeIcon icon={faLock} className="h-5 w-5 test-white-400" />
+                                        <IconLock className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <Field
                                         id="confirmPassword"
                                         name="confirmPassword"
                                         type="password"
                                         autoComplete="new-password"
-                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         placeholder="Confirm Password"
                                     />
                                 </div>
@@ -224,13 +222,13 @@ const Register: React.FC = () => {
 
                         {/* Account Type */}
                         <div>
-                            <label className="block text-sm font-medium text-white">Account Type</label>
-                            <div className="mt-1 grid grid-cols-2 gap-3">
+                            <label className="block text-sm font-medium text-white mb-2">Account Type</label>
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                 <div>
                                     <Field type="radio" name="accountType" value="user" id="user" className="hidden peer" />
                                     <label
                                         htmlFor="user"
-                                        className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-white hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 cursor-pointer"
+                                        className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-black/50 bg-white hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 cursor-pointer"
                                     >
                                         User
                                     </label>
@@ -239,7 +237,7 @@ const Register: React.FC = () => {
                                     <Field type="radio" name="accountType" value="provider" id="provider" className="hidden peer" />
                                     <label
                                         htmlFor="provider"
-                                        className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-white hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 cursor-pointer"
+                                        className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-black/50 bg-white hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 cursor-pointer"
                                     >
                                         Provider
                                     </label>
@@ -272,29 +270,29 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Social Login */}
-                        <div className="mt-6">
+                        <div className="mt-4 sm:mt-6">
                             <div className="relative">
                                 <div className="absolute inset-0 flex items-center">
                                     <div className="w-full border-t border-gray-300"></div>
                                 </div>
                                 <div className="relative flex justify-center text-sm">
-                                    <span className="px-2 bg-white test-white-500">Or continue with</span>
+                                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
                                 </div>
                             </div>
 
-                            <div className="mt-6 grid grid-cols-2 gap-3">
+                            <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-2 sm:gap-3">
                                 <button
                                     type="button"
-                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium test-white-500 hover:bg-gray-50"
+                                    className="w-full inline-flex justify-center py-2 px-3 sm:px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                                 >
-                                    <FontAwesomeIcon icon={faGoogle} className="h-5 w-5" />
+                                    <IconBrandGoogle className="h-5 w-5" />
                                     <span className="ml-2">Google</span>
                                 </button>
                                 <button
                                     type="button"
-                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium test-white-500 hover:bg-gray-50"
+                                    className="w-full inline-flex justify-center py-2 px-3 sm:px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                                 >
-                                    <FontAwesomeIcon icon={faFacebookF} className="h-5 w-5" />
+                                    <IconBrandFacebook className="h-5 w-5" />
                                     <span className="ml-2">Facebook</span>
                                 </button>
                             </div>
@@ -302,7 +300,7 @@ const Register: React.FC = () => {
 
                         {/* Login Link */}
                         <div className="text-center text-sm">
-                            <span className="test-white-600">Already have an account?</span>{' '}
+                            <span className="text-white">Already have an account?</span>{' '}
                             <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
                                 Sign in
                             </Link>

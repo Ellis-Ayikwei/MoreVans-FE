@@ -67,6 +67,8 @@ import PricingAdmin from '../pages/admin/pricing';
 import BlogPostDetail from '../pages/BlogPostDetail';
 import Blog from '../pages/Blog';
 import Services from '../pages/Services';
+import ForgotPassword from '../pages/auth/forgot-password';
+import TestMapApi from '../pages/testMapApi';
 
 const userRole = localStorage.getItem('userRole') || '';
 const adminUsers = ['SUPER_ADMIN', 'ADMIN', 'UNDERWRITER', 'PREMIUM_ADMIN', 'SALES'];
@@ -139,6 +141,11 @@ const routes = [
         layout: 'blank',
     },
     {
+        path: '/forgot-password',
+        element: <ForgotPassword />,
+        layout: 'blank',
+    },
+    {
         path: '/how-it-works',
         element: <HowItWorks />,
         layout: 'blank',
@@ -158,6 +165,11 @@ const routes = [
     {
         path: '/dashboard',
         element: <UserDashboard />,
+        layout: 'default',
+    },
+    {
+        path: '/testmap-api',
+        element: <TestMapApi />,
         layout: 'default',
     },
 

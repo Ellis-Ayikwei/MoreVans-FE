@@ -308,7 +308,7 @@ const Hero: React.FC = () => {
                             </motion.p>
 
                             {/* Enhanced Trust Badges */}
-                              <motion.div className="flex justify-between gap-2 sm:gap-3 mb-8 sm:mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1 }}>
+                            <motion.div className="flex justify-between gap-2 sm:gap-3 mb-8 sm:mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1 }}>
                                 <motion.div
                                     className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
                                     whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
@@ -319,8 +319,6 @@ const Hero: React.FC = () => {
                                     </div>
                                     <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Verified Providers</span>
                                 </motion.div>
-
-                               
 
                                 <motion.div
                                     className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
@@ -437,7 +435,7 @@ const Hero: React.FC = () => {
                                     </div>
 
                                     {/* Contact Information */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-white/90 mb-2">Your Name</label>
                                             <div className="relative">
@@ -467,9 +465,9 @@ const Hero: React.FC = () => {
                                                 />
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> */}
 
-                                    <div>
+                                    {/* <div>
                                         <label className="block text-sm font-medium text-white/90 mb-2">Email Address</label>
                                         <div className="relative">
                                             <IconMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-5 h-5" />
@@ -482,7 +480,7 @@ const Hero: React.FC = () => {
                                                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition"
                                             />
                                         </div>
-                                    </div>
+                                    </div> */}
 
                                     {formError && <div className="text-red-400 text-sm mt-2">{formError}</div>}
 
@@ -517,7 +515,7 @@ const Hero: React.FC = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <span className="relative z-10">Get Free Quotes</span>
+                                                <span className="relative z-10">Get Instant Prices</span>
                                                 <motion.span className="ml-2 z-10" animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}>
                                                     <IconArrowRight className="w-5 h-5" />
                                                 </motion.span>
@@ -570,7 +568,9 @@ const Hero: React.FC = () => {
                                         >
                                             {card.badge}
                                         </div>
-                                        <h3 className="font-bold text-lg sm:text-2xl transition-colors duration-300 group-hover:text-white drop-shadow-lg group-hover:drop-shadow-none">{card.title}</h3>
+                                        <h3 className="font-bold text-lg sm:text-2xl transition-colors duration-300 group-hover:text-white drop-shadow-lg group-hover:drop-shadow-none">
+                                            {card.title}
+                                        </h3>
                                         <div className="hidden group-hover:flex items-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 mt-1 sm:mt-2">
                                             <card.icon className="text-white mr-2 drop-shadow-lg group-hover:drop-shadow-none" />
                                             <span className="text-xs sm:text-sm font-medium drop-shadow-lg group-hover:drop-shadow-none text-white/90">{card.description}</span>

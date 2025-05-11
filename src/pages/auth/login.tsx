@@ -107,7 +107,7 @@ const Login: React.FC = () => {
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <FontAwesomeIcon icon={faEnvelope} className={`h-5 w-5 ${errors.email && touched.email ? 'text-red-400' : 'text-white/50'}`} />
+                                    <FontAwesomeIcon icon={faEnvelope} className={`h-5 w-5 ${errors.email && touched.email ? 'text-red-400' : 'text-black/50'}`} />
                                 </div>
                                 <Field
                                     id="email"
@@ -155,7 +155,7 @@ const Login: React.FC = () => {
                             </div>
                             <div className="mt-1 relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <FontAwesomeIcon icon={faLock} className={`h-5 w-5 ${errors.password && touched.password ? 'text-red-400' : 'text-white/50'}`} />
+                                    <FontAwesomeIcon icon={faLock} className={`h-5 w-5 ${errors.password && touched.password ? 'text-red-400' : 'text-black/50'}`} />
                                 </div>
                                 <Field
                                     id="password"
@@ -228,10 +228,10 @@ const Login: React.FC = () => {
             <div className="mt-8">
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-white/20"></div>
+                        <div className="w-full border-t border-gray-300"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-transparent text-white/60">Or continue with</span>
+                        <span className="px-2 bg-white test-white-500">Or continue with</span>
                     </div>
                 </div>
 

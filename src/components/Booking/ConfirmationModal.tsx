@@ -1,8 +1,8 @@
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { AnimatePresence, motion } from 'framer-motion';
-import { formatCurrency } from './PriceDetailsModal';
 import { format, isValid } from 'date-fns';
 import { CalendarIcon, UserIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { formatCurrency } from '../../helper/formatCurrency';
 
 interface ConfirmationModalProps {
     isOpen: boolean;

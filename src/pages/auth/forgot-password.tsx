@@ -27,9 +27,10 @@ export default function ForgotPassword() {
                             id="email"
                             name="email"
                             type="email"
+                            placeholder="Enter your email address"
                             autoComplete="email"
                             required
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#dc711a] focus:ring-[#dc711a] dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="mt-1 form-input block w-full rounded-md border-gray-300 shadow-sm focus:border-[#dc711a] focus:ring-[#dc711a] dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -43,7 +44,7 @@ export default function ForgotPassword() {
                     </button>
 
                     <div className="text-center">
-                        <Link to="/auth/login" className="text-sm font-medium text-[#dc711a] hover:text-[#dc711a]/80">
+                        <Link to="/login" className="text-sm font-medium text-[#dc711a] hover:text-[#dc711a]/80">
                             Back to login
                         </Link>
                     </div>
@@ -55,14 +56,14 @@ export default function ForgotPassword() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <h3 className="mt-3 text-lg font-medium text-gray-900 dark:text-white">Check your email</h3>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    <h3 className="mt-3 text-lg font-medium text-white">Check your email</h3>
+                    <p className="mt-2 text-sm text-white">
                         We've sent a password reset link to
                         <br />
-                        <span className="font-medium text-gray-900 dark:text-white">{email}</span>
+                        <span className="font-medium text-white">{email}</span>
                     </p>
                     <div className="mt-6">
-                        <Link to="/auth/login" className="text-sm font-medium text-[#dc711a] hover:text-[#dc711a]/80 flex items-center justify-center">
+                        <Link to="/login" className="text-sm font-medium text-[#dc711a] hover:text-[#dc711a]/80 flex items-center justify-center">
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
