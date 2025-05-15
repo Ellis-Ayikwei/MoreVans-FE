@@ -67,6 +67,7 @@ import { setStepData, updateFormValues } from '../../store/slices/createRequestS
 import { AppDispatch } from '../../store';
 import { submitStepToAPI } from '../../store/slices/createRequestSlice';
 import showMessage from '../../helper/showMessage';
+import AddressAutocomplete from './AddressAutocomplete';
 
 const propertyTypes = ['house', 'apartment', 'office', 'storage'];
 const vehicleTypes = ['motorcycle', 'car', 'suv', 'truck', 'van'];
@@ -353,6 +354,38 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
                                     : ' Converting to a direct route will keep only one pickup and one dropoff location if you have multiple stops.'}
                             </p>
                         </div>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                        <AddressAutocomplete
+                            name="pickup_location"
+                            value={values.pickup_location}
+                            onChange={(value, coords) => {
+                                setFieldValue('pickup_location', value);
+                                if (coords) {
+                                    setFieldValue('pickup_coordinates', coords);
+                                }
+                            }}
+                            label="Street Address"
+                            error={errors.pickup_location}
+                            touched={touched.pickup_location}
+                            required
+                        />
+
+                        <AddressAutocomplete
+                            name="dropoff_location"
+                            value={values.dropoff_location}
+                            onChange={(value, coords) => {
+                                setFieldValue('dropoff_location', value);
+                                if (coords) {
+                                    setFieldValue('dropoff_coordinates', coords);
+                                }
+                            }}
+                            label="Street Address"
+                            error={errors.dropoff_location}
+                            touched={touched.dropoff_location}
+                            required
+                        />
                     </div>
 
                     <StepNavigation

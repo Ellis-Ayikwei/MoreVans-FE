@@ -69,6 +69,7 @@ import Blog from '../pages/Blog';
 import Services from '../pages/Services';
 import ForgotPassword from '../pages/auth/forgot-password';
 import TestMapApi from '../pages/testMapApi';
+import PriceForecastPage from '../pages/PriceForecastPage';
 
 const userRole = localStorage.getItem('userRole') || '';
 const adminUsers = ['SUPER_ADMIN', 'ADMIN', 'UNDERWRITER', 'PREMIUM_ADMIN', 'SALES'];
@@ -523,6 +524,10 @@ const routes = [
         path: '/payment/detail/:requestId',
         element: <PaymentDetail />,
         layout: 'default',
+    },
+    {
+        path: '/booking/price-forecast',
+        element: <PriceForecastPage />
     },
 ];
 

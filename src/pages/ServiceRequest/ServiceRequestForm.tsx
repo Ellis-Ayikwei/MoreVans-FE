@@ -9,13 +9,49 @@ import ContactDetailsStep from '../../components/ServiceRequest/ContactDetailsSt
 import ServiceDetailsStep from '../../components/ServiceRequest/ServiceDetailsStep';
 import LocationsStep from '../../components/ServiceRequest/LocationsStep';
 import ScheduleStep from '../../components/ServiceRequest/ScheduleStep';
+import RequestReviewPanel from '../../components/ServiceRequest/RequestReviewPanel';
+import RequestDetailsPanel from '../../components/ServiceRequest/RequestDetailsPanel';
 import { ServiceRequest } from '../../types';
-import { IconCheck, IconShieldCheck, IconThumbUp } from '@tabler/icons-react';
+import { IconCheck, IconShieldCheck, IconThumbUp, IconChevronLeft, IconChevronRight, IconStar, IconLock, IconTruck, IconClock, IconMapPin, IconRoute, IconPhone, IconBrandWhatsapp } from '@tabler/icons-react';
 import { getPricePreview, setCurrentStep, submitStepToAPI, resetForm, updateFormValues, setStepData } from '../../store/slices/createRequestSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
 import StepNavigation from '../../components/ServiceRequest/stepNavigation';
 import showMessage from '../../helper/showMessage';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icons in Leaflet with Next.js
+const DefaultIcon = L.icon({
+    iconUrl: '/images/marker-icon.png',
+    iconRetinaUrl: '/images/marker-icon-2x.png',
+    shadowUrl: '/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+// Add custom marker icons
+const pickupIcon = L.icon({
+    iconUrl: '/images/pickup-marker.png',
+    iconRetinaUrl: '/images/pickup-marker-2x.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+});
+
+const dropoffIcon = L.icon({
+    iconUrl: '/images/dropoff-marker.png',
+    iconRetinaUrl: '/images/dropoff-marker-2x.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+});
+
 // Define payload types for each step
 interface Step1Payload {
     contact_name: string;
@@ -215,7 +251,65 @@ const initialValues: ServiceRequest = {
     journey_stops: [],
 };
 
-const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = false }) => {
+// Add this new component for handling route fetching
+const RouteLayer: React.FC<{
+    pickupCoords: [number, number];
+    dropoffCoords: [number, number];
+    onRouteLoaded: (coordinates: [number, number][]) => void;
+}> = ({ pickupCoords, dropoffCoords, onRouteLoaded }) => {
+    const map = useMap();
+
+    React.useEffect(() => {
+        const fetchRoute = async () => {
+            try {
+                // Format coordinates for OSRM (longitude, latitude)
+                const [pickupLat, pickupLng] = pickupCoords;
+                const [dropoffLat, dropoffLng] = dropoffCoords;
+                
+                // Fetch route from OSRM
+                const response = await fetch(
+                    `https://router.project-osrm.org/route/v1/driving/${pickupLng},${pickupLat};${dropoffLng},${dropoffLat}?overview=full&geometries=geojson`
+                );
+                const data = await response.json();
+
+                if (data.routes && data.routes[0]) {
+                    // Extract coordinates from the route and convert to [lat, lng] for Leaflet
+                    const coordinates = data.routes[0].geometry.coordinates.map((coord: number[]) => {
+                        // OSRM returns [lng, lat], convert to [lat, lng] for Leaflet
+                        return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    onRouteLoaded(coordinates);
+
+                    // Create bounds that include both points and the route
+                    const bounds = L.latLngBounds([
+                        pickupCoords,
+                        dropoffCoords,
+                        ...coordinates
+                    ]);
+                    
+                    // Add padding to the bounds
+                    map.fitBounds(bounds, { 
+                        padding: [50, 50],
+                        maxZoom: 15 // Prevent zooming in too far
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching route:', error);
+                // Fallback to direct line if route fetching fails
+                onRouteLoaded([pickupCoords, dropoffCoords]);
+            }
+        };
+
+        if (pickupCoords && dropoffCoords) {
+            fetchRoute();
+        }
+    }, [pickupCoords, dropoffCoords, map, onRouteLoaded]);
+
+    return null;
+};
+
+const ServiceRequestForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
@@ -225,6 +319,12 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
     const [showPreAnimation, setShowPreAnimation] = useState(false);
     const [showPriceModal, setShowPriceModal] = useState(false);
     const [priceForecast, setPriceForecast] = useState<any>(null);
+    const [isReviewPanelOpen, setIsReviewPanelOpen] = useState(true);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([51.505, -0.09]);
+    const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([]);
+    const [pickupCoords, setPickupCoords] = useState<[number, number] | null>(null);
+    const [dropoffCoords, setDropoffCoords] = useState<[number, number] | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Handle form value changes
     const handleFormChange = (values: any) => {
@@ -256,9 +356,9 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
 
     const handlePriceAccept = (staffCount: string, price: number) => {
         setShowPriceModal(false);
-        showMessage(isEditing ? 'Request updated successfully.' : 'Request created successfully.', 'success');
+        showMessage('Request created successfully.', 'success');
         dispatch(resetForm());
-        navigate(isEditing ? `/account/bookings/${request_id}` : '/my-bookings');
+        navigate('/my-bookings');
     };
 
     const { previewImages, handleImageUpload, removeImage } = useImageUpload(formValues.photo_urls || []);
@@ -279,8 +379,70 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
         }
     };
 
+    // Function to geocode addresses
+    const geocodeAddress = async (address: string) => {
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+            );
+            const data = await response.json();
+            if (data && data[0]) {
+                return [parseFloat(data[0].lat), parseFloat(data[0].lon)] as [number, number];
+            }
+            return null;
+        } catch (error) {
+            console.error('Geocoding error:', error);
+            return null;
+        }
+    };
+
+    // Update map when locations change
+    useEffect(() => {
+        const updateMap = async () => {
+            if (formValues.pickup_location && formValues.dropoff_location) {
+                const pickup = await geocodeAddress(formValues.pickup_location);
+                const dropoff = await geocodeAddress(formValues.dropoff_location);
+
+                if (pickup && dropoff) {
+                    setPickupCoords(pickup);
+                    setDropoffCoords(dropoff);
+                    setMapCenter([
+                        (pickup[0] + dropoff[0]) / 2,
+                        (pickup[1] + dropoff[1]) / 2
+                    ]);
+
+                    // Calculate route (simplified for demo - in production, use a proper routing service)
+                    setRouteCoordinates([pickup, dropoff]);
+                }
+            }
+        };
+
+        updateMap();
+    }, [formValues.pickup_location, formValues.dropoff_location]);
+
+    const handleEditStep = (stepNumber: number) => {
+        dispatch(setCurrentStep(stepNumber - 1)); // Convert to 0-based index
+    };
+
+    const handleRemoveItem = (itemId: string) => {
+        const updatedItems = formValues.moving_items.filter((item: any) => item.id !== itemId);
+        dispatch(updateFormValues({
+            ...formValues,
+            moving_items: updatedItems
+        }));
+    };
+
+    const handlePriceSelect = (selectedPrice: any) => {
+        setPriceForecast(selectedPrice);
+        setShowPriceModal(false);
+        // You can add additional logic here if needed
+    };
+
     return (
-        <div className="w-full px-4 md:px-8 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <div className="w-full px-4 md:px-2 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Main Form */}
+                <div className="lg:col-span-3">
             {/* Hero Section */}
             <div className="relative py-16 mb-10 overflow-hidden rounded-2xl shadow-2xl">
                 {/* Gradient Overlay + Background Image */}
@@ -297,16 +459,15 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                 </div>
 
                 {/* Content */}
-                <div className="relative z-20 text-center px-6 sm:px-10 lg:px-12 max-w-5xl mx-auto">
+                <div className="relative z-20 text-center px-6 sm:px-10 lg:px-12  mx-auto">
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-                        <span className="inline-block transform transition-all animate-fadeIn">{isEditing ? 'Edit Your Service Request' : 'Professional Moving Services'}</span>
+                                <span className="inline-block transform transition-all animate-fadeIn">Professional Moving Services</span>
                     </h1>
 
                     <p className="text-xl text-blue-100 mt-6 max-w-3xl mx-auto font-light opacity-90">
-                        {isEditing ? 'Update the details of your existing service request below' : 'Get instant quotes from verified moving professionals in your area'}
+                                Get instant quotes from verified moving professionals in your area
                     </p>
 
-                    {!isEditing && (
                         <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
                             <div className="bg-white/15 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 transition-all hover:bg-white/20 group">
                                 <div className="flex items-center justify-center sm:justify-start">
@@ -335,95 +496,191 @@ const ServiceRequestForm: React.FC<{ isEditing?: boolean }> = ({ isEditing = fal
                                 </div>
                             </div>
                         </div>
-                    )}
                 </div>
             </div>
 
-            <div className="w-full max-w-7xl mx-auto">
-                <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 sm:p-8 relative">
-                    {isLoading && currentStep != 4 ? (
-                        <LoadingSpinner message="Loading your request details..." />
-                    ) : (
-                        <>
-                            <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+                    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 sm:p-8 relative">
+                        {isLoading && currentStep != 4 ? (
+                            <LoadingSpinner message="Loading your request details..." />
+                        ) : (
+                            <>
+                                <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-                            <Formik initialValues={formValues} validationSchema={getCurrentValidationSchema()} onSubmit={() => {}} enableReinitialize>
-                                {(formikProps) => (
-                                    <Form className="space-y-6" noValidate>
-                                        {currentStep === 1 && (
-                                            <ContactDetailsStep
-                                                values={formikProps.values}
-                                                handleChange={formikProps.handleChange}
-                                                handleBlur={formikProps.handleBlur}
-                                                setFieldValue={formikProps.setFieldValue}
-                                                setTouched={formikProps.setTouched}
-                                                validateForm={formikProps.validateForm}
-                                                onNext={handleNextStep}
-                                                errors={formikProps.errors}
-                                                touched={formikProps.touched}
-                                                isEditing={isEditing}
-                                                stepNumber={1}
-                                            />
-                                        )}
+                                <Formik initialValues={formValues} validationSchema={getCurrentValidationSchema()} onSubmit={() => {}} enableReinitialize>
+                                    {(formikProps) => (
+                                        <Form className="space-y-6" noValidate>
+                                            {currentStep === 1 && (
+                                                <ContactDetailsStep
+                                                    values={formikProps.values}
+                                                    handleChange={formikProps.handleChange}
+                                                    handleBlur={formikProps.handleBlur}
+                                                    setFieldValue={formikProps.setFieldValue}
+                                                    setTouched={formikProps.setTouched}
+                                                    validateForm={formikProps.validateForm}
+                                                    onNext={handleNextStep}
+                                                    errors={formikProps.errors}
+                                                    touched={formikProps.touched}
+                                                    stepNumber={1}
+                                                />
+                                            )}
 
-                                        {currentStep === 2 && (
-                                            <LocationsStep
-                                                values={formikProps.values}
-                                                handleChange={formikProps.handleChange}
-                                                handleBlur={formikProps.handleBlur}
-                                                setFieldValue={formikProps.setFieldValue}
-                                                setTouched={formikProps.setTouched}
-                                                validateForm={formikProps.validateForm}
-                                                onNext={handleNextStep}
-                                                onBack={handlePreviousStep}
-                                                errors={formikProps.errors}
-                                                touched={formikProps.touched}
-                                                isEditing={isEditing}
-                                                stepNumber={2}
-                                            />
-                                        )}
+                                            {currentStep === 2 && (
+                                                <LocationsStep
+                                                    values={formikProps.values}
+                                                    handleChange={formikProps.handleChange}
+                                                    handleBlur={formikProps.handleBlur}
+                                                    setFieldValue={formikProps.setFieldValue}
+                                                    setTouched={formikProps.setTouched}
+                                                    validateForm={formikProps.validateForm}
+                                                    onNext={handleNextStep}
+                                                    onBack={handlePreviousStep}
+                                                    errors={formikProps.errors}
+                                                    touched={formikProps.touched}
+                                                    stepNumber={2}
+                                                />
+                                            )}
 
-                                        {currentStep === 3 && (
-                                            <ServiceDetailsStep
-                                                values={formikProps.values}
-                                                handleChange={formikProps.handleChange}
-                                                handleBlur={formikProps.handleBlur}
-                                                setFieldValue={formikProps.setFieldValue}
-                                                setTouched={formikProps.setTouched}
-                                                validateForm={formikProps.validateForm}
-                                                errors={formikProps.errors}
-                                                touched={formikProps.touched}
-                                                onNext={handleNextStep}
-                                                onBack={handlePreviousStep}
-                                                isLoading={isLoading}
-                                                isEditing={isEditing}
-                                                stepNumber={3}
-                                            />
-                                        )}
+                                            {currentStep === 3 && (
+                                                <ServiceDetailsStep
+                                                    values={formikProps.values}
+                                                    handleChange={formikProps.handleChange}
+                                                    handleBlur={formikProps.handleBlur}
+                                                    setFieldValue={formikProps.setFieldValue}
+                                                    setTouched={formikProps.setTouched}
+                                                    validateForm={formikProps.validateForm}
+                                                    errors={formikProps.errors}
+                                                    touched={formikProps.touched}
+                                                    onNext={handleNextStep}
+                                                    onBack={handlePreviousStep}
+                                                    isLoading={isLoading}
+                                                    stepNumber={3}
+                                                />
+                                            )}
 
-                                        {currentStep === totalSteps && (
-                                            <ScheduleStep
-                                                values={formikProps.values}
-                                                handleChange={formikProps.handleChange}
-                                                handleBlur={formikProps.handleBlur}
-                                                setFieldValue={formikProps.setFieldValue}
-                                                setTouched={formikProps.setTouched}
-                                                validateForm={formikProps.validateForm}
-                                                onBack={handlePreviousStep}
-                                                isEditing={isEditing}
-                                                stepNumber={totalSteps}
-                                                errors={formikProps.errors}
-                                                touched={formikProps.touched}
-                                                priceForecast={priceForecast}
-                                                setPriceForecast={setPriceForecast}
-                                                onPriceAccept={handlePriceAccept}
-                                            />
+                                            {currentStep === totalSteps && (
+                                                <ScheduleStep
+                                                    values={formikProps.values}
+                                                    handleChange={formikProps.handleChange}
+                                                    handleBlur={formikProps.handleBlur}
+                                                    setFieldValue={formikProps.setFieldValue}
+                                                    setTouched={formikProps.setTouched}
+                                                    validateForm={formikProps.validateForm}
+                                                    onBack={handlePreviousStep}
+                                                    stepNumber={totalSteps}
+                                                    errors={formikProps.errors}
+                                                    touched={formikProps.touched}
+                                                    priceForecast={priceForecast}
+                                                    setPriceForecast={setPriceForecast}
+                                                    onPriceAccept={handlePriceAccept}
+                                                />
+                                            )}
+                                        </Form>
+                                    )}
+                                </Formik>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sidebar */}
+                <div className="lg:col-span-1">
+                    <div className="sticky top-6 space-y-6">
+                        {/* Map Component - Only show when locations are set */}
+                        {formValues.pickup_location && formValues.dropoff_location && (
+                            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                                <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/30 border-b border-gray-200 dark:border-gray-700">
+                                    <h3 className="font-medium text-gray-800 dark:text-gray-200">Route Map</h3>
+                                </div>
+                                <div className="h-[400px] relative">
+                                    <MapContainer
+                                        center={mapCenter}
+                                        zoom={13}
+                                        className="h-full w-full"
+                                        scrollWheelZoom={false}
+                                    >
+                                        <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                        {pickupCoords && dropoffCoords && (
+                                            <>
+                                                <RouteLayer
+                    pickupCoords={pickupCoords}
+                    dropoffCoords={dropoffCoords}
+                                                    onRouteLoaded={setRouteCoordinates}
+                                                />
+                                                <Marker position={pickupCoords} icon={pickupIcon}>
+                                                    <Popup>
+                                                        <div className="text-sm">
+                                                            <p className="font-medium text-blue-600">Pickup Location</p>
+                                                            <p>{formValues.pickup_location}</p>
+                                                            {formValues.pickup_floor && (
+                                                                <p className="text-gray-600">Floor: {formValues.pickup_floor}</p>
+                                                            )}
+                                                        </div>
+                                                    </Popup>
+                                                </Marker>
+                                                <Marker position={dropoffCoords} icon={dropoffIcon}>
+                                                    <Popup>
+                                                        <div className="text-sm">
+                                                            <p className="font-medium text-green-600">Dropoff Location</p>
+                                                            <p>{formValues.dropoff_location}</p>
+                                                            {formValues.dropoff_floor && (
+                                                                <p className="text-gray-600">Floor: {formValues.dropoff_floor}</p>
+                                                            )}
+                                                        </div>
+                                                    </Popup>
+                                                </Marker>
+                                                {routeCoordinates.length > 0 && (
+                                                    <Polyline
+                                                        positions={routeCoordinates}
+                                                        color="#3B82F6"
+                                                        weight={4}
+                                                        opacity={0.8}
+                                                        lineCap="round"
+                                                        lineJoin="round"
+                                                        dashArray="5, 10"
+                                                    />
+                                                )}
+                                            </>
                                         )}
-                                    </Form>
-                                )}
-                            </Formik>
-                        </>
-                    )}
+                                    </MapContainer>
+                                </div>
+                            </div>
+                        )}
+
+                        <RequestDetailsPanel
+                            values={formValues}
+                            onEditStep={handleEditStep}
+                            currentStep={currentStep}
+                            onRemoveItem={handleRemoveItem}
+                        />
+                        
+                      
+
+                        {/* Quick Actions */}
+                        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                            <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/30 border-b border-gray-200 dark:border-gray-700">
+                                <h3 className="font-medium text-gray-800 dark:text-gray-200">Quick Actions</h3>
+                            </div>
+                            <div className="p-4 space-y-3">
+                                <button
+                                    onClick={() => window.open('tel:+1234567890')}
+                                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                >
+                                    <IconPhone size={20} />
+                                    <span>Call Support</span>
+                                </button>
+                                <button
+                                    onClick={() => window.open('https://wa.me/1234567890')}
+                                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                                >
+                                    <IconBrandWhatsapp size={20} />
+                                    <span>WhatsApp Chat</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

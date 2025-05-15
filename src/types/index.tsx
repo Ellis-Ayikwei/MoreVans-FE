@@ -77,6 +77,7 @@ export interface JourneyStop {
     other_rooms?: string;
     items?: JourneyItem[];
     linked_items?: string[]; // Array of item IDs for dropoff points
+    coordinates?: { lat: number; lng: number };
 }
 
 export interface ServiceRequest {
@@ -126,6 +127,8 @@ export interface ServiceRequest {
     status?: string;
     created_at?: string;
     updated_at?: string;
+    pickup_coordinates?: { lat: number; lng: number };
+    dropoff_coordinates?: { lat: number; lng: number };
 }
 
 // Updated type definition to use snake_case directly from the backend

@@ -9,8 +9,46 @@ import StepNavigation from './stepNavigation';
 import { v4 as uuidv4 } from 'uuid';
 import { submitStepToAPI, updateFormValues } from '../../store/slices/createRequestSlice';
 import showMessage from '../../helper/showMessage';
+import AddressAutocomplete from './AddressAutocomplete';
 
-const propertyTypes = ['house', 'apartment', 'office', 'storage'];
+const propertyTypes = [
+    { value: 'house_1', label: '1 Bed House' },
+    { value: 'house_2', label: '2 Bed House' },
+    { value: 'house_3', label: '3 Bed House' },
+    { value: 'house_4', label: '4 Bed House' },
+    { value: 'house_5plus', label: '5+ Bed House' },
+    { value: 'flat_1', label: '1 Bed Flat' },
+    { value: 'flat_2', label: '2 Bed Flat' },
+    { value: 'flat_3', label: '3 Bed Flat' },
+    { value: 'flat_4plus', label: '4+ Bed Flat' },
+    { value: 'studio', label: 'Studio' },
+    { value: 'storage', label: 'Storage Unit' },
+    { value: 'flatshare', label: 'Flatshare' },
+    { value: 'other', label: 'Other' }
+];
+
+const floorLevelOptions = [
+    { value: 'basement', label: 'Basement' },
+    { value: 'ground', label: 'Ground Floor' },
+    ...Array.from({ length: 100 }, (_, i) => ({
+        value: `${i + 1}`,
+        label: `${i + 1}${getOrdinalSuffix(i + 1)} Floor`
+    }))
+];
+
+const totalFloorsOptions = Array.from({ length: 100 }, (_, i) => ({
+    value: `${i + 1}`,
+    label: `${i + 1} ${i === 0 ? 'Floor' : 'Floors'}`
+}));
+
+function getOrdinalSuffix(n: number): string {
+    const j = n % 10;
+    const k = n % 100;
+    if (j === 1 && k !== 11) return 'st';
+    if (j === 2 && k !== 12) return 'nd';
+    if (j === 3 && k !== 13) return 'rd';
+    return 'th';
+}
 
 interface ContactDetailsStepProps {
     values: any;
@@ -267,57 +305,38 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Street Address <span className="text-red-500">*</span>
                                     </label>
-                                    <div className="relative">
-                                        <FontAwesomeIcon icon={faLocationDot} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                                        <Field
-                                            name="pickup_location"
-                                            className={`block w-full border ${
-                                                errors.pickup_location && touched.pickup_location ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
-                                            } rounded-lg py-3 pl-10 pr-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="Enter full address"
-                                        />
-                                    </div>
-                                    <ErrorMessage name="pickup_location" component="p" className="text-red-500 text-sm mt-1" />
+                                    <AddressAutocomplete
+                                        name="pickup_location"
+                                        value={values.pickup_location}
+                                        onChange={(value, coords) => {
+                                            setFieldValue('pickup_location', value);
+                                            if (coords) {
+                                                setFieldValue('pickup_coordinates', coords);
+                                            }
+                                        }}
+                                        error={errors.pickup_location}
+                                        touched={touched.pickup_location}
+                                        required
+                                    />
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Floor</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Floor Level</label>
                                         <Field
+                                            as="select"
                                             name="pickup_floor"
-                                            type="number"
-                                            min="0"
                                             className={`block w-full border ${
                                                 errors.pickup_floor && touched.pickup_floor ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
                                             } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="0"
-                                        />
+                                        >
+                                            {floorLevelOptions.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </Field>
                                         <ErrorMessage name="pickup_floor" component="p" className="text-red-500 text-sm mt-1" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit/Apt #</label>
-                                        <Field
-                                            name="pickup_unit_number"
-                                            className={`block w-full border ${
-                                                errors.pickup_unit_number && touched.pickup_unit_number ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
-                                            } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="e.g., Apt 42"
-                                        />
-                                        <ErrorMessage name="pickup_unit_number" component="p" className="text-red-500 text-sm mt-1" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            <FontAwesomeIcon icon={faCar} className="mr-2 text-blue-600 dark:text-blue-400" />
-                                            Parking Info
-                                        </label>
-                                        <Field
-                                            name="pickup_parking_info"
-                                            className={`block w-full border ${
-                                                errors.pickup_parking_info && touched.pickup_parking_info ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
-                                            } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="e.g., Street parking"
-                                        />
-                                        <ErrorMessage name="pickup_parking_info" component="p" className="text-red-500 text-sm mt-1" />
                                     </div>
                                 </div>
 
@@ -328,7 +347,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                             <FontAwesomeIcon icon={faBuilding} className="mr-2 text-blue-600 dark:text-blue-400" />
                                             Property Details
                                         </h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Property Type</label>
                                                 <Field
@@ -338,9 +357,9 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                                         errors.propertyType && touched.propertyType ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
                                                     } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
                                                 >
-                                                    {propertyTypes.map((type: string) => (
-                                                        <option key={type} value={type}>
-                                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                    {propertyTypes.map((type) => (
+                                                        <option key={type.value} value={type.value}>
+                                                            {type.label}
                                                         </option>
                                                     ))}
                                                 </Field>
@@ -349,36 +368,24 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
 
                                             <div>
                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                    Number of Floors <span className="text-red-500">*</span>
+                                                    Total Floors in Building <span className="text-red-500">*</span>
                                                 </label>
                                                 <Field
-                                                    type="number"
+                                                    as="select"
                                                     name="pickup_number_of_floors"
-                                                    min="1"
                                                     className={`block w-full border ${
                                                         errors.pickup_number_of_floors && touched.pickup_number_of_floors
                                                             ? 'border-red-300 dark:border-red-700'
                                                             : 'border-gray-300 dark:border-gray-600'
                                                     } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                                />
+                                                >
+                                                    {totalFloorsOptions.map((option) => (
+                                                        <option key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </Field>
                                                 <ErrorMessage name="pickup_number_of_floors" component="p" className="text-red-500 text-xs mt-1" />
-                                            </div>
-
-                                            <div className="flex items-center">
-                                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                                    <Field
-                                                        type="checkbox"
-                                                        name="pickup_has_elevator"
-                                                        className={`rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 ${
-                                                            errors.pickup_has_elevator && touched.pickup_has_elevator ? 'border-red-300 dark:border-red-700' : ''
-                                                        }`}
-                                                    />
-                                                    <span className="ml-2 flex items-center">
-                                                        <FontAwesomeIcon icon={faElevator} className="mr-1.5 text-gray-500 dark:text-gray-400" />
-                                                        Elevator Access
-                                                    </span>
-                                                </label>
-                                                <ErrorMessage name="pickup_has_elevator" component="p" className="text-red-500 text-xs mt-1" />
                                             </div>
                                         </div>
                                     </div>
@@ -399,57 +406,38 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Street Address <span className="text-red-500">*</span>
                                     </label>
-                                    <div className="relative">
-                                        <FontAwesomeIcon icon={faLocationDot} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                                        <Field
-                                            name="dropoff_location"
-                                            className={`block w-full border ${
-                                                errors.dropoff_location && touched.dropoff_location ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
-                                            } rounded-lg py-3 pl-10 pr-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="Enter full address"
-                                        />
-                                    </div>
-                                    <ErrorMessage name="dropoff_location" component="p" className="text-red-500 text-sm mt-1" />
+                                    <AddressAutocomplete
+                                        name="dropoff_location"
+                                        value={values.dropoff_location}
+                                        onChange={(value, coords) => {
+                                            setFieldValue('dropoff_location', value);
+                                            if (coords) {
+                                                setFieldValue('dropoff_coordinates', coords);
+                                            }
+                                        }}
+                                        error={errors.dropoff_location}
+                                        touched={touched.dropoff_location}
+                                        required
+                                    />
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Floor</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Floor Level</label>
                                         <Field
+                                            as="select"
                                             name="dropoff_floor"
-                                            type="number"
-                                            min="0"
                                             className={`block w-full border ${
                                                 errors.dropoff_floor && touched.dropoff_floor ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
                                             } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="0"
-                                        />
+                                        >
+                                            {floorLevelOptions.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </Field>
                                         <ErrorMessage name="dropoff_floor" component="p" className="text-red-500 text-sm mt-1" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit/Apt #</label>
-                                        <Field
-                                            name="dropoff_unit_number"
-                                            className={`block w-full border ${
-                                                errors.dropoff_unit_number && touched.dropoff_unit_number ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
-                                            } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="e.g., Apt 42"
-                                        />
-                                        <ErrorMessage name="dropoff_unit_number" component="p" className="text-red-500 text-sm mt-1" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            <FontAwesomeIcon icon={faCar} className="mr-2 text-blue-600 dark:text-blue-400" />
-                                            Parking Info
-                                        </label>
-                                        <Field
-                                            name="dropoff_parking_info"
-                                            className={`block w-full border ${
-                                                errors.dropoff_parking_info && touched.dropoff_parking_info ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
-                                            } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                            placeholder="e.g., Private driveway"
-                                        />
-                                        <ErrorMessage name="dropoff_parking_info" component="p" className="text-red-500 text-sm mt-1" />
                                     </div>
                                 </div>
 
@@ -460,7 +448,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                             <FontAwesomeIcon icon={faBuilding} className="mr-2 text-green-600 dark:text-green-400" />
                                             Property Details
                                         </h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Property Type</label>
                                                 <Field
@@ -470,9 +458,9 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                                         errors.dropoffPropertyType && touched.dropoffPropertyType ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
                                                     } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
                                                 >
-                                                    {propertyTypes.map((type: string) => (
-                                                        <option key={type} value={type}>
-                                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                    {propertyTypes.map((type) => (
+                                                        <option key={type.value} value={type.value}>
+                                                            {type.label}
                                                         </option>
                                                     ))}
                                                 </Field>
@@ -481,36 +469,24 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
 
                                             <div>
                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                    Number of Floors <span className="text-red-500">*</span>
+                                                    Total Floors in Building <span className="text-red-500">*</span>
                                                 </label>
                                                 <Field
-                                                    type="number"
+                                                    as="select"
                                                     name="dropoff_number_of_floors"
-                                                    min="1"
                                                     className={`block w-full border ${
                                                         errors.dropoff_number_of_floors && touched.dropoff_number_of_floors
                                                             ? 'border-red-300 dark:border-red-700'
                                                             : 'border-gray-300 dark:border-gray-600'
                                                     } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
-                                                />
+                                                >
+                                                    {totalFloorsOptions.map((option) => (
+                                                        <option key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </Field>
                                                 <ErrorMessage name="dropoff_number_of_floors" component="p" className="text-red-500 text-xs mt-1" />
-                                            </div>
-
-                                            <div className="flex items-center">
-                                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                                    <Field
-                                                        type="checkbox"
-                                                        name="dropoff_has_elevator"
-                                                        className={`rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 ${
-                                                            errors.dropoff_has_elevator && touched.dropoff_has_elevator ? 'border-red-300 dark:border-red-700' : ''
-                                                        }`}
-                                                    />
-                                                    <span className="ml-2 flex items-center">
-                                                        <FontAwesomeIcon icon={faElevator} className="mr-1.5 text-gray-500 dark:text-gray-400" />
-                                                        Elevator Access
-                                                    </span>
-                                                </label>
-                                                <ErrorMessage name="dropoff_has_elevator" component="p" className="text-red-500 text-xs mt-1" />
                                             </div>
                                         </div>
                                     </div>
