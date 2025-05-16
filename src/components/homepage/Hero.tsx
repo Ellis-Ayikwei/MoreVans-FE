@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import AddressAutocomplete from '../ServiceRequest/AddressAutocomplete';
 import {
     IconArrowRight,
     IconCheck,
@@ -182,74 +183,239 @@ const Hero: React.FC = () => {
     };
 
     return (
-        <section className="relative min-h-[90vh] pt-28 lg:pt-32 pb-24 lg:pb-32 bg-gradient-to-br from-primary via-primary/90 to-primary/80 overflow-hidden">
-            {/* Enhanced Background Elements */}
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-primary/70 z-10"></div>
-                <img
-                    src="https://images.unsplash.com/photo-1603624910536-e1a268321bcf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
-                    alt=""
-                    className="w-full h-full object-cover opacity-30 scale-105"
-                    style={{ objectPosition: '50% 65%' }}
-                    loading="eager"
-                />
+        <section className="relative min-h-[90vh] pt-28 lg:pt-32 pb-24 lg:pb-32 overflow-hidden">
+            {/* Ultra Modern Background */}
+            <div className="absolute inset-0">
+                {/* Base gradient using system colors */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-secondary/60"></div>
+                
+                {/* Cool geometric shapes */}
+                <div className="absolute inset-0">
+                    {/* Top-left geometric shapes */}
+                    <motion.div
+                        className="absolute top-0 left-0 w-[1000px] h-[1000px]"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary)/50 50%, transparent 100%)',
+                            filter: 'blur(120px)',
+                            opacity: 0.6,
+                            clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+                        }}
+                        animate={{
+                            rotate: [0, 45, 0],
+                            scale: [1, 1.2, 1],
+                        }}
+                        transition={{
+                            duration: 20,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    />
+                    <motion.div
+                        className="absolute top-20 left-20 w-[800px] h-[800px]"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary)/50 50%, transparent 100%)',
+                            filter: 'blur(100px)',
+                            opacity: 0.5,
+                            clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
+                        }}
+                        animate={{
+                            rotate: [45, 0, 45],
+                            scale: [1.2, 1, 1.2],
+                        }}
+                        transition={{
+                            duration: 15,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    />
+                    <motion.div
+                        className="absolute top-40 left-40 w-[600px] h-[600px]"
+                        style={{
+                            background: 'radial-gradient(circle at center, var(--color-secondary) 0%, var(--color-secondary)/50 50%, transparent 100%)',
+                            filter: 'blur(80px)',
+                            opacity: 0.7,
+                            clipPath: 'polygon(50% 0%, 90% 20%, 100% 60%, 75% 100%, 25% 100%, 0% 60%, 10% 20%)'
+                        }}
+                        animate={{
+                            rotate: [0, 180, 0],
+                            scale: [1, 1.3, 1],
+                        }}
+                        transition={{
+                            duration: 25,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    />
 
-                {/* Animated grid pattern overlay */}
-                <div className="absolute inset-0 bg-grid-pattern opacity-10 z-10"></div>
+                    {/* Additional accent shape */}
+                    <motion.div
+                        className="absolute top-60 left-60 w-[400px] h-[400px]"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--color-secondary) 0%, transparent 70%)',
+                            filter: 'blur(60px)',
+                            opacity: 0.8,
+                            clipPath: 'polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)'
+                        }}
+                        animate={{
+                            rotate: [0, 90, 0],
+                            scale: [1.1, 1, 1.1],
+                        }}
+                        transition={{
+                            duration: 18,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    />
+                </div>
 
-                {/* Enhanced animated visual elements */}
-                <motion.div
-                    className="absolute w-[40rem] h-[40rem] rounded-full bg-primary/20 -top-40 -left-20 blur-3xl z-10"
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.15, 0.25, 0.15],
-                    }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 12,
-                        ease: 'easeInOut',
-                    }}
-                />
-                <motion.div
-                    className="absolute w-[50rem] h-[50rem] rounded-full bg-primary/20 -bottom-40 -right-20 blur-3xl z-10"
-                    animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.15, 0.3, 0.15],
-                    }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 15,
-                        ease: 'easeInOut',
-                        delay: 1,
-                    }}
-                />
+                {/* Advanced pattern system */}
+                <div className="absolute inset-0">
+                    {/* Geometric patterns */}
+                    <div className="absolute inset-0" style={{
+                        backgroundImage: `radial-gradient(circle at 50% 50%, transparent 0%, transparent 50%, var(--color-secondary) 50%, var(--color-secondary) 100%)`,
+                        backgroundSize: '100px 100px',
+                        opacity: 0.03,
+                        maskImage: 'linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)'
+                    }}></div>
+                    
+                    {/* Diagonal pattern */}
+                    <div className="absolute inset-0" style={{
+                        backgroundImage: `repeating-linear-gradient(45deg, var(--color-secondary) 0px, var(--color-secondary) 1px, transparent 1px, transparent 10px)`,
+                        opacity: 0.02,
+                        maskImage: 'radial-gradient(circle at 50% 50%, black 30%, transparent 70%)'
+                    }}></div>
+                </div>
 
-                {/* Enhanced floating particles */}
-                <div className="absolute inset-0 z-10">
+                {/* Advanced blur system */}
+                <div className="absolute inset-0">
+                    {/* Main ambient blurs */}
+                    <motion.div
+                        className="absolute top-0 right-0 w-[1200px] h-[1200px] rounded-full"
+                        style={{
+                            background: 'radial-gradient(circle at center, var(--color-secondary) 0%, transparent 70%)',
+                            filter: 'blur(150px)',
+                            opacity: 0.1
+                        }}
+                        animate={{
+                            scale: [1, 1.2, 1],
+                            x: [0, 100, 0],
+                            y: [0, -50, 0],
+                        }}
+                        transition={{
+                            duration: 25,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    />
+                    <motion.div
+                        className="absolute bottom-0 left-0 w-[1200px] h-[1200px] rounded-full"
+                        style={{
+                            background: 'radial-gradient(circle at center, var(--color-primary) 0%, transparent 70%)',
+                            filter: 'blur(150px)',
+                            opacity: 0.1
+                        }}
+                        animate={{
+                            scale: [1.2, 1, 1.2],
+                            x: [0, -100, 0],
+                            y: [0, 50, 0],
+                        }}
+                        transition={{
+                            duration: 25,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    />
+                </div>
+
+                {/* Dynamic gradient system */}
+                <div className="absolute inset-0">
+                    {/* Moving gradient mesh */}
+                    <motion.div
+                        className="absolute inset-0"
+                        animate={{
+                            background: [
+                                'radial-gradient(circle at 20% 20%, var(--color-secondary) 0%, transparent 50%)',
+                                'radial-gradient(circle at 80% 80%, var(--color-secondary) 0%, transparent 50%)',
+                                'radial-gradient(circle at 20% 80%, var(--color-secondary) 0%, transparent 50%)',
+                                'radial-gradient(circle at 80% 20%, var(--color-secondary) 0%, transparent 50%)',
+                                'radial-gradient(circle at 20% 20%, var(--color-secondary) 0%, transparent 50%)',
+                            ],
+                        }}
+                        transition={{
+                            duration: 20,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                        style={{ opacity: 0.08 }}
+                    />
+
+                    {/* Animated spotlight system */}
+                    <motion.div
+                        className="absolute inset-0"
+                        animate={{
+                            background: [
+                                'radial-gradient(circle at 30% 30%, var(--color-secondary) 0%, transparent 25%)',
+                                'radial-gradient(circle at 70% 70%, var(--color-secondary) 0%, transparent 25%)',
+                                'radial-gradient(circle at 30% 30%, var(--color-secondary) 0%, transparent 25%)',
+                            ],
+                        }}
+                        transition={{
+                            duration: 15,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                        style={{ opacity: 0.05 }}
+                    />
+                </div>
+
+                {/* Advanced particle system */}
+                <div className="absolute inset-0">
                     {[...Array(30)].map((_, i) => (
                         <motion.div
                             key={i}
-                            className="absolute rounded-full bg-white"
+                            className="absolute w-1 h-1 rounded-full"
                             style={{
-                                width: Math.random() * 6 + 2 + 'px',
-                                height: Math.random() * 6 + 2 + 'px',
-                                left: Math.random() * 100 + '%',
-                                top: Math.random() * 100 + '%',
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                background: Math.random() > 0.5 ? 'var(--color-primary)' : 'var(--color-secondary)',
+                                opacity: Math.random() * 0.3 + 0.1,
                                 filter: 'blur(1px)',
                             }}
                             animate={{
-                                y: [0, -(30 + Math.random() * 80)],
-                                opacity: [0, 0.7, 0],
+                                y: [0, -150, 0],
+                                x: [0, Math.random() * 100 - 50, 0],
+                                scale: [1, Math.random() * 2 + 1, 1],
+                                opacity: [0.1, 0.3, 0.1],
                             }}
                             transition={{
+                                duration: Math.random() * 15 + 15,
                                 repeat: Infinity,
-                                duration: 5 + Math.random() * 10,
+                                ease: "easeInOut",
                                 delay: Math.random() * 10,
-                                ease: 'easeInOut',
                             }}
                         />
                     ))}
                 </div>
+
+                {/* Advanced glass morphism */}
+                <div className="absolute inset-0">
+                    <div className="absolute inset-0 backdrop-blur-[2px] bg-white/5"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+                </div>
+
+                {/* Subtle noise texture */}
+                <div 
+                    className="absolute inset-0 mix-blend-overlay"
+                    style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                        opacity: 0.02
+                    }}
+                ></div>
+
+                {/* Final polish layers */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.1),transparent_50%)]"></div>
             </div>
 
             <div className="max-w-[100vw] mx-auto px-2 sm:px-2 lg:px-16 relative z-20">
@@ -271,7 +437,7 @@ const Hero: React.FC = () => {
                             </motion.div>
 
                             {/* Main heading with enhanced animation */}
-                            <motion.h1 className="text-5xl lg:text-7xl xl:text-8xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/80 text-center sm:text-left">
+                            <motion.h1 className="text-5xl lg:text-7xl xl:text-7xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white/70 to-white/40 text-center sm:text-left">
                                 <div className="overflow-hidden">
                                     <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}>
                                         Moving Made
@@ -279,9 +445,9 @@ const Hero: React.FC = () => {
                                 </div>
                                 <div className="overflow-hidden">
                                     <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.33, 1, 0.68, 1] }} className="relative">
-                                        <span className="relative inline-block text-white text-6xl sm:text-8xl lg:text-9xl">
+                                        <span className="relative inline-block text-white/65   text-6xl sm:text-8xl lg:text-9xl">
                                             Simple
-                                            <motion.svg
+                                            {/* <motion.svg
                                                 initial={{ pathLength: 0 }}
                                                 animate={{ pathLength: 1 }}
                                                 transition={{ delay: 1.4, duration: 1.2, ease: 'easeInOut' }}
@@ -291,7 +457,7 @@ const Hero: React.FC = () => {
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
                                                 <path d="M3 8C20 -3 40 12 60 8C80 4 100 8 117 3" strokeLinecap="round" />
-                                            </motion.svg>
+                                            </motion.svg> */}
                                         </span>
                                     </motion.div>
                                 </div>
@@ -391,14 +557,18 @@ const Hero: React.FC = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-white/90 mb-2">Pickup Location</label>
                                         <div className="relative">
-                                            <IconMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-5 h-5" />
-                                            <input
-                                                type="text"
+                                            <IconMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-5 h-5 z-10" />
+                                            <AddressAutocomplete
                                                 name="pickup_location"
                                                 value={quickFormData.pickup_location}
-                                                onChange={handleQuickFormChange}
+                                                onChange={(value, coords) => {
+                                                    setQuickFormData(prev => ({
+                                                        ...prev,
+                                                        pickup_location: value
+                                                    }));
+                                                }}
                                                 placeholder="Enter pickup address"
-                                                className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition"
+                                                className="[&_input]:w-full [&_input]:pl-10 [&_input]:pr-4 [&_input]:py-3 [&_input]:rounded-lg [&_input]:bg-white/5 [&_input]:border [&_input]:border-white/20 [&_input]:text-white [&_input]:placeholder-white/50 [&_input]:backdrop-blur-sm [&_input]:focus:outline-none [&_input]:focus:ring-2 [&_input]:focus:ring-secondary [&_input]:focus:border-transparent [&_input]:transition [&_.pac-container]:bg-gray-800 [&_.pac-container]:border-white/20 [&_.pac-item]:text-white/90 [&_.pac-item]:hover:bg-white/10 [&_.pac-item-query]:text-white [&_.pac-matched]:text-secondary"
                                             />
                                         </div>
                                     </div>
@@ -407,14 +577,18 @@ const Hero: React.FC = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-white/90 mb-2">Dropoff Location</label>
                                         <div className="relative">
-                                            <IconMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-5 h-5" />
-                                            <input
-                                                type="text"
+                                            <IconMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-5 h-5 z-10" />
+                                            <AddressAutocomplete
                                                 name="dropoff_location"
                                                 value={quickFormData.dropoff_location}
-                                                onChange={handleQuickFormChange}
+                                                onChange={(value, coords) => {
+                                                    setQuickFormData(prev => ({
+                                                        ...prev,
+                                                        dropoff_location: value
+                                                    }));
+                                                }}
                                                 placeholder="Enter dropoff address"
-                                                className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition"
+                                                className="[&_input]:w-full [&_input]:pl-10 [&_input]:pr-4 [&_input]:py-3 [&_input]:rounded-lg [&_input]:bg-white/5 [&_input]:border [&_input]:border-white/20 [&_input]:text-white [&_input]:placeholder-white/50 [&_input]:backdrop-blur-sm [&_input]:focus:outline-none [&_input]:focus:ring-2 [&_input]:focus:ring-secondary [&_input]:focus:border-transparent [&_input]:transition [&_.pac-container]:bg-gray-800 [&_.pac-container]:border-white/20 [&_.pac-item]:text-white/90 [&_.pac-item]:hover:bg-white/10 [&_.pac-item-query]:text-white [&_.pac-matched]:text-secondary"
                                             />
                                         </div>
                                     </div>

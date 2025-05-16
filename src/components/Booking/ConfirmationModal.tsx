@@ -9,6 +9,7 @@ interface ConfirmationModalProps {
     onClose: () => void;
     price: number;
     email: string;
+    onConfirm: () => void;
     bookingDetails?: {
         date: string;
         time: string;
@@ -19,7 +20,7 @@ interface ConfirmationModalProps {
     };
 }
 
-const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, price, email, bookingDetails }) => {
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, price, email, bookingDetails, onConfirm }) => {
     // Helper function to safely format dates
     const formatBookingDate = (dateString: string | undefined, timeString: string | undefined): string => {
         if (!dateString) return 'Date not specified';
@@ -131,10 +132,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={onClose}
+                                onClick={onConfirm}
                                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                             >
-                                Close
+                                Confirm Booking
                             </motion.button>
                         </div>
                     </motion.div>

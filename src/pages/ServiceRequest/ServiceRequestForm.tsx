@@ -21,7 +21,7 @@ import showMessage from '../../helper/showMessage';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-
+import PriceForecastPage from '../../components/Booking/PriceForecastPage';
 // Fix for default marker icons in Leaflet with Next.js
 const DefaultIcon = L.icon({
     iconUrl: '/images/marker-icon.png',
@@ -425,7 +425,7 @@ const ServiceRequestForm: React.FC = () => {
     };
 
     const handleRemoveItem = (itemId: string) => {
-        const updatedItems = formValues.moving_items.filter((item: any) => item.id !== itemId);
+        const updatedItems = (formValues.moving_items || []).filter((item: any) => item.id !== itemId);
         dispatch(updateFormValues({
             ...formValues,
             moving_items: updatedItems
@@ -439,67 +439,57 @@ const ServiceRequestForm: React.FC = () => {
     };
 
     return (
-        <div className="w-full px-4 md:px-2 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <div className="w-full px-1 md:px-2 py-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Main Form */}
                 <div className="lg:col-span-3">
-            {/* Hero Section */}
-            <div className="relative py-16 mb-10 overflow-hidden rounded-2xl shadow-2xl">
-                {/* Gradient Overlay + Background Image */}
-                <div className="absolute inset-0">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/80 to-indigo-900/90 z-10" />
-                    <div
-                        className="absolute inset-0 bg-no-repeat bg-center bg-cover filter  opacity-125"
-                        style={{
-                            backgroundImage:
-                                'url(https://images.unsplash.com/photo-1587813369290-091c9d432daf?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)',
-                            backgroundPosition: '30% 60%',
-                        }}
-                    />
-                </div>
-
-                {/* Content */}
-                <div className="relative z-20 text-center px-6 sm:px-10 lg:px-12  mx-auto">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-                                <span className="inline-block transform transition-all animate-fadeIn">Professional Moving Services</span>
-                    </h1>
-
-                    <p className="text-xl text-blue-100 mt-6 max-w-3xl mx-auto font-light opacity-90">
-                                Get instant quotes from verified moving professionals in your area
-                    </p>
-
-                        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                            <div className="bg-white/15 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 transition-all hover:bg-white/20 group">
-                                <div className="flex items-center justify-center sm:justify-start">
-                                    <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <IconCheck className="text-green-300" size={24} />
-                                    </div>
-                                    <span className="ml-3 text-white font-medium">Verified Providers</span>
-                                </div>
+                    {!priceForecast && (
+                        /* Hero Section */
+                        <div className="relative py-16 mb-10 overflow-hidden rounded-2xl shadow-2xl">
+                            {/* Gradient Overlay + Background Image */}
+                            <div className="absolute inset-0">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/80 to-indigo-900/90 z-10" />
+                                <div
+                                    className="absolute inset-0 bg-no-repeat bg-center bg-cover filter  opacity-125"
+                                    style={{
+                                        backgroundImage:
+                                            'url(https://images.unsplash.com/photo-1587813369290-091c9d432daf?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)',
+                                        backgroundPosition: '30% 60%',
+                                    }}
+                                />
                             </div>
 
-                            <div className="bg-white/15 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 transition-all hover:bg-white/20 group">
-                                <div className="flex items-center justify-center sm:justify-start">
-                                    <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <IconShieldCheck className="text-green-300" size={24} />
-                                    </div>
-                                    <span className="ml-3 text-white font-medium">Insured Services</span>
-                                </div>
-                            </div>
+                            {/* Content */}
+                            <div className="relative z-20 text-center px-6 sm:px-10 lg:px-12  mx-auto">
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
+                                    <span className="inline-block transform transition-all animate-fadeIn">Professional Moving Services</span>
+                                </h1>
 
-                            <div className="bg-white/15 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 transition-all hover:bg-white/20 group">
-                                <div className="flex items-center justify-center sm:justify-start">
-                                    <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <IconThumbUp className="text-green-300" size={24} />
+                                <p className="text-xl text-blue-100 mt-6 max-w-3xl mx-auto font-light opacity-90">
+                                    Get instant quotes from verified moving professionals in your area
+                                </p>
+
+                                <div className="mt-8 flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+                                    <div className="flex flex-row items-center gap-1 border border-gray-200/20 rounded-lg p-2 text-green-300">
+                                        <IconShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+                                        <p className="text-sm font-medium sm:text-base hidden sm:inline">Verified Providers</p>
                                     </div>
-                                    <span className="ml-3 text-white font-medium">Satisfaction Guaranteed</span>
+
+                                    <div className="flex flex-row items-center gap-1 border border-gray-200/20 rounded-lg p-2 text-green-300">
+                                        <IconLock className="w-5 h-5 sm:w-6 sm:h-6" />
+                                        <p className="text-sm font-medium sm:text-base hidden sm:inline">Insured Services</p>
+                                    </div>
+
+                                    <div className="flex flex-row items-center gap-1 border border-gray-200/20 rounded-lg p-2 text-green-300">
+                                        <IconStar className="w-5 h-5 sm:w-6 sm:h-6" />
+                                        <p className="text-sm font-medium sm:text-base hidden sm:inline">Satisfaction Guaranteed</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                </div>
-            </div>
+                    )}
 
-                    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 sm:p-8 relative">
+                    {!priceForecast && <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 sm:p-8 relative">
                         {isLoading && currentStep != 4 ? (
                             <LoadingSpinner message="Loading your request details..." />
                         ) : (
@@ -566,12 +556,12 @@ const ServiceRequestForm: React.FC = () => {
                                                     setTouched={formikProps.setTouched}
                                                     validateForm={formikProps.validateForm}
                                                     onBack={handlePreviousStep}
+                                                    onNext={handleNextStep}
                                                     stepNumber={totalSteps}
                                                     errors={formikProps.errors}
                                                     touched={formikProps.touched}
-                                                    priceForecast={priceForecast}
-                                                    setPriceForecast={setPriceForecast}
                                                     onPriceAccept={handlePriceAccept}
+                                                    onPriceForecast={setPriceForecast}
                                                 />
                                             )}
                                         </Form>
@@ -579,7 +569,16 @@ const ServiceRequestForm: React.FC = () => {
                                 </Formik>
                             </>
                         )}
-                    </div>
+                    </div>}
+
+                    {priceForecast && (
+                        <PriceForecastPage 
+                            priceForecast={priceForecast} 
+                            request_id={formValues.id || ''} 
+                            onAccept={handlePriceSelect} 
+                        />
+                    )}
+
                 </div>
 
                 {/* Sidebar */}

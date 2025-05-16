@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
 import { submitStepToAPI, resetForm, setCurrentStep, getPricePreview, updateFormValues } from '../../store/slices/createRequestSlice';
 import { useNavigate } from 'react-router-dom';
-import PriceForecastModal from '../Booking/PriceForecastModal';
+import PriceForecastModal from '../Booking/PriceForecastPage';
 import PreAnimationModal from '../Booking/PreAnimationModal';
 import ConfirmationModal from '../Booking/ConfirmationModal';
 import { JourneyStop, RequestItem } from '../../store/slices/serviceRequestSice';
@@ -66,6 +66,7 @@ interface ScheduleStepProps {
     isEditing?: boolean;
     stepNumber: number;
     onPriceAccept: (staffCount: string, price: number) => void;
+    onPriceForecast: (forecast: any) => void;
 }
 
 const ScheduleStep: React.FC<ScheduleStepProps> = ({
@@ -82,26 +83,19 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
     isEditing = false,
     stepNumber,
     onPriceAccept,
+    onPriceForecast,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { request_id } = useSelector((state: IRootState) => state.serviceRequest);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showPriceModal, setShowPriceModal] = useState(false);
-    const [priceForecast, setPriceForecast] = useState<any>(null);
-    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [selectedPrice, setSelectedPrice] = useState<number>(0);
-    const [selectedStaffCount, setSelectedStaffCount] = useState<number>(0);
     const [showLoading, setShowLoading] = useState<boolean>(false);
 
     const handleSubmit = async () => {
         try {
             setShowLoading(true);
             setIsSubmitting(true);
-            console.log('validation values', values);
             const errors = await validateForm();
-            console.log('after validation');
-            console.log('the errors', errors);
             if (Object.keys(errors).length > 0) {
                 setTouched(
                     Object.keys(errors).reduce((acc, key) => {
@@ -113,7 +107,6 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                 return;
             }
 
-            // Update form values before submission
             dispatch(
                 updateFormValues({
                     ...values,
@@ -138,13 +131,10 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
             if (result.status === 200 || result.status === 201) {
                 if (result.data.price_forecast) {
                     const forecastData = result.data.price_forecast;
-                    console.log('Setting forecast data:', forecastData);
-                    setPriceForecast(forecastData);
-                    // Keep loading state true for animation
+                    onPriceForecast(forecastData);
                     setTimeout(() => {
                         setShowLoading(false);
-                        setShowPriceModal(true);
-                    }, 3000); // Increased delay to allow animation to complete
+                    }, 3000);
                 } else {
                     console.error('No price forecast in response:', result.data);
                     showMessage('Failed to get price forecast. Please try again.', 'error');
@@ -164,14 +154,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
     };
 
     const handlePriceSelect = (staffCount: string, price: number) => {
-        setSelectedPrice(price);
-        setSelectedStaffCount(parseInt(staffCount));
-        setShowPriceModal(false);
-        setShowConfirmationModal(true);
-    };
-
-    const handlePriceAccept = () => {
-        onPriceAccept(selectedStaffCount.toString(), selectedPrice);
+        onPriceAccept(staffCount, price);
     };
 
     // Add this helper function inside your component
@@ -297,9 +280,8 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
 
             <StepNavigation onBack={onBack} onNext={onNext} handleSubmit={handleSubmit} nextLabel={isEditing ? 'Update & Get Prices' : 'Get Prices'} isLastStep={true} isSubmitting={isSubmitting} />
 
-            <PriceForecastModal showPriceModal={showPriceModal}      onClose={() => setShowPriceModal(false)} priceForecast={priceForecast} request_id={values.id} onAccept={handlePriceSelect} />
 
-            <ConfirmationModal
+            {/* <ConfirmationModal
                 isOpen={showConfirmationModal}
                 onClose={() => {
                     setShowConfirmationModal(false);
@@ -317,7 +299,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                     dropoffLocation: values.dropoff_location,
                 }}
                 onConfirm={handlePriceAccept}
-            />
+            /> */}
         </div>
     );
 };
