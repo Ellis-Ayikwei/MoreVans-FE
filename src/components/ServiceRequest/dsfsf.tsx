@@ -54,7 +54,7 @@ import {
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 
-import JourneyPlanning from './JourneryPlanning';
+import JourneyPlanning from './JourneyPlanning';
 import StepNavigation from './stepNavigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 

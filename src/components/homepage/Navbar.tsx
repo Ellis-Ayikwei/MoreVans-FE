@@ -34,27 +34,28 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
     };
 
     return (
-        <nav className={`fixed top-0 left-0 w-full right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white dark:bg-gray-900 shadow-md' : 'bg-transparent'} overflow-hidden`}>
-            <div className="max-w-[100vw] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-20">
+        <div className="fixed top-0 left-0 w-full z-50">
+            <nav className={`w-full transition-all duration-300 ${isScrolled ? 'bg-white dark:bg-gray-900 shadow-md' : 'bg-transparent'}`}>
+                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16 sm:h-20">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center">
+                        <Link to="/" className="flex items-center flex-shrink-0">
                         <img
-                            className={`w-[160px] sm:w-[200px] flex-none transition-all duration-300 ${isScrolled ? ' ' : 'brightness-0 invert'}`}
+                                className={`w-[120px] sm:w-[160px] transition-all duration-300 ${isScrolled ? '' : 'brightness-0 invert'}`}
                             src="/assets/images/morevanstext.png"
                             alt="MoreVans"
                         />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-8">
+                        <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
                         {navLinks.map(({ to, label, icon: Icon }) => {
                             const active = isActive(to);
                             return (
                                 <Link
                                     key={to}
                                     to={to}
-                                    className={`flex items-center text-lg font-medium transition-colors duration-200 ${
+                                        className={`flex items-center text-base lg:text-lg font-medium transition-colors duration-200 ${
                                         active
                                             ? 'text-blue-600 dark:text-blue-400'
                                             : isScrolled
@@ -62,7 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                             : 'text-white hover:text-blue-200'
                                     }`}
                                 >
-                                    <Icon className={`w-6 h-6 mr-2 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                                        <Icon className={`w-5 h-5 lg:w-6 lg:h-6 mr-2 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
                                     {label}
                                 </Link>
                             );
@@ -73,16 +74,16 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                     <div className="hidden md:flex items-center space-x-4">
                         <Link
                             to="/login"
-                            className={`flex items-center text-lg font-medium transition-colors duration-200 ${
+                                className={`flex items-center text-base lg:text-lg font-medium transition-colors duration-200 ${
                                 isScrolled ? 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400' : 'text-white hover:text-blue-200'
                             }`}
                         >
-                            <IconLogin className="w-6 h-6 mr-2" />
+                                <IconLogin className="w-5 h-5 lg:w-6 lg:h-6 mr-2" />
                             Log In
                         </Link>
                         <Link
                             to="/service-request"
-                            className={`px-6 py-3 rounded-lg text-lg font-medium transition-all duration-200 ${
+                                className={`px-4 lg:px-6 py-2 lg:py-3 rounded-lg text-base lg:text-lg font-medium transition-all duration-200 ${
                                 isScrolled ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg' : 'bg-white text-blue-600 hover:bg-blue-50 shadow-md hover:shadow-lg'
                             }`}
                         >
@@ -91,58 +92,70 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button onClick={toggleMobileMenu} className={`md:hidden ${isScrolled ? "text-gray-700":"text-white"} dark:text-gray-300`}>
-                        <FontAwesomeIcon icon={mobileMenuOpen ? faTimes : faBars} className="text-2xl" />
+                        <button 
+                            onClick={toggleMobileMenu} 
+                            className={`md:hidden p-2 rounded-lg transition-colors duration-200 ${
+                                isScrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'
+                            }`}
+                        >
+                            <FontAwesomeIcon icon={mobileMenuOpen ? faTimes : faBars} className="text-xl" />
                     </button>
                 </div>
             </div>
+            </nav>
 
             {/* Mobile Menu */}
             <AnimatePresence>
                 {mobileMenuOpen && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="md:hidden bg-white dark:bg-gray-900 w-full">
-                        <div className="container mx-auto px-4 py-4">
-                            <div className="flex flex-col space-y-4">
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="md:hidden bg-white dark:bg-gray-900 shadow-lg"
+                    >
+                        <div className="px-4 py-2 space-y-1">
                                 {navLinks.map(({ to, label, icon: Icon }) => {
                                     const active = isActive(to);
                                     return (
                                         <Link
                                             key={to}
                                             to={to}
-                                            className={`flex items-center px-4 py-3 rounded-lg text-lg font-medium transition-colors duration-200 ${
-                                                active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                        className={`flex items-center px-4 py-2.5 rounded-lg text-base font-medium transition-colors duration-200 ${
+                                            active 
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                                             }`}
                                             onClick={() => setMobileMenuOpen(false)}
                                         >
-                                            <Icon className={`w-6 h-6 mr-3 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                                        <Icon className={`w-5 h-5 mr-3 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
                                             {label}
                                         </Link>
                                     );
                                 })}
 
-                                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
                                     <Link
                                         to="/login"
-                                        className="flex items-center px-4 py-3 text-lg text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="flex items-center px-4 py-2.5 text-base text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                                         onClick={() => setMobileMenuOpen(false)}
                                     >
-                                        <IconLogin className="w-6 h-6 mr-3" />
+                                    <IconLogin className="w-5 h-5 mr-3" />
                                         Log In
                                     </Link>
                                     <Link
                                         to="/service-request"
-                                        className="block mt-4 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 text-center text-lg font-medium"
+                                    className="block mt-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 text-center text-base font-medium"
                                         onClick={() => setMobileMenuOpen(false)}
                                     >
                                         Request a Move
                                     </Link>
-                                </div>
                             </div>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </nav>
+        </div>
     );
 };
 

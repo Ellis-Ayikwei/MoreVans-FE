@@ -18,9 +18,10 @@ import {
     IconUsers,
     IconCertificate,
 } from '@tabler/icons-react';
-import Navbar from '../components/homepage/Navbar';
-import Footer from '../components/homepage/Footer';
-import QuickQuoteButton from '../components/buttons/QuickQuoteButton';
+
+import QuickQuoteButton from '../../components/buttons/QuickQuoteButton';
+import Navbar from '../../components/homepage/Navbar';
+import Footer from '../../components/homepage/Footer';
 
 interface ServiceCard {
     id: number;

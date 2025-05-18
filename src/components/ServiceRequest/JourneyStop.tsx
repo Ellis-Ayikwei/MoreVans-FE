@@ -72,38 +72,6 @@ const JourneyStop: React.FC<JourneyStopProps> = ({ stop, index, provided, arrayH
                             </div>
                         </div>
 
-                        {/* Details fields */}
-                        <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Floor</label>
-                            <Field
-                                name={`journeyStops.${index}.floor`}
-                                type="number"
-                                min="0"
-                                className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                            />
-                        </div>
-
-                        {/* Unit number field */}
-                        <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Unit/Apt #</label>
-                            <Field
-                                name={`journeyStops.${index}.unit_number`}
-                                className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                            />
-                        </div>
-
-                        {/* Parking info field */}
-                        <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                <FontAwesomeIcon icon={faCar} className="mr-2 text-gray-500" />
-                                Parking Info
-                            </label>
-                            <Field
-                                name={`journeyStops.${index}.parking_info`}
-                                placeholder="e.g., Street parking"
-                                className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                            />
-                        </div>
                     </div>
 
                     {/* Additional details section */}

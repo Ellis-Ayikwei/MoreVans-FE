@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { LoadScript, Autocomplete } from '@react-google-maps/api';
+import React, { useState, useEffect } from 'react';
+import { Autocomplete, useLoadScript } from '@react-google-maps/api';
 
 interface AddressAutocompleteProps {
     value: string;
@@ -29,6 +29,11 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     const [autocomplete, setAutocomplete] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [inputValue, setInputValue] = useState(value);
+
+    const { isLoaded, loadError } = useLoadScript({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        libraries: ['places'],
+    });
 
     // Configure what data to show in suggestions
     const formatSuggestions = (place: any) => {
@@ -82,6 +87,34 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         onChange(newValue);
     };
 
+    if (loadError) {
+        return (
+            <div className="text-red-500 text-sm">
+                Error loading Google Maps API
+            </div>
+        );
+    }
+
+    if (!isLoaded) {
+        return (
+            <div className="relative">
+                <input
+                    type="text"
+                    id={name}
+                    name={name}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    placeholder={placeholder}
+                    disabled={true}
+                    className="w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <style>
@@ -124,7 +157,6 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                     </label>
                 )}
 
-                <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={['places']}>
                     <div className="relative">
                         <Autocomplete
                             onLoad={(autocomplete) => setAutocomplete(autocomplete)}
@@ -157,7 +189,6 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                             </div>
                         )}
                     </div>
-                </LoadScript>
 
                 {error && touched && <p className="text-sm text-red-500 mt-1">{error}</p>}
             </div>

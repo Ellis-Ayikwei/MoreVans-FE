@@ -58,7 +58,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useServiceRequest } from '../../hooks/useServiceRequest';
 import { JourneyStop } from '../../store/slices/serviceRequestSice';
-import JourneyPlanning from './JourneryPlanning';
+import { JourneyPlanning } from './JourneyPlanning';
 import StepNavigation from './stepNavigation';
 import { useDispatch } from 'react-redux';
 import { IRootState } from '../../store';
@@ -105,10 +105,23 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
 
     // Initialize journey_stops as an empty array if it doesn't exist
     useEffect(() => {
-        if (!values.journey_stops && values.request_type === 'journey') {
+        if (!values.journey_stops) {
             setFieldValue('journey_stops', []);
         }
-    }, [values.request_type, values.journey_stops, setFieldValue]);
+    }, [setFieldValue]);
+
+    // Sync journey_stops with Redux
+    useEffect(() => {
+        if (values.journey_stops && currentRequest?.journey_stops) {
+            const currentStops = values.journey_stops;
+            const reduxStops = currentRequest.journey_stops;
+            
+            // Only update if there's a difference
+            if (JSON.stringify(currentStops) !== JSON.stringify(reduxStops)) {
+                setFieldValue('journey_stops', reduxStops);
+            }
+        }
+    }, [currentRequest?.journey_stops, setFieldValue]);
 
     const handleRequestTypeChange = (newType: 'instant' | 'journey') => {
         if (newType === 'instant' && values.request_type !== 'instant') {
@@ -125,6 +138,11 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
             }
         } else if (newType === 'journey' && values.request_type !== 'journey') {
             setFieldValue('request_type', 'journey');
+            
+            // Initialize journey_stops if it doesn't exist
+            if (!values.journey_stops) {
+                setFieldValue('journey_stops', []);
+            }
         }
     };
 
@@ -170,16 +188,16 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
     const handleSubmit = async () => {
         try {
             setIsSubmitting(true);
-            // Skip API submission for instant requests
             dispatch(updateFormValues(values));
-            if (values.request_type === 'instant') {
+            
+            // Skip validation and API submission for journey requests
+            if (values.request_type === 'journey') {
                 onNext();
                 return;
             }
-            console.log('values for step 2', values);
+
+            // For other request types, proceed with validation
             const errors = await validateForm();
-            console.log('validation errors', errors);
-            console.log('after validation', values);
             if (Object.keys(errors).length > 0) {
                 setTouched(
                     Object.keys(errors).reduce((acc, key) => {
@@ -195,41 +213,36 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
                     step: stepNumber,
                     payload: {
                         pickup_location: values.pickup_location,
+                        dropoff_location: values.dropoff_location,
                         pickup_unit_number: values.pickup_unit_number,
                         pickup_floor: values.pickup_floor,
-                        pickup_number_of_floors: values.pickup_number_of_floors,
                         pickup_parking_info: values.pickup_parking_info,
-                        pickup_has_elevator: values.pickup_has_elevator,
-                        dropoff_location: values.dropoff_location,
                         dropoff_unit_number: values.dropoff_unit_number,
                         dropoff_floor: values.dropoff_floor,
-                        dropoff_number_of_floors: values.dropoff_number_of_floors,
                         dropoff_parking_info: values.dropoff_parking_info,
+                        pickup_has_elevator: values.pickup_has_elevator,
                         dropoff_has_elevator: values.dropoff_has_elevator,
-                        property_type: values.property_type,
-                        dropoff_property_type: values.dropoff_property_type,
-                        journey_stops: values.journey_stops,
                     },
                     isEditing,
                     request_id: values.id,
                 })
             ).unwrap();
 
-            if (result.data.success) {
+            if (result.status === 200 || result.status === 201) {
                 onNext();
             } else {
                 showMessage('Failed to save location details. Please try again.', 'error');
             }
         } catch (error: any) {
-            showMessage('An error occurred. Please try again212.', 'error');
+            showMessage('An error occurred. Please try again.', 'error');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <div className="mx-auto px-2 ">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg  p-2 sm:p-2">
                 {isInstant && (
                     <div className="mb-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-100 dark:border-blue-800">
                         <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4 flex items-center">
@@ -356,7 +369,7 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
                         </div>
                     </div>
 
-                    <div className="p-6 space-y-6">
+                    {/* <div className="p-6 space-y-6">
                         <AddressAutocomplete
                             name="pickup_location"
                             value={values.pickup_location}
@@ -386,7 +399,7 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
                             touched={touched.dropoff_location}
                             required
                         />
-                    </div>
+                    </div> */}
 
                     <StepNavigation
                         onBack={onBack}

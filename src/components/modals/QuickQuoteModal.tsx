@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IconX, IconTruck, IconPackage, IconPiano, IconBox, IconMapPin, IconCalendar, IconMail, IconPhone, IconCheck, IconShield, IconShieldCheck } from '@tabler/icons-react';
+import AddressAutocomplete from '../ServiceRequest/AddressAutocomplete';
 
 interface QuickQuoteModalProps {
     isOpen: boolean;
@@ -280,67 +281,72 @@ const QuickQuoteModal: React.FC<QuickQuoteModalProps> = ({ isOpen, onClose, serv
         <AnimatePresence>
             {isOpen && (
                 <>
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]" onClick={onClose} />
+                    <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }} 
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]" 
+                        onClick={onClose} 
+                    />
 
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed inset-0 flex items-center justify-center z-[101] p-4"
+                        className="fixed inset-0 flex items-center justify-center z-[101] p-4 overflow-y-auto"
                     >
-                        <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+                        <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 my-8">
                             {/* Header with gradient */}
-                            <div className={`bg-gradient-to-r ${serviceInfo.color} p-6 text-white relative overflow-hidden`}>
+                            <div className="relative p-4 sm:p-6 bg-secondary">
                                 <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                                 <div className="relative z-10">
-                                    <div className="flex flex-col space-y-4">
                                         {/* Title and Close Button */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-4">
-                                                <div className={`${serviceInfo.accent} p-3 rounded-xl backdrop-blur-sm`}>
-                                                    <ServiceIcon className="w-8 h-8" />
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                            <div className="bg-white/20 p-3 sm:p-4 rounded-xl backdrop-blur-sm flex-shrink-0">
+                                                <ServiceIcon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h2 className="text-2xl font-bold truncate">{serviceInfo.title}</h2>
-                                                    <p className="text-white/90 truncate">{serviceInfo.description}</p>
-                                                </div>
+                                            <div className="min-w-0 flex-1">
+                                                <h2 className="text-lg sm:text-xl md:text-2xl font-bold truncate text-white">{serviceInfo.title}</h2>
+                                                <p className="text-xs sm:text-sm text-white/90 truncate">{serviceInfo.description}</p>
                                             </div>
-                                            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors backdrop-blur-sm flex-shrink-0 ml-4">
-                                                <IconX className="w-6 h-6" />
-                                            </button>
                                         </div>
+                                        <button 
+                                            onClick={onClose} 
+                                            className="p-2 sm:p-3 hover:bg-white/20 rounded-lg transition-colors backdrop-blur-sm flex-shrink-0"
+                                        >
+                                            <IconX className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Service Features */}
-                            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 border-b border-gray-200 dark:border-gray-700">
-                                <div className="flex flex-wrap gap-3">
+                            <div className="p-6">
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                                     {/* Warranty and Insurance Info */}
-                                    <div className="flex flex-wrap gap-4 mt-2 mx-auto">
-                                        <div className="flex items-center gap-2  backdrop-blur-sm px-4 py-2 rounded-lg bg-primary/10 text-primary">
-                                            <IconShield className="w-5 h-5" />
-                                            <span className="text-sm font-medium">{serviceInfo.warranty}</span>
+                                    <div className="flex items-center justify-center gap-2 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-primary/10 text-primary">
+                                        <IconShield className="w-6 h-6 sm:w-7 sm:h-7" />
+                                        <span className="text-xs sm:text-sm font-medium">{serviceInfo.warranty}</span>
                                         </div>
-                                        <div className="flex items-center gap-2  backdrop-blur-sm px-4 py-2 rounded-lg bg-primary/10 text-primary">
-                                            <IconShieldCheck className="w-5 h-5" />
-                                            <span className="text-sm font-medium">{serviceInfo.insurance}</span>
+                                    <div className="flex items-center justify-center gap-2 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-primary/10 text-primary">
+                                        <IconShieldCheck className="w-6 h-6 sm:w-7 sm:h-7" />
+                                        <span className="text-xs sm:text-sm font-medium">{serviceInfo.insurance}</span>
                                         </div>
-                                        <div className="flex items-center gap-2  backdrop-blur-sm px-4 py-2 rounded-lg bg-primary/10 text-primary">
-                                            <IconCheck className="w-5 h-5" />
-                                            <span className="text-sm font-medium">Licensed & Insured</span>
-                                        </div>
+                                    <div className="flex items-center justify-center gap-2 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-primary/10 text-primary">
+                                        <IconCheck className="w-6 h-6 sm:w-7 sm:h-7" />
+                                        <span className="text-xs sm:text-sm font-medium">Licensed & Insured</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Form */}
-                            <div className="p-6 bg-gray-50/50 dark:bg-gray-800/50">
+                            <div className="p-6">
                                 <div className="grid grid-cols-1 gap-8">
                                     {/* Main Form */}
                                     <div className="lg:col-span-7">
-                                        <form onSubmit={handleSubmit} className="space-y-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                                 <div className="group">
                                                     <label
                                                         htmlFor="pickupPostcode"
@@ -348,21 +354,24 @@ const QuickQuoteModal: React.FC<QuickQuoteModalProps> = ({ isOpen, onClose, serv
                                                     >
                                                         <div className="flex items-center gap-2">
                                                             <IconMapPin className={`w-4 h-4 flex-shrink-0 ${serviceInfo.iconColor}`} />
-                                                            <span>Pickup Postcode</span>
+                                                            <span>Pickup Location</span>
                                                         </div>
                                                     </label>
                                                     <div className="relative">
-                                                        <input
-                                                            type="text"
-                                                            id="pickupPostcode"
+                                                        <AddressAutocomplete
                                                             name="pickupPostcode"
                                                             value={formData.pickupPostcode}
-                                                            onChange={handleChange}
-                                                            className="w-full px-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50"
-                                                            placeholder="Enter pickup postcode"
+                                                            onChange={(value, coords) => {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    pickupPostcode: value
+                                                                }));
+                                                            }}
+                                                            placeholder="Enter pickup address"
+                                                            className="[&_input]:w-full [&_input]:pl-10 [&_input]:pr-4 [&_input]:py-3 [&_input]:rounded-lg [&_input]:bg-white [&_input]:border [&_input]:border-gray-200 [&_input]:text-gray-900 [&_input]:placeholder-gray-500 [&_input]:focus:outline-none [&_input]:focus:ring-2 [&_input]:focus:ring-secondary [&_input]:focus:border-transparent [&_input]:transition [&_.pac-container]:bg-white [&_.pac-container]:border-gray-200 [&_.pac-item]:text-gray-900 [&_.pac-item]:hover:bg-gray-50 [&_.pac-item-query]:text-gray-900 [&_.pac-matched]:text-secondary"
                                                             required
                                                         />
-                                                        <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-200 dark:ring-gray-700 group-hover:ring-secondary/50 transition-all pointer-events-none"></div>
+                                                        <IconMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                                     </div>
                                                 </div>
 
@@ -373,26 +382,28 @@ const QuickQuoteModal: React.FC<QuickQuoteModalProps> = ({ isOpen, onClose, serv
                                                     >
                                                         <div className="flex items-center gap-2">
                                                             <IconMapPin className={`w-4 h-4 flex-shrink-0 ${serviceInfo.iconColor}`} />
-                                                            <span>Delivery Postcode</span>
+                                                            <span>Delivery Location</span>
                                                         </div>
                                                     </label>
                                                     <div className="relative">
-                                                        <input
-                                                            type="text"
-                                                            id="deliveryPostcode"
+                                                        <AddressAutocomplete
                                                             name="deliveryPostcode"
                                                             value={formData.deliveryPostcode}
-                                                            onChange={handleChange}
-                                                            className="w-full px-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50"
-                                                            placeholder="Enter delivery postcode"
+                                                            onChange={(value, coords) => {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    deliveryPostcode: value
+                                                                }));
+                                                            }}
+                                                            placeholder="Enter delivery address"
+                                                            className="[&_input]:w-full [&_input]:pl-10 [&_input]:pr-4 [&_input]:py-3 [&_input]:rounded-lg [&_input]:bg-white [&_input]:border [&_input]:border-gray-200 [&_input]:text-gray-900 [&_input]:placeholder-gray-500 [&_input]:focus:outline-none [&_input]:focus:ring-2 [&_input]:focus:ring-secondary [&_input]:focus:border-transparent [&_input]:transition [&_.pac-container]:bg-white [&_.pac-container]:border-gray-200 [&_.pac-item]:text-gray-900 [&_.pac-item]:hover:bg-gray-50 [&_.pac-item-query]:text-gray-900 [&_.pac-matched]:text-secondary"
                                                             required
                                                         />
-                                                        <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-200 dark:ring-gray-700 group-hover:ring-secondary/50 transition-all pointer-events-none"></div>
+                                                        <IconMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="group">
                                                     <label htmlFor="moveDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 group-hover:text-secondary transition-colors">
                                                         <div className="flex items-center gap-2">
@@ -407,17 +418,13 @@ const QuickQuoteModal: React.FC<QuickQuoteModalProps> = ({ isOpen, onClose, serv
                                                             name="moveDate"
                                                             value={formData.moveDate}
                                                             onChange={handleChange}
-                                                            className="w-full px-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50"
+                                                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50 text-sm sm:text-base"
                                                             required
                                                         />
-                                                        <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-200 dark:ring-gray-700 group-hover:ring-secondary/50 transition-all pointer-events-none"></div>
-                                                    </div>
                                                 </div>
-
-                                                {renderServiceSpecificFields()}
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                                 <div className="group">
                                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 group-hover:text-secondary transition-colors">
                                                         <div className="flex items-center gap-2">
@@ -432,11 +439,10 @@ const QuickQuoteModal: React.FC<QuickQuoteModalProps> = ({ isOpen, onClose, serv
                                                             name="email"
                                                             value={formData.email}
                                                             onChange={handleChange}
-                                                            className="w-full px-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50"
+                                                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50 text-sm sm:text-base"
                                                             placeholder="Enter your email"
                                                             required
                                                         />
-                                                        <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-200 dark:ring-gray-700 group-hover:ring-secondary/50 transition-all pointer-events-none"></div>
                                                     </div>
                                                 </div>
 
@@ -454,11 +460,10 @@ const QuickQuoteModal: React.FC<QuickQuoteModalProps> = ({ isOpen, onClose, serv
                                                             name="phone"
                                                             value={formData.phone}
                                                             onChange={handleChange}
-                                                            className="w-full px-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50"
+                                                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm group-hover:shadow-md group-hover:border-secondary/50 text-sm sm:text-base"
                                                             placeholder="Enter your phone number"
                                                             required
                                                         />
-                                                        <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-200 dark:ring-gray-700 group-hover:ring-secondary/50 transition-all pointer-events-none"></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -466,7 +471,7 @@ const QuickQuoteModal: React.FC<QuickQuoteModalProps> = ({ isOpen, onClose, serv
                                             <div className="flex justify-end pt-4">
                                                 <button
                                                     type="submit"
-                                                    className={`px-8 py-4 bg-gradient-to-r ${serviceInfo.color} text-white rounded-xl font-medium hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]`}
+                                                    className={`px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r ${serviceInfo.color} text-white rounded-xl font-medium hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base`}
                                                 >
                                                     Request a Move
                                                 </button>

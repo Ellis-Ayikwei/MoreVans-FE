@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBox, faTruck, faUser, faClipboardList, faCheckCircle, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import Navbar from '../components/homepage/Navbar';
-import Footer from '../components/homepage/Footer';
+import Navbar from '../../components/homepage/Navbar';
+import Footer from '../../components/homepage/Footer';
 import { Link } from 'react-router-dom';
 import { IconArrowRight } from '@tabler/icons-react';
-import HowItWorksComponent from '../components/homepage/HowItWorks';
+import HowItWorksComponent from '../../components/homepage/HowItWorks';
 
 const HowItWorks: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);

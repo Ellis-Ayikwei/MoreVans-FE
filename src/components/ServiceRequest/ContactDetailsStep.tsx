@@ -129,6 +129,30 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
     const handleSubmit = async () => {
         try {
             setIsSubmitting(true);
+            
+            // For journey requests, skip validation and only send request type
+            if (values.request_type === 'journey') {
+                dispatch(updateFormValues(values));
+                const result = await dispatch(
+                    submitStepToAPI({
+                        step: stepNumber,
+                        payload: {
+                            request_type: values.request_type,
+                        },
+                        isEditing,
+                        request_id: values.id,
+                    })
+                ).unwrap();
+
+                if (result.status === 201) {
+                    onNext();
+                } else {
+                    showMessage('Failed to save request type. Please try again.', 'error');
+                }
+                return;
+            }
+
+            // For other request types, proceed with normal validation
             const errors = await validateForm();
             if (Object.keys(errors).length > 0) {
                 setTouched(
@@ -320,7 +344,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Floor Level</label>
                                         <Field
@@ -347,7 +371,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                             <FontAwesomeIcon icon={faBuilding} className="mr-2 text-blue-600 dark:text-blue-400" />
                                             Property Details
                                         </h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Property Type</label>
                                                 <Field
@@ -421,7 +445,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Floor Level</label>
                                         <Field
@@ -448,7 +472,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                             <FontAwesomeIcon icon={faBuilding} className="mr-2 text-green-600 dark:text-green-400" />
                                             Property Details
                                         </h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Property Type</label>
                                                 <Field

@@ -76,7 +76,7 @@ const RequestReviewPanel: React.FC<RequestReviewPanelProps> = ({
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="hidden lg:block"
         >
-            <div className="sticky top-8">
+            <div className="sticky top-16">
                 <div className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden flex flex-col h-[calc(100vh-4rem)] backdrop-blur-lg bg-opacity-95 dark:bg-opacity-95">
                     {/* Panel Header */}
                     <motion.div 

@@ -1,6 +1,22 @@
 /* Animate css */
 @import './assets/css/animate.css';
 
+@font-face {
+    font-family: 'Charlie';
+    src: url('/assets/fonts/charlie-text-3.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Charlie';
+    src: url('/assets/fonts/charlie-display-bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,6 +28,12 @@
 .has-tooltip:hover .tooltip {
     @apply visible z-50;
 }
+
+/* @font-face{
+    font-family: "Charlie-Regular";
+    src: local("charlie-display"),
+    url('./assets/fonts/charlie-display.ttf')
+} */
 
 @layer components {
     html {

@@ -78,8 +78,8 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
 
     const hasContactInfo = values.contact_name || values.contact_phone || values.contact_email;
     const hasRequestInfo = values.request_type || values.service_type;
-    const hasPickupInfo = values.pickup_location || values.pickup_floor || values.propertyType || values.pickup_number_of_floors;
-    const hasDropoffInfo = values.dropoff_location || values.dropoff_floor || values.dropoffPropertyType || values.dropoff_number_of_floors;
+    const hasPickupInfo = values.request_type !== 'journey' && (values.pickup_location || values.pickup_floor || values.propertyType || values.pickup_number_of_floors);
+    const hasDropoffInfo = values.request_type !== 'journey' && (values.dropoff_location || values.dropoff_floor || values.dropoffPropertyType || values.dropoff_number_of_floors);
     const hasJourneyStops = values.request_type === 'journey' && values.journey_stops && values.journey_stops.length > 0;
     const hasItems = values.moving_items && values.moving_items.length > 0;
     const hasSchedule = values.preferred_date || values.preferred_time;

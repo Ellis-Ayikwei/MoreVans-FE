@@ -60,7 +60,8 @@ module.exports = {
                 },
             },
             fontFamily: {
-                sans: [' '], // Modern logistics-friendly font
+                sans: ['Charlie', 'sans-serif'], // Charlie as default font
+                Charlie: ['Charlie', 'sans-serif']
             },
             spacing: {
                 4.5: '18px',

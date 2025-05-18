@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faNewspaper, faBookmark, faShare } from '@fortawesome/free-solid-svg-icons';
-import Navbar from '../components/homepage/Navbar';
-import Footer from '../components/homepage/Footer';
-import BlogCard from '../components/blog/BlogCard';
+import Navbar from '../../components/homepage/Navbar';
+import Footer from '../../components/homepage/Footer';
+import BlogCard from '../../components/blog/BlogCard';
 
 interface BlogPost {
     id: number;

@@ -29,12 +29,13 @@ import {
     faBell,
     faLock,
 } from '@fortawesome/free-solid-svg-icons';
-import Navbar from '../components/homepage/Navbar';
-import Hero from '../components/homepage/Hero';
-import HowItWorks from '../components/homepage/HowItWorks';
-import FeaturedProviders from '../components/homepage/FeaturedProviders';
-import Footer from '../components/homepage/Footer';
+import Navbar from '../../components/homepage/Navbar';
+import Hero from '../../components/homepage/Hero';
+import HowItWorks from '../../components/homepage/HowItWorks';
+import FeaturedProviders from '../../components/homepage/FeaturedProviders';
+import Footer from '../../components/homepage/Footer';
 import { IconClipboardList, IconUsers, IconTruck, IconArrowRight } from '@tabler/icons-react';
+import { Users, ShieldCheck, Star, PoundSterling } from 'lucide-react';
 
 interface FeaturedProvider {
     id: number;
@@ -237,10 +238,10 @@ const Homepage: React.FC = () => {
 
     // Enhanced stats with more specific metrics
     const stats = [
-        { value: '15,742', label: 'Happy Customers' },
-        { value: '5,612', label: 'Verified Providers' },
-        { value: '98.3%', label: 'Satisfaction Rate' },
-        { value: '£10M+', label: 'Insurance Coverage' },
+        { value: '15,742', label: 'Happy Customers', icon: Users },
+        { value: '5,612', label: 'Verified Providers', icon: ShieldCheck },
+        { value: '98.3%', label: 'Satisfaction Rate', icon: Star },
+        { value: '£10M+', label: 'Insurance Coverage', icon: PoundSterling },
     ];
 
     return (
@@ -253,18 +254,24 @@ const Homepage: React.FC = () => {
             {/* Benefits */}
             <section className="py-16">
                 <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                         {stats.map((stat, index) => (
                             <motion.div
                                 key={index}
+                                className="bg-white/10 backdrop-blur-md p-4 sm:p-6 rounded-xl border border-white/10"
                                 initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="text-center"
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 + index * 0.1 }}
                             >
-                                <p className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">{stat.value}</p>
-                                <p className="text-gray-600 dark:text-gray-400">{stat.label}</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
+                                        <stat.icon className="w-5 h-5 text-secondary" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl sm:text-3xl font-bold text-primary dark:text-blue-400">{stat.value}</h3>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
+                                    </div>
+                                </div>
                             </motion.div>
                         ))}
                     </div>

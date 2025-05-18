@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import AddressAutocomplete from '../ServiceRequest/AddressAutocomplete';
+import QuickQuoteModal from '../modals/QuickQuoteModal';
 import {
     IconArrowRight,
     IconCheck,
@@ -32,6 +33,8 @@ interface QuickFormData {
 const Hero: React.FC = () => {
     const [isLoadingQuote, setIsLoadingQuote] = useState(false);
     const [formError, setFormError] = useState('');
+    const [isQuickQuoteModalOpen, setIsQuickQuoteModalOpen] = useState(false);
+    const [selectedServiceType, setSelectedServiceType] = useState('manvan');
     const [quickFormData, setQuickFormData] = useState<QuickFormData>({
         pickup_location: '',
         dropoff_location: '',
@@ -56,6 +59,7 @@ const Hero: React.FC = () => {
             iconColor: 'text-yellow-400',
             hoverColor: 'group-hover:text-yellow-400',
             badgeColor: 'bg-yellow-500/20 border-yellow-500/30',
+            serviceType: 'manvan',
         },
         {
             id: 2,
@@ -69,6 +73,7 @@ const Hero: React.FC = () => {
             iconColor: 'text-blue-400',
             hoverColor: 'group-hover:text-blue-400',
             badgeColor: 'bg-blue-500/20 border-blue-500/30',
+            serviceType: 'manvan',
         },
         {
             id: 3,
@@ -82,6 +87,7 @@ const Hero: React.FC = () => {
             iconColor: 'text-green-400',
             hoverColor: 'group-hover:text-green-400',
             badgeColor: 'bg-green-500/20 border-green-500/30',
+            serviceType: 'manvan',
         },
         {
             id: 4,
@@ -95,6 +101,7 @@ const Hero: React.FC = () => {
             iconColor: 'text-purple-400',
             hoverColor: 'group-hover:text-purple-400',
             badgeColor: 'bg-purple-500/20 border-purple-500/30',
+            serviceType: 'piano',
         },
     ];
 
@@ -425,7 +432,7 @@ const Hero: React.FC = () => {
                         <div className="relative">
                             {/* Pre-heading accent */}
                             <motion.div
-                                className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs sm:text-sm font-medium text-white mb-4 sm:mb-6 border border-white/20 text-center"
+                                className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs sm:text-sm font-medium text-white mb-4 sm:mb-6 border border-white/20 text-center mx-auto sm:mx-0 block sm:inline-block"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3, duration: 0.6 }}
@@ -437,27 +444,16 @@ const Hero: React.FC = () => {
                             </motion.div>
 
                             {/* Main heading with enhanced animation */}
-                            <motion.h1 className="text-5xl lg:text-7xl xl:text-7xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white/70 to-white/40 text-center sm:text-left">
+                            <motion.h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 text-white leading-tight bg-clip-text text-center sm:text-left">
                                 <div className="overflow-hidden">
-                                    <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}>
+                                    <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.4, ease: [0.33, 1, 0.68, 1] }} className="font-Charlie font-bold">
                                         Moving Made
                                     </motion.div>
                                 </div>
                                 <div className="overflow-hidden">
                                     <motion.div initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.33, 1, 0.68, 1] }} className="relative">
-                                        <span className="relative inline-block text-white/65   text-6xl sm:text-8xl lg:text-9xl">
+                                        <span className="relative inline-block text-white/65 text-7xl sm:text-8xl lg:text-9xl xl:text-[12rem] font-Charlie font-bold">
                                             Simple
-                                            {/* <motion.svg
-                                                initial={{ pathLength: 0 }}
-                                                animate={{ pathLength: 1 }}
-                                                transition={{ delay: 1.4, duration: 1.2, ease: 'easeInOut' }}
-                                                className="absolute w-full -bottom-2 left-0 stroke-[3] stroke-secondary"
-                                                viewBox="0 0 120 10"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path d="M3 8C20 -3 40 12 60 8C80 4 100 8 117 3" strokeLinecap="round" />
-                                            </motion.svg> */}
                                         </span>
                                     </motion.div>
                                 </div>
@@ -465,7 +461,7 @@ const Hero: React.FC = () => {
 
                             {/* Enhanced description */}
                             <motion.p
-                                className="text-lg md:text-xl text-white/80 mb-8 max-w-xl text-center md:text-left"
+                                className="text-lg md:text-xl text-white/80 mb-8 max-w-xl text-center sm:text-left mx-auto sm:mx-0"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.8, duration: 0.6 }}
@@ -473,10 +469,27 @@ const Hero: React.FC = () => {
                                 Connect with trusted moving professionals. Get instant quotes, compare prices, and book your move with confidence.
                             </motion.p>
 
-                            {/* Enhanced Trust Badges */}
-                            <motion.div className="flex justify-between gap-2 sm:gap-3 mb-8 sm:mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1 }}>
+                            {/* Enhanced Trust Badges with CTA for mobile */}
+                            <motion.div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-3 mb-8 sm:mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1 }}>
+                                {/* Mobile CTA Button */}
+                                <motion.button
+                                    onClick={() => {
+                                        setSelectedServiceType('manvan');
+                                        setIsQuickQuoteModalOpen(true);
+                                    }}
+                                    className="sm:hidden w-full py-4 rounded-lg font-medium text-lg flex items-center justify-center transition-all bg-secondary"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <span className="relative z-10">Get Instant Prices</span>
+                                    <motion.span className="ml-2 z-10" animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}>
+                                        <IconArrowRight className="w-5 h-5" />
+                                    </motion.span>
+                                </motion.button>
+
+                                {/* Trust Badges (hidden on mobile) */}
                                 <motion.div
-                                    className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
+                                    className="hidden sm:flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
                                     whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
                                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                                 >
@@ -487,7 +500,7 @@ const Hero: React.FC = () => {
                                 </motion.div>
 
                                 <motion.div
-                                    className="flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
+                                    className="hidden sm:flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg flex-1"
                                     whileHover={{ y: -3, backgroundColor: 'rgba(255,255,255,0.15)' }}
                                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                                 >
@@ -728,6 +741,10 @@ const Hero: React.FC = () => {
                                     initial={{ opacity: 0, y: 30 }}
                                     animate={{ opacity: 1, y: 0, transition: { delay: card.delay } }}
                                     whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        setSelectedServiceType(card.serviceType);
+                                        setIsQuickQuoteModalOpen(true);
+                                    }}
                                 >
                                     {/* Base gradient overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black/95 opacity-95 transition-opacity"></div>
@@ -745,9 +762,19 @@ const Hero: React.FC = () => {
                                         <h3 className="font-bold text-lg sm:text-2xl transition-colors duration-300 group-hover:text-white drop-shadow-lg group-hover:drop-shadow-none">
                                             {card.title}
                                         </h3>
-                                        <div className="hidden group-hover:flex items-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 mt-1 sm:mt-2">
-                                            <card.icon className="text-white mr-2 drop-shadow-lg group-hover:drop-shadow-none" />
-                                            <span className="text-xs sm:text-sm font-medium drop-shadow-lg group-hover:drop-shadow-none text-white/90">{card.description}</span>
+                                        <div className="hidden group-hover:flex flex-col items-start opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 mt-1 sm:mt-2">
+                                            <div className="flex items-center mb-3">
+                                                <card.icon className="text-white mr-2 drop-shadow-lg group-hover:drop-shadow-none" />
+                                                <span className="text-xs sm:text-sm font-medium drop-shadow-lg group-hover:drop-shadow-none text-white/90">{card.description}</span>
+                                            </div>
+                                            <motion.button
+                                                className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg text-sm font-medium hover:bg-white/30 transition-colors flex items-center gap-2"
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                            >
+                                                Get Prices
+                                                <IconArrowRight className="w-4 h-4" />
+                                            </motion.button>
                                         </div>
                                         <motion.div
                                             className="h-1 bg-gradient-to-r from-secondary to-secondary/50 rounded-full opacity-90 shadow-lg group-hover:from-white group-hover:to-white/50 transition-colors duration-500 mt-2 sm:mt-3"
@@ -885,6 +912,13 @@ const Hero: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                 </svg>
             </motion.div>
+
+            {/* Quick Quote Modal */}
+            <QuickQuoteModal 
+                isOpen={isQuickQuoteModalOpen} 
+                onClose={() => setIsQuickQuoteModalOpen(false)} 
+                serviceType={selectedServiceType}
+            />
         </section>
     );
 };

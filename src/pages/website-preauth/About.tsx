@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { IconTruck, IconUsers, IconStar, IconShieldCheck, IconMapPin, IconClock, IconPhone } from '@tabler/icons-react';
-import Navbar from '../components/homepage/Navbar';
+import Navbar from '../../components/homepage/Navbar';
 
 const About: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);

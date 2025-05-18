@@ -12,7 +12,7 @@ import ScheduleStep from '../../components/ServiceRequest/ScheduleStep';
 import RequestReviewPanel from '../../components/ServiceRequest/RequestReviewPanel';
 import RequestDetailsPanel from '../../components/ServiceRequest/RequestDetailsPanel';
 import { ServiceRequest } from '../../types';
-import { IconCheck, IconShieldCheck, IconThumbUp, IconChevronLeft, IconChevronRight, IconStar, IconLock, IconTruck, IconClock, IconMapPin, IconRoute, IconPhone, IconBrandWhatsapp } from '@tabler/icons-react';
+import { IconCheck, IconShieldCheck, IconThumbUp, IconChevronLeft, IconChevronRight, IconStar, IconLock, IconTruck, IconClock, IconMapPin, IconRoute, IconPhone, IconBrandWhatsapp, IconArrowLeft } from '@tabler/icons-react';
 import { getPricePreview, setCurrentStep, submitStepToAPI, resetForm, updateFormValues, setStepData } from '../../store/slices/createRequestSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
@@ -22,6 +22,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import PriceForecastPage from '../../components/Booking/PriceForecastPage';
+import AddressDetails from '../../components/ServiceRequest/AddressDetails';
 // Fix for default marker icons in Leaflet with Next.js
 const DefaultIcon = L.icon({
     iconUrl: '/images/marker-icon.png',
@@ -443,6 +444,12 @@ const ServiceRequestForm: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Main Form */}
                 <div className="lg:col-span-3">
+             {priceForecast &&   <button
+                                onClick={() => setPriceForecast(null)}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 flex items-center gap-2"
+                            >
+                                <IconArrowLeft className="w-6 h-6 text-gray-600" /> Back to Form
+                            </button>}
                     {!priceForecast && (
                         /* Hero Section */
                         <div className="relative py-16 mb-10 overflow-hidden rounded-2xl shadow-2xl">
@@ -489,7 +496,7 @@ const ServiceRequestForm: React.FC = () => {
                         </div>
                     )}
 
-                    {!priceForecast && <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 sm:p-8 relative">
+                    {!priceForecast && <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-2 sm:p-2 relative">
                         {isLoading && currentStep != 4 ? (
                             <LoadingSpinner message="Loading your request details..." />
                         ) : (
@@ -576,14 +583,15 @@ const ServiceRequestForm: React.FC = () => {
                             priceForecast={priceForecast} 
                             request_id={formValues.id || ''} 
                             onAccept={handlePriceSelect} 
+                            onBack={() => setPriceForecast(null)}
                         />
                     )}
 
                 </div>
 
                 {/* Sidebar */}
-                <div className="lg:col-span-1">
-                    <div className="sticky top-6 space-y-6">
+                <div className="lg:col-span-1 ">
+                    <div className="sticky top-16 space-y-6">
                         {/* Map Component - Only show when locations are set */}
                         {formValues.pickup_location && formValues.dropoff_location && (
                             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">

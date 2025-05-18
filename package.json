@@ -57,6 +57,7 @@
         "framer-motion": "^12.7.2",
         "highlight.js": "^11.6.0",
         "leaflet": "^1.9.4",
+        "lucide-react": "^0.511.0",
         "mantine-contextmenu": "^7.12.2",
         "mantine-datatable": "^7.12.4",
         "moment": "^2.30.1",

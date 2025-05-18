@@ -93,10 +93,16 @@ const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({
     const handleSubmit = async () => {
         try {
             setIsSubmitting(true);
-            console.log('values before validation', values);
+            dispatch(updateFormValues(values));
+            
+            // Skip validation and API submission for journey requests
+            if (values.request_type === 'journey') {
+                onNext();
+                return;
+            }
+
+            // For other request types, proceed with validation
             const errors = await validateForm();
-            console.log('values after validation', values);
-            console.log('errors', errors);
             if (Object.keys(errors).length > 0) {
                 setTouched(
                     Object.keys(errors).reduce((acc, key) => {
@@ -106,8 +112,6 @@ const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({
                 );
                 return;
             }
-
-            dispatch(updateFormValues(values));
 
             const result = await dispatch(
                 submitStepToAPI({
@@ -138,7 +142,7 @@ const ServiceDetailsStep: React.FC<ServiceDetailsStepProps> = ({
                 })
             ).unwrap();
 
-            if (result.status === 200) {
+            if (result.status === 200 || result.status === 201) {
                 onNext();
             } else {
                 showMessage('Failed to save service details. Please try again.', 'error');

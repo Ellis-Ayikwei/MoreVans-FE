@@ -5,6 +5,8 @@ import { CalendarIcon, UserIcon, TruckIcon, ClipboardDocumentCheckIcon, ClockIco
 import PriceDetailsModal from './PriceDetailsModal';
 import { formatCurrency } from '../../helper/formatCurrency';
 import { IconLock, IconMoneybagMinus, IconShieldCheck, IconStar, IconClock, IconTruck } from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
+import { IconArrowLeft } from '@tabler/icons-react';
 
 interface StaffPrice {
     staff_count: number;
@@ -77,7 +79,8 @@ const StaffCountIcon: React.FC<{ count: number }> = ({ count }) => {
     );
 };
 
-const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, request_id, onAccept }) => {
+const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, request_id, onAccept, onBack }) => {
+    const navigate = useNavigate();
     const [selectedDay, setSelectedDay] = useState<DayPrice | null>(null);
     const [selectedStaff, setSelectedStaff] = useState<string>('staff_1');
     const [showLoading, setShowLoading] = useState(true);
@@ -86,7 +89,7 @@ const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, re
     useEffect(() => {
         const timer = setTimeout(() => {
             setShowLoading(false);
-        }, 2000);
+        }, 4000);
         return () => clearTimeout(timer);
     }, []);
 
@@ -186,20 +189,25 @@ const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, re
         }
     };
 
-    if (showLoading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"
-                    />
-                    <h2 className="text-xl font-semibold text-gray-700">Loading Price Forecast...</h2>
-                </div>
-            </div>
-        );
-    }
+    const handleBack = () => {
+        // Navigate back to the request form with the request_id
+        
+    };
+
+    // if (showLoading) {
+    //     return (
+    //         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    //             <div className="text-center">
+    //                 <motion.div
+    //                     animate={{ rotate: 360 }}
+    //                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+    //                     className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"
+    //                 />
+    //                 <h2 className="text-xl font-semibold text-gray-700">Loading Price Forecast...</h2>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     const staffOptions = getStaffOptions();
 
@@ -217,6 +225,7 @@ const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, re
                     {/* Content with relative positioning */}
                     <div className="relative z-10">
                         <div className="flex sm:flex-row items-start sm:items-center gap-4 mb-4 sm:mb-6">
+                            
                             <div className="p-3 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg backdrop-blur-sm border border-primary/20">
                                 <CalendarIcon className="w-6 h-6 text-primary" />
                             </div>
@@ -233,30 +242,11 @@ const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, re
                                 <p className="text-sm font-medium sm:text-base">38% cheaper than average</p>
                             </div>
 
-                            <div className="flex flex-row items-center gap-1 mb-2 border border-gray-200 rounded-lg p-2 text-green-700 bg-white/50 backdrop-blur-sm">
-                                <IconClock className="w-6 h-6" />
-                                <p className="text-sm font-medium sm:text-base">Instant booking</p>
-                            </div>
+                           
+                           
 
-                            <div className="flex flex-row items-center gap-1 mb-2 border border-gray-200 rounded-lg p-2 text-green-700 bg-white/50 backdrop-blur-sm">
-                                <IconShieldCheck className="w-6 h-6" />
-                                <p className="text-sm font-medium sm:text-base">Verified provider</p>
-                            </div>
+                            
 
-                            <div className="flex flex-row items-center gap-1 mb-2 border border-gray-200 rounded-lg p-2 text-green-700 bg-white/50 backdrop-blur-sm">
-                                <IconStar className="w-6 h-6" />
-                                <p className="text-sm font-medium sm:text-base">4.9/5 rating</p>
-                            </div>
-
-                            <div className="flex flex-row items-center gap-1 mb-2 border border-gray-200 rounded-lg p-2 text-green-700 bg-white/50 backdrop-blur-sm">
-                                <IconTruck className="w-6 h-6" />
-                                <p className="text-sm font-medium sm:text-base">Professional driver</p>
-                            </div>
-
-                            <div className="flex flex-row items-center gap-1 mb-2 border border-gray-200 rounded-lg p-2 text-green-700 bg-white/50 backdrop-blur-sm">
-                                <IconLock className="w-6 h-6" />
-                                <p className="text-sm font-medium sm:text-base">Fully insured</p>
-                            </div>
                         </div>
 
                         {/* Staff Selector */}

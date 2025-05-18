@@ -134,7 +134,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                     onPriceForecast(forecastData);
                     setTimeout(() => {
                         setShowLoading(false);
-                    }, 3000);
+                    }, 8000);
                 } else {
                     console.error('No price forecast in response:', result.data);
                     showMessage('Failed to get price forecast. Please try again.', 'error');
@@ -276,7 +276,10 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                 
             </div>
 
-            {showLoading && <PreAnimationModal isOpen={showLoading} onClose={() => setShowLoading(false)} onComplete={() => setShowLoading(false)} isLoading={showLoading} />}
+            {showLoading && <PreAnimationModal isOpen={showLoading} onClose={() => console.log('close')} onComplete={() => setTimeout(() => {
+                setShowLoading(false);
+                console.log('complete');
+            }, 8000)} isLoading={showLoading} />}
 
             <StepNavigation onBack={onBack} onNext={onNext} handleSubmit={handleSubmit} nextLabel={isEditing ? 'Update & Get Prices' : 'Get Prices'} isLastStep={true} isSubmitting={isSubmitting} />
 
