@@ -62,6 +62,7 @@ interface PriceForecastPageProps {
     priceForecast: PriceForecast;
     request_id: string;
     onAccept: (staffCount: string, price: number) => void;
+    onBack: () => void;
 }
 
 const StaffCountIcon: React.FC<{ count: number }> = ({ count }) => {
@@ -86,12 +87,12 @@ const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, re
     const [showLoading, setShowLoading] = useState(true);
     const [visibleDaysCount, setVisibleDaysCount] = useState(10);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowLoading(false);
-        }, 4000);
-        return () => clearTimeout(timer);
-    }, []);
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         setShowLoading(false);
+    //     }, 4000);
+    //     return () => clearTimeout(timer);
+    // }, []);
 
     if (!priceForecast) return null;
 
@@ -225,7 +226,12 @@ const PriceForecastPage: React.FC<PriceForecastPageProps> = ({ priceForecast, re
                     {/* Content with relative positioning */}
                     <div className="relative z-10">
                         <div className="flex sm:flex-row items-start sm:items-center gap-4 mb-4 sm:mb-6">
-                            
+                        <button
+                                onClick={() => onBack()}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 flex items-center gap-2"
+                            >
+                                <IconArrowLeft className="w-6 h-6 text-gray-600" /> 
+                            </button>
                             <div className="p-3 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg backdrop-blur-sm border border-primary/20">
                                 <CalendarIcon className="w-6 h-6 text-primary" />
                             </div>

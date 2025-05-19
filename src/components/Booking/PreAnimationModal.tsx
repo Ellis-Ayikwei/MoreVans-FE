@@ -1,17 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TruckIcon, ClipboardDocumentCheckIcon, ClockIcon, BuildingOfficeIcon, MapPinIcon, DocumentCheckIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 interface PreAnimationModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onComplete: () => void;
-    isLoading: boolean;
+    isOpen?: boolean;
+    onClose?: () => void;
+    onComplete?: () => void;
+    isLoading?: boolean;
+    onAnimationComplete?: () => Promise<void>;
 }
 
-const PreAnimationModal: React.FC<PreAnimationModalProps> = ({ isOpen, onClose, onComplete, isLoading }) => {
-    console.log('the preanimation...................');
+const PreAnimationModal: React.FC<PreAnimationModalProps> = ({ 
+    isOpen, 
+    onClose, 
+    onComplete, 
+    isLoading,
+    onAnimationComplete 
+}) => {
     const [step, setStep] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(false);
     const steps = [
         { icon: TruckIcon, label: 'Checking Vehicle Availability', bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },
         { icon: ClipboardDocumentCheckIcon, label: 'Verifying Route', bgColor: 'bg-green-50', iconColor: 'text-green-600' },
@@ -21,28 +28,36 @@ const PreAnimationModal: React.FC<PreAnimationModalProps> = ({ isOpen, onClose, 
         { icon: DocumentCheckIcon, label: 'Finalizing Details', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600' },
     ];
 
+    const handleAnimationComplete = useCallback(async () => {
+        if (onAnimationComplete) {
+            await onAnimationComplete();
+        }
+        onComplete?.();
+    }, [onAnimationComplete, onComplete]);
+
     useEffect(() => {
         if (isOpen) {
+            setIsAnimating(true);
             const interval = setInterval(() => {
                 setStep((prev) => {
                     if (prev >= steps.length - 1) {
                         clearInterval(interval);
+                        // Add a small delay after the last step before completing
+                        setTimeout(() => {
+                            setIsAnimating(false);
+                            handleAnimationComplete();
+                        }, 1000);
                         return prev;
                     }
                     return prev + 1;
                 });
-            }, 800);
+            }, 1000); // Each step takes 1 second
             return () => clearInterval(interval);
         } else {
             setStep(0);
+            setIsAnimating(false);
         }
-    }, [isOpen]);
-
-    useEffect(() => {
-        if (!isLoading && step >= steps.length - 1) {
-            onComplete();
-        }
-    }, [isLoading, step, onComplete]);
+    }, [isOpen, handleAnimationComplete]);
 
     return (
         <AnimatePresence>
@@ -62,7 +77,7 @@ const PreAnimationModal: React.FC<PreAnimationModalProps> = ({ isOpen, onClose, 
                                             key={label}
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.2 }}
+                                            transition={{ delay: index * 0.1 }}
                                             className="flex flex-col items-center space-y-2"
                                         >
                                             <div className={`p-3 rounded-full ${bgColor}`}>
@@ -70,7 +85,13 @@ const PreAnimationModal: React.FC<PreAnimationModalProps> = ({ isOpen, onClose, 
                                             </div>
                                             <AnimatePresence>
                                                 {index <= step && (
-                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="text-green-600">
+                                                    <motion.div 
+                                                        initial={{ scale: 0 }} 
+                                                        animate={{ scale: 1 }} 
+                                                        exit={{ scale: 0 }}
+                                                        transition={{ duration: 0.3 }}
+                                                        className="text-green-600"
+                                                    >
                                                         <CheckCircleIcon className="h-5 w-5" />
                                                     </motion.div>
                                                 )}
@@ -81,7 +102,12 @@ const PreAnimationModal: React.FC<PreAnimationModalProps> = ({ isOpen, onClose, 
                                 </div>
                             </div>
 
-                            <motion.div initial={{ width: 0 }} animate={{ width: isLoading ? '100%' : '0%' }} transition={{ duration: 1, ease: 'linear' }} className="h-1 bg-blue-600 rounded-full" />
+                            <motion.div 
+                                initial={{ width: 0 }} 
+                                animate={{ width: isAnimating ? '100%' : '0%' }} 
+                                transition={{ duration: 6, ease: 'linear' }} 
+                                className="h-1 bg-blue-600 rounded-full" 
+                            />
                         </div>
                     </motion.div>
                 </motion.div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StepNavigation from './stepNavigation';
 import { Formik, Form, Field } from 'formik';
 import { IconCalendar, IconCalendarCheck, IconClock, IconClipboardCheck, IconMapPin } from '@tabler/icons-react';
@@ -12,6 +12,7 @@ import PreAnimationModal from '../Booking/PreAnimationModal';
 import ConfirmationModal from '../Booking/ConfirmationModal';
 import { JourneyStop, RequestItem } from '../../store/slices/serviceRequestSice';
 import showMessage from '../../helper/showMessage';
+import { calculateRouteDetails } from '../../helper/routeCalculator';
 
 interface StaffPrice {
     total_price: number;
@@ -52,6 +53,16 @@ interface PriceForecastResponse {
     };
 }
 
+interface AddressWithCoordinates {
+    address: string;
+    postcode: string;
+    coordinates: {
+        lat: number;
+        lng: number;
+    };
+    type: 'pickup' | 'dropoff' | 'stop';
+}
+
 interface ScheduleStepProps {
     values: any;
     handleChange: (e: React.ChangeEvent<any>) => void;
@@ -90,6 +101,36 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
     const { request_id } = useSelector((state: IRootState) => state.serviceRequest);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLoading, setShowLoading] = useState<boolean>(false);
+    const [forecastData, setForecastData] = useState<any>(null);
+
+    const calculateRouteInfo = async () => {
+        try {
+            if (values.request_type === 'journey') {
+                // For journey requests, calculate route between all stops
+                const stops = values.journey_stops || [];
+                const routeDetails = await calculateRouteDetails(stops);
+                return {
+                    total_distance: routeDetails.totalDistance,
+                    total_duration: routeDetails.totalDuration,
+                    route_details: routeDetails.legs
+                };
+            } else {
+                // For instant requests, calculate route between pickup and dropoff
+                const routeDetails = await calculateRouteDetails([
+                    { address: values.pickup_location },
+                    { address: values.dropoff_location }
+                ]);
+                return {
+                    total_distance: routeDetails.totalDistance,
+                    total_duration: routeDetails.totalDuration,
+                    route_details: routeDetails.legs
+                };
+            }
+        } catch (error) {
+            console.error('Error calculating route:', error);
+            return null;
+        }
+    };
 
     const handleSubmit = async () => {
         try {
@@ -114,6 +155,29 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                 })
             );
 
+            // Prepare addresses with coordinates
+            const addresses: AddressWithCoordinates[] = values.request_type === 'journey' 
+                ? (values.journey_stops || []).map((stop: JourneyStop) => ({
+                    address: stop.address,
+                    postcode: stop.postcode,
+                    coordinates: stop.coordinates,
+                    type: stop.type
+                }))
+                : [
+                    {
+                        address: values.pickup_location,
+                        postcode: values.pickup_postcode,
+                        coordinates: values.pickup_coordinates,
+                        type: 'pickup'
+                    },
+                    {
+                        address: values.dropoff_location,
+                        postcode: values.dropoff_postcode,
+                        coordinates: values.dropoff_coordinates,
+                        type: 'dropoff'
+                    }
+                ];
+
             const result = await dispatch(
                 submitStepToAPI({
                     step: stepNumber,
@@ -122,6 +186,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                         preferred_time: values.preferred_time,
                         is_flexible: values.is_flexible,
                         service_priority: values.service_speed,
+                        addresses // Send addresses with coordinates
                     },
                     isEditing,
                     request_id: values.request_id,
@@ -130,11 +195,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
 
             if (result.status === 200 || result.status === 201) {
                 if (result.data.price_forecast) {
-                    const forecastData = result.data.price_forecast;
-                    onPriceForecast(forecastData);
-                    setTimeout(() => {
-                        setShowLoading(false);
-                    }, 8000);
+                    setForecastData(result.data.price_forecast);
                 } else {
                     console.error('No price forecast in response:', result.data);
                     showMessage('Failed to get price forecast. Please try again.', 'error');
@@ -153,6 +214,13 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
         }
     };
 
+    const handleAnimationComplete = async () => {
+        if (forecastData) {
+            onPriceForecast(forecastData);
+        }
+        setShowLoading(false);
+    };
+
     const handlePriceSelect = (staffCount: string, price: number) => {
         onPriceAccept(staffCount, price);
     };
@@ -165,6 +233,10 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
     // Add these debug logs at the beginning of your component
     // console.log("Journey items:", values.journey_stops?.map(stop => stop.type === 'pickup' ? stop.items : []));
     // console.log("Moving items:", values.moving_items);
+
+useEffect(() => {
+    console.log("showLoading", showLoading);
+}, [showLoading]);
 
     return (
         <div className="space-y-6 animate-fadeIn">
@@ -276,12 +348,19 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                 
             </div>
 
-            {showLoading && <PreAnimationModal isOpen={showLoading} onClose={() => console.log('close')} onComplete={() => setTimeout(() => {
-                setShowLoading(false);
-                console.log('complete');
-            }, 8000)} isLoading={showLoading} />}
+            {<PreAnimationModal 
+                isOpen={showLoading} 
+                onAnimationComplete={handleAnimationComplete}
+            />}
 
-            <StepNavigation onBack={onBack} onNext={onNext} handleSubmit={handleSubmit} nextLabel={isEditing ? 'Update & Get Prices' : 'Get Prices'} isLastStep={true} isSubmitting={isSubmitting} />
+            <StepNavigation 
+                onBack={onBack} 
+                onNext={onNext} 
+                handleSubmit={handleSubmit} 
+                nextLabel={isEditing ? 'Update & Get Prices' : 'Get Prices'} 
+                isLastStep={true} 
+                isSubmitting={isSubmitting} 
+            />
 
 
             {/* <ConfirmationModal
