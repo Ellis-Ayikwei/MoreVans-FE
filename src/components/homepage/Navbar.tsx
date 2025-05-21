@@ -16,10 +16,10 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
     const navLinks = [
         { to: '/', label: 'Home', icon: IconHome },
         { to: '/services', label: 'Services', icon: IconBriefcase },
-        { to: '/how-it-works', label: 'How it Works', icon: IconInfoCircle },
-        { to: '/blog', label: 'Blog', icon: IconInfoCircle },
+        // { to: '/how-it-works', label: 'How it Works', icon: IconInfoCircle },
+        // { to: '/blog', label: 'Blog', icon: IconInfoCircle },
         { to: '/about', label: 'About', icon: IconInfoCircle },
-        { to: '/contact', label: 'Contact', icon: IconInfoCircle },
+        // { to: '/contact', label: 'Contact', icon: IconInfoCircle },
     ];
 
     const isActive = (path: string) => {
