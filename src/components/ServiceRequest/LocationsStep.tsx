@@ -115,7 +115,7 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
         if (values.journey_stops && currentRequest?.journey_stops) {
             const currentStops = values.journey_stops;
             const reduxStops = currentRequest.journey_stops;
-            
+
             // Only update if there's a difference
             if (JSON.stringify(currentStops) !== JSON.stringify(reduxStops)) {
                 setFieldValue('journey_stops', reduxStops);
@@ -138,7 +138,7 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
             }
         } else if (newType === 'journey' && values.request_type !== 'journey') {
             setFieldValue('request_type', 'journey');
-            
+
             // Initialize journey_stops if it doesn't exist
             if (!values.journey_stops) {
                 setFieldValue('journey_stops', []);
@@ -189,15 +189,15 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
         try {
             setIsSubmitting(true);
             dispatch(updateFormValues(values));
-            
-            // Skip validation and API submission for journey requests
-            if (values.request_type === 'journey') {
+
+            if (values.request_type === 'instant') {
                 onNext();
                 return;
             }
 
             // For other request types, proceed with validation
             const errors = await validateForm();
+            console.log('errors', errors);
             if (Object.keys(errors).length > 0) {
                 setTouched(
                     Object.keys(errors).reduce((acc, key) => {

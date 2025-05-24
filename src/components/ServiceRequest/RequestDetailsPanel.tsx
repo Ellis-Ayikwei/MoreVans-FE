@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp, faEdit, faUser, faTag, faLocationDot, faBuilding, faRoute, faBox, faTrash, faCalendar, faClock, faShieldAlt, faInfoCircle, faTable, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+    faChevronDown,
+    faChevronUp,
+    faEdit,
+    faUser,
+    faTag,
+    faLocationDot,
+    faBuilding,
+    faRoute,
+    faBox,
+    faTrash,
+    faCalendar,
+    faClock,
+    faShieldAlt,
+    faInfoCircle,
+    faTable,
+    faCheckCircle,
+    faMoneyBillWave,
+} from '@fortawesome/free-solid-svg-icons';
 import { IconClipboardCheck, IconShieldCheck, IconThumbUp } from '@tabler/icons-react';
 
 interface RequestDetailsPanelProps {
@@ -8,9 +26,10 @@ interface RequestDetailsPanelProps {
     onEditStep: (stepNumber: number) => void;
     currentStep: number;
     onRemoveItem?: (itemId: string) => void;
+    onPriceReselection?: () => void;
 }
 
-const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEditStep, currentStep, onRemoveItem }) => {
+const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEditStep, currentStep, onRemoveItem, onPriceReselection }) => {
     const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
         contact: true,
         request: true,
@@ -18,32 +37,22 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
         dropoff: true,
         journey: true,
         items: true,
-        schedule: true
+        schedule: true,
     });
 
     const toggleSection = (section: string) => {
-        setExpandedSections(prev => ({
+        setExpandedSections((prev) => ({
             ...prev,
-            [section]: !prev[section]
+            [section]: !prev[section],
         }));
     };
 
-    const renderSection = (
-        title: string,
-        section: string,
-        icon: any,
-        content: React.ReactNode,
-        stepNumber: number,
-        shouldShow: boolean = true
-    ) => {
+    const renderSection = (title: string, section: string, icon: any, content: React.ReactNode, stepNumber: number, shouldShow: boolean = true) => {
         if (!shouldShow) return null;
-        
+
         return (
             <div className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                <button
-                    onClick={() => toggleSection(section)}
-                    className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
-                >
+                <button onClick={() => toggleSection(section)} className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
                     <div className="flex items-center">
                         <FontAwesomeIcon icon={icon} className="mr-2 text-gray-600 dark:text-gray-400" />
                         <span className="font-medium text-gray-800 dark:text-gray-200">{title}</span>
@@ -58,17 +67,10 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                         >
                             <FontAwesomeIcon icon={faEdit} />
                         </button>
-                        <FontAwesomeIcon
-                            icon={expandedSections[section] ? faChevronUp : faChevronDown}
-                            className="text-gray-400"
-                        />
+                        <FontAwesomeIcon icon={expandedSections[section] ? faChevronUp : faChevronDown} className="text-gray-400" />
                     </div>
                 </button>
-                {expandedSections[section] && (
-                    <div className="px-4 pb-3">
-                        {content}
-                    </div>
-                )}
+                {expandedSections[section] && <div className="px-4 pb-3">{content}</div>}
             </div>
         );
     };
@@ -83,6 +85,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
     const hasJourneyStops = values.request_type === 'journey' && values.journey_stops && values.journey_stops.length > 0;
     const hasItems = values.moving_items && values.moving_items.length > 0;
     const hasSchedule = values.preferred_date || values.preferred_time;
+    const hasPriceInfo = values.selected_price || values.staff_count;
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
@@ -214,32 +217,22 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                                         {idx + 1}
                                     </div>
                                     <div>
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            {stop.type.charAt(0).toUpperCase() + stop.type.slice(1)}:
-                                        </span>
-                                        <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                                            {stop.location || '(Address not entered)'}
-                                        </span>
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{stop.type.charAt(0).toUpperCase() + stop.type.slice(1)}:</span>
+                                        <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">{stop.location || '(Address not entered)'}</span>
                                     </div>
                                 </div>
 
                                 {/* Show items for pickup stops */}
                                 {stop.type === 'pickup' && stop.items && stop.items.length > 0 && (
                                     <div className="mt-3 pl-8">
-                                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                                            Items to pickup ({stop.items.length}):
-                                        </p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Items to pickup ({stop.items.length}):</p>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             {stop.items.map((item: any) => (
                                                 <div key={item.id} className="text-xs bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">
                                                     <div className="font-medium text-gray-700 dark:text-gray-300">
                                                         {item.name || 'Unnamed item'} {item.quantity > 1 ? `(x${item.quantity})` : ''}
                                                     </div>
-                                                    {item.dimensions && (
-                                                        <div className="text-gray-600 dark:text-gray-400 mt-1">
-                                                            {item.dimensions}
-                                                        </div>
-                                                    )}
+                                                    {item.dimensions && <div className="text-gray-600 dark:text-gray-400 mt-1">{item.dimensions}</div>}
                                                 </div>
                                             ))}
                                         </div>
@@ -249,9 +242,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                                 {/* Show linked items for dropoff stops */}
                                 {stop.type === 'dropoff' && stop.linked_items && stop.linked_items.length > 0 && (
                                     <div className="mt-3 pl-8">
-                                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                                            Items to drop off ({stop.linked_items.length}):
-                                        </p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Items to drop off ({stop.linked_items.length}):</p>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             {stop.linked_items.map((itemId: string) => {
                                                 const pickupStops = values.journey_stops.filter((s: any) => s.type === 'pickup');
@@ -269,11 +260,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                                                         <div className="font-medium text-gray-700 dark:text-gray-300">
                                                             {foundItem.name || 'Unnamed item'} {foundItem.quantity > 1 ? `(x${foundItem.quantity})` : ''}
                                                         </div>
-                                                        {foundItem.dimensions && (
-                                                            <div className="text-gray-600 dark:text-gray-400 mt-1">
-                                                                {foundItem.dimensions}
-                                                            </div>
-                                                        )}
+                                                        {foundItem.dimensions && <div className="text-gray-600 dark:text-gray-400 mt-1">{foundItem.dimensions}</div>}
                                                     </div>
                                                 ) : null;
                                             })}
@@ -293,8 +280,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                                     <div className="mt-2 pl-8 text-xs">
                                         <p className="font-medium text-gray-600 dark:text-gray-400">Property:</p>
                                         <p className="text-gray-600 dark:text-gray-400">
-                                            {stop.property_type.charAt(0).toUpperCase() + stop.property_type.slice(1)},{' '}
-                                            {stop.number_of_rooms} {stop.number_of_rooms === 1 ? 'room' : 'rooms'},{' '}
+                                            {stop.property_type.charAt(0).toUpperCase() + stop.property_type.slice(1)}, {stop.number_of_rooms} {stop.number_of_rooms === 1 ? 'room' : 'rooms'},{' '}
                                             {stop.number_of_floors} {stop.number_of_floors === 1 ? 'floor' : 'floors'}
                                         </p>
                                     </div>
@@ -325,27 +311,15 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                                         </div>
                                     )}
                                     <div className="flex-grow">
-                                        <div className="font-medium text-gray-800 dark:text-gray-200">
-                                            {item.name || 'Unnamed item'}
-                                        </div>
-                                        {item.dimensions && (
-                                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                {item.dimensions}
-                                            </div>
-                                        )}
+                                        <div className="font-medium text-gray-800 dark:text-gray-200">{item.name || 'Unnamed item'}</div>
+                                        {item.dimensions && <div className="text-sm text-gray-600 dark:text-gray-400">{item.dimensions}</div>}
                                     </div>
                                     <div className="flex space-x-2">
-                                        <button
-                                            onClick={() => onEditStep(3)}
-                                            className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
-                                        >
+                                        <button onClick={() => onEditStep(3)} className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
                                             <FontAwesomeIcon icon={faEdit} />
                                         </button>
                                         {onRemoveItem && (
-                                            <button
-                                                onClick={() => onRemoveItem(item.id)}
-                                                className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                                            >
+                                            <button onClick={() => onRemoveItem(item.id)} className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
                                                 <FontAwesomeIcon icon={faTrash} />
                                             </button>
                                         )}
@@ -404,6 +378,37 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                     4,
                     hasSchedule
                 )}
+
+                {/* Price Details */}
+                {renderSection(
+                    'Price Details',
+                    'price',
+                    faMoneyBillWave,
+                    <div className="space-y-2 text-sm">
+                        <ul className="space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>
+                                <span className="font-medium">Selected Date:</span> {values.selected_date ? new Date(values.selected_date).toLocaleDateString() : 'Not selected'}
+                            </li>
+                            <li>
+                                <span className="font-medium">Staff Count:</span> {values.staff_count || 'Not selected'}
+                            </li>
+                            <li>
+                                <span className="font-medium">Total Price:</span> {values.selected_price ? `$${values.selected_price.toFixed(2)}` : 'Not selected'}
+                            </li>
+                        </ul>
+                        {values.selected_price && onPriceReselection && (
+                            <button
+                                onClick={onPriceReselection}
+                                className="mt-3 w-full flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                            >
+                                <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                                Change Price Selection
+                            </button>
+                        )}
+                    </div>,
+                    4,
+                    hasPriceInfo
+                )}
             </div>
 
             {/* Accept Request Button */}
@@ -444,4 +449,4 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
     );
 };
 
-export default RequestDetailsPanel; 
+export default RequestDetailsPanel;

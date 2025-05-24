@@ -2,20 +2,52 @@ import * as Yup from 'yup';
 
 // Step 2: Location Details Validation
 const locationDetailsValidation = Yup.object().shape({
-    pickup_location: Yup.string().required('Pickup location is required').min(5, 'Address must be at least 5 characters'),
-    pickup_floor: Yup.number().min(0, 'Floor cannot be negative').max(100, 'Floor must be less than 100'),
+    pickup_location: Yup.string().when('request_type', {
+        is: 'instant',
+        then: Yup.string().required('Pickup location is required').min(5, 'Address must be at least 5 characters'),
+        otherwise: Yup.string(),
+    }),
+    pickup_floor: Yup.number().when('request_type', {
+        is: 'instant',
+        then: Yup.number().min(0, 'Floor cannot be negative').max(100, 'Floor must be less than 100'),
+        otherwise: Yup.number(),
+    }),
     pickup_unit_number: Yup.string(),
     pickup_parking_info: Yup.string(),
-    pickup_number_of_floors: Yup.number().min(1, 'Must be at least 1 floor').max(100, 'Must be less than 100 floors'),
+    pickup_number_of_floors: Yup.number().when('request_type', {
+        is: 'instant',
+        then: Yup.number().min(1, 'Must be at least 1 floor').max(100, 'Must be less than 100 floors'),
+        otherwise: Yup.number(),
+    }),
     pickup_has_elevator: Yup.boolean(),
-    dropoff_location: Yup.string().required('Dropoff location is required').min(5, 'Address must be at least 5 characters'),
-    dropoff_floor: Yup.number().min(0, 'Floor cannot be negative').max(100, 'Floor must be less than 100'),
+    dropoff_location: Yup.string().when('request_type', {
+        is: 'instant',
+        then: Yup.string().required('Dropoff location is required').min(5, 'Address must be at least 5 characters'),
+        otherwise: Yup.string(),
+    }),
+    dropoff_floor: Yup.number().when('request_type', {
+        is: 'instant',
+        then: Yup.number().min(0, 'Floor cannot be negative').max(100, 'Floor must be less than 100'),
+        otherwise: Yup.number(),
+    }),
     dropoff_unit_number: Yup.string(),
     dropoff_parking_info: Yup.string(),
-    dropoff_number_of_floors: Yup.number().min(1, 'Must be at least 1 floor').max(100, 'Must be less than 100 floors'),
+    dropoff_number_of_floors: Yup.number().when('request_type', {
+        is: 'instant',
+        then: Yup.number().min(1, 'Must be at least 1 floor').max(100, 'Must be less than 100 floors'),
+        otherwise: Yup.number(),
+    }),
     dropoff_has_elevator: Yup.boolean(),
-    property_type: Yup.string().oneOf(['house', 'apartment', 'office', 'storage'], 'Invalid property type'),
-    dropoff_property_type: Yup.string().oneOf(['house', 'apartment', 'office', 'storage'], 'Invalid property type'),
+    property_type: Yup.string().when('request_type', {
+        is: 'instant',
+        then: Yup.string().oneOf(['house', 'apartment', 'office', 'storage'], 'Invalid property type'),
+        otherwise: Yup.string(),
+    }),
+    dropoff_property_type: Yup.string().when('request_type', {
+        is: 'instant',
+        then: Yup.string().oneOf(['house', 'apartment', 'office', 'storage'], 'Invalid property type'),
+        otherwise: Yup.string(),
+    }),
 });
 
 // Step 1: Contact Details Validation

@@ -12,7 +12,22 @@ import ScheduleStep from '../../components/ServiceRequest/ScheduleStep';
 import RequestReviewPanel from '../../components/ServiceRequest/RequestReviewPanel';
 import RequestDetailsPanel from '../../components/ServiceRequest/RequestDetailsPanel';
 import { ServiceRequest } from '../../types';
-import { IconCheck, IconShieldCheck, IconThumbUp, IconChevronLeft, IconChevronRight, IconStar, IconLock, IconTruck, IconClock, IconMapPin, IconRoute, IconPhone, IconBrandWhatsapp, IconArrowLeft } from '@tabler/icons-react';
+import {
+    IconCheck,
+    IconShieldCheck,
+    IconThumbUp,
+    IconChevronLeft,
+    IconChevronRight,
+    IconStar,
+    IconLock,
+    IconTruck,
+    IconClock,
+    IconMapPin,
+    IconRoute,
+    IconPhone,
+    IconBrandWhatsapp,
+    IconArrowLeft,
+} from '@tabler/icons-react';
 import { getPricePreview, setCurrentStep, submitStepToAPI, resetForm, updateFormValues, setStepData } from '../../store/slices/createRequestSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
@@ -22,7 +37,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import PriceForecastPage from '../../components/Booking/PriceForecastPage';
-import AddressDetails from '../../components/ServiceRequest/AddressDetails';
+import BookingDetailsForm from '../../components/Booking/BookingDetailsForm';
 // Fix for default marker icons in Leaflet with Next.js
 const DefaultIcon = L.icon({
     iconUrl: '/images/marker-icon.png',
@@ -31,7 +46,7 @@ const DefaultIcon = L.icon({
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
-    shadowSize: [41, 41]
+    shadowSize: [41, 41],
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
@@ -42,7 +57,7 @@ const pickupIcon = L.icon({
     iconRetinaUrl: '/images/pickup-marker-2x.png',
     iconSize: [32, 32],
     iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    popupAnchor: [0, -32],
 });
 
 const dropoffIcon = L.icon({
@@ -50,7 +65,7 @@ const dropoffIcon = L.icon({
     iconRetinaUrl: '/images/dropoff-marker-2x.png',
     iconSize: [32, 32],
     iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    popupAnchor: [0, -32],
 });
 
 // Define payload types for each step
@@ -266,11 +281,9 @@ const RouteLayer: React.FC<{
                 // Format coordinates for OSRM (longitude, latitude)
                 const [pickupLat, pickupLng] = pickupCoords;
                 const [dropoffLat, dropoffLng] = dropoffCoords;
-                
+
                 // Fetch route from OSRM
-                const response = await fetch(
-                    `https://router.project-osrm.org/route/v1/driving/${pickupLng},${pickupLat};${dropoffLng},${dropoffLat}?overview=full&geometries=geojson`
-                );
+                const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLng},${pickupLat};${dropoffLng},${dropoffLat}?overview=full&geometries=geojson`);
                 const data = await response.json();
 
                 if (data.routes && data.routes[0]) {
@@ -279,20 +292,16 @@ const RouteLayer: React.FC<{
                         // OSRM returns [lng, lat], convert to [lat, lng] for Leaflet
                         return [coord[1], coord[0]] as [number, number];
                     });
-                    
+
                     onRouteLoaded(coordinates);
 
                     // Create bounds that include both points and the route
-                    const bounds = L.latLngBounds([
-                        pickupCoords,
-                        dropoffCoords,
-                        ...coordinates
-                    ]);
-                    
+                    const bounds = L.latLngBounds([pickupCoords, dropoffCoords, ...coordinates]);
+
                     // Add padding to the bounds
-                    map.fitBounds(bounds, { 
+                    map.fitBounds(bounds, {
                         padding: [50, 50],
-                        maxZoom: 15 // Prevent zooming in too far
+                        maxZoom: 15, // Prevent zooming in too far
                     });
                 }
             } catch (error) {
@@ -326,6 +335,8 @@ const ServiceRequestForm: React.FC = () => {
     const [pickupCoords, setPickupCoords] = useState<[number, number] | null>(null);
     const [dropoffCoords, setDropoffCoords] = useState<[number, number] | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPriceForcast, setShowPriceForcast] = useState(false);
+    const [selectedPrice, setSelectedPrice] = useState<any>(null);
 
     // Handle form value changes
     const handleFormChange = (values: any) => {
@@ -357,6 +368,7 @@ const ServiceRequestForm: React.FC = () => {
 
     const handlePriceAccept = (staffCount: string, price: number) => {
         setShowPriceModal(false);
+        setShowPriceForcast(false);
         showMessage('Request created successfully.', 'success');
         dispatch(resetForm());
         navigate('/my-bookings');
@@ -383,9 +395,7 @@ const ServiceRequestForm: React.FC = () => {
     // Function to geocode addresses
     const geocodeAddress = async (address: string) => {
         try {
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-            );
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
             const data = await response.json();
             if (data && data[0]) {
                 return [parseFloat(data[0].lat), parseFloat(data[0].lon)] as [number, number];
@@ -407,10 +417,7 @@ const ServiceRequestForm: React.FC = () => {
                 if (pickup && dropoff) {
                     setPickupCoords(pickup);
                     setDropoffCoords(dropoff);
-                    setMapCenter([
-                        (pickup[0] + dropoff[0]) / 2,
-                        (pickup[1] + dropoff[1]) / 2
-                    ]);
+                    setMapCenter([(pickup[0] + dropoff[0]) / 2, (pickup[1] + dropoff[1]) / 2]);
 
                     // Calculate route (simplified for demo - in production, use a proper routing service)
                     setRouteCoordinates([pickup, dropoff]);
@@ -427,16 +434,46 @@ const ServiceRequestForm: React.FC = () => {
 
     const handleRemoveItem = (itemId: string) => {
         const updatedItems = (formValues.moving_items || []).filter((item: any) => item.id !== itemId);
-        dispatch(updateFormValues({
-            ...formValues,
-            moving_items: updatedItems
-        }));
+        dispatch(
+            updateFormValues({
+                ...formValues,
+                moving_items: updatedItems,
+            })
+        );
     };
 
-    const handlePriceSelect = (selectedPrice: any) => {
-        setPriceForecast(selectedPrice);
-        setShowPriceModal(false);
-        // You can add additional logic here if needed
+    const handlePriceSelect = (staffCount: string, price: number, date: string) => {
+        // Update form values with the selected price information
+        dispatch(
+            updateFormValues({
+                ...formValues,
+                selected_price: price,
+                staff_count: parseInt(staffCount.split('_')[1]),
+                selected_date: date,
+                step: currentStep,
+            })
+        );
+
+        // Set the selected price for the booking details form
+        setSelectedPrice({
+            staffCount: parseInt(staffCount.split('_')[1]),
+            price: price,
+            date: date,
+        });
+
+        // Show the booking details form instead of hiding everything
+        setShowPriceForcast(false);
+    };
+
+    // Add a function to handle price reselection
+    const handlePriceReselection = () => {
+        setShowPriceForcast(true);
+        setPriceForecast(priceForecast);
+    };
+
+    const handlePriceForecast = (priceForecast: any) => {
+        setPriceForecast(priceForecast);
+        setShowPriceForcast(true);
     };
 
     return (
@@ -444,12 +481,11 @@ const ServiceRequestForm: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Main Form */}
                 <div className="lg:col-span-3">
-             {priceForecast &&   <button
-                                onClick={() => setPriceForecast(null)}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 flex items-center gap-2"
-                            >
-                                <IconArrowLeft className="w-6 h-6 text-gray-600" /> Back to Form
-                            </button>}
+                    {priceForecast && (
+                        <button onClick={() => setPriceForecast(null)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 flex items-center gap-2">
+                            <IconArrowLeft className="w-6 h-6 text-gray-600" /> Back to Form
+                        </button>
+                    )}
                     {!priceForecast && (
                         /* Hero Section */
                         <div className="relative py-16 mb-10 overflow-hidden rounded-2xl shadow-2xl">
@@ -472,9 +508,7 @@ const ServiceRequestForm: React.FC = () => {
                                     <span className="inline-block transform transition-all animate-fadeIn">Professional Moving Services</span>
                                 </h1>
 
-                                <p className="text-xl text-blue-100 mt-6 max-w-3xl mx-auto font-light opacity-90">
-                                    Get instant quotes from verified moving professionals in your area
-                                </p>
+                                <p className="text-xl text-blue-100 mt-6 max-w-3xl mx-auto font-light opacity-90">Get instant quotes from verified moving professionals in your area</p>
 
                                 <div className="mt-8 flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
                                     <div className="flex flex-row items-center gap-1 border border-gray-200/20 rounded-lg p-2 text-green-300">
@@ -496,97 +530,94 @@ const ServiceRequestForm: React.FC = () => {
                         </div>
                     )}
 
-                    {!priceForecast && <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-2 sm:p-2 relative">
-                        {isLoading && currentStep != 4 ? (
-                            <LoadingSpinner message="Loading your request details..." />
-                        ) : (
-                            <>
-                                <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+                    {!priceForecast && (
+                        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-2 sm:p-2 relative">
+                            {isLoading && currentStep != 4 ? (
+                                <LoadingSpinner message="Loading your request details..." />
+                            ) : (
+                                <>
+                                    <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-                                <Formik initialValues={formValues} validationSchema={getCurrentValidationSchema()} onSubmit={() => {}} enableReinitialize>
-                                    {(formikProps) => (
-                                        <Form className="space-y-6" noValidate>
-                                            {currentStep === 1 && (
-                                                <ContactDetailsStep
-                                                    values={formikProps.values}
-                                                    handleChange={formikProps.handleChange}
-                                                    handleBlur={formikProps.handleBlur}
-                                                    setFieldValue={formikProps.setFieldValue}
-                                                    setTouched={formikProps.setTouched}
-                                                    validateForm={formikProps.validateForm}
-                                                    onNext={handleNextStep}
-                                                    errors={formikProps.errors}
-                                                    touched={formikProps.touched}
-                                                    stepNumber={1}
-                                                />
-                                            )}
+                                    <Formik initialValues={formValues} validationSchema={getCurrentValidationSchema()} onSubmit={() => {}} enableReinitialize>
+                                        {(formikProps) => (
+                                            <Form className="space-y-6" noValidate>
+                                                {currentStep === 1 && (
+                                                    <ContactDetailsStep
+                                                        values={formikProps.values}
+                                                        handleChange={formikProps.handleChange}
+                                                        handleBlur={formikProps.handleBlur}
+                                                        setFieldValue={formikProps.setFieldValue}
+                                                        setTouched={formikProps.setTouched}
+                                                        validateForm={formikProps.validateForm}
+                                                        onNext={handleNextStep}
+                                                        errors={formikProps.errors}
+                                                        touched={formikProps.touched}
+                                                        stepNumber={1}
+                                                    />
+                                                )}
 
-                                            {currentStep === 2 && (
-                                                <LocationsStep
-                                                    values={formikProps.values}
-                                                    handleChange={formikProps.handleChange}
-                                                    handleBlur={formikProps.handleBlur}
-                                                    setFieldValue={formikProps.setFieldValue}
-                                                    setTouched={formikProps.setTouched}
-                                                    validateForm={formikProps.validateForm}
-                                                    onNext={handleNextStep}
-                                                    onBack={handlePreviousStep}
-                                                    errors={formikProps.errors}
-                                                    touched={formikProps.touched}
-                                                    stepNumber={2}
-                                                />
-                                            )}
+                                                {currentStep === 2 && (
+                                                    <LocationsStep
+                                                        values={formikProps.values}
+                                                        handleChange={formikProps.handleChange}
+                                                        handleBlur={formikProps.handleBlur}
+                                                        setFieldValue={formikProps.setFieldValue}
+                                                        setTouched={formikProps.setTouched}
+                                                        validateForm={formikProps.validateForm}
+                                                        onNext={handleNextStep}
+                                                        onBack={handlePreviousStep}
+                                                        errors={formikProps.errors}
+                                                        touched={formikProps.touched}
+                                                        stepNumber={2}
+                                                    />
+                                                )}
 
-                                            {currentStep === 3 && (
-                                                <ServiceDetailsStep
-                                                    values={formikProps.values}
-                                                    handleChange={formikProps.handleChange}
-                                                    handleBlur={formikProps.handleBlur}
-                                                    setFieldValue={formikProps.setFieldValue}
-                                                    setTouched={formikProps.setTouched}
-                                                    validateForm={formikProps.validateForm}
-                                                    errors={formikProps.errors}
-                                                    touched={formikProps.touched}
-                                                    onNext={handleNextStep}
-                                                    onBack={handlePreviousStep}
-                                                    isLoading={isLoading}
-                                                    stepNumber={3}
-                                                />
-                                            )}
+                                                {currentStep === 3 && (
+                                                    <ServiceDetailsStep
+                                                        values={formikProps.values}
+                                                        handleChange={formikProps.handleChange}
+                                                        handleBlur={formikProps.handleBlur}
+                                                        setFieldValue={formikProps.setFieldValue}
+                                                        setTouched={formikProps.setTouched}
+                                                        validateForm={formikProps.validateForm}
+                                                        errors={formikProps.errors}
+                                                        touched={formikProps.touched}
+                                                        onNext={handleNextStep}
+                                                        onBack={handlePreviousStep}
+                                                        isLoading={isLoading}
+                                                        stepNumber={3}
+                                                    />
+                                                )}
 
-                                            {currentStep === totalSteps && (
-                                                <ScheduleStep
-                                                    values={formikProps.values}
-                                                    handleChange={formikProps.handleChange}
-                                                    handleBlur={formikProps.handleBlur}
-                                                    setFieldValue={formikProps.setFieldValue}
-                                                    setTouched={formikProps.setTouched}
-                                                    validateForm={formikProps.validateForm}
-                                                    onBack={handlePreviousStep}
-                                                    onNext={handleNextStep}
-                                                    stepNumber={totalSteps}
-                                                    errors={formikProps.errors}
-                                                    touched={formikProps.touched}
-                                                    onPriceAccept={handlePriceAccept}
-                                                    onPriceForecast={setPriceForecast}
-                                                />
-                                            )}
-                                        </Form>
-                                    )}
-                                </Formik>
-                            </>
-                        )}
-                    </div>}
-
-                    {priceForecast && (
-                        <PriceForecastPage 
-                            priceForecast={priceForecast} 
-                            request_id={formValues.id || ''} 
-                            onAccept={handlePriceSelect} 
-                            onBack={() => setPriceForecast(null)}
-                        />
+                                                {currentStep === totalSteps && (
+                                                    <ScheduleStep
+                                                        values={formikProps.values}
+                                                        handleChange={formikProps.handleChange}
+                                                        handleBlur={formikProps.handleBlur}
+                                                        setFieldValue={formikProps.setFieldValue}
+                                                        setTouched={formikProps.setTouched}
+                                                        validateForm={formikProps.validateForm}
+                                                        onBack={handlePreviousStep}
+                                                        onNext={handleNextStep}
+                                                        stepNumber={totalSteps}
+                                                        errors={formikProps.errors}
+                                                        touched={formikProps.touched}
+                                                        onPriceAccept={handlePriceAccept}
+                                                        onPriceForecast={handlePriceForecast}
+                                                    />
+                                                )}
+                                            </Form>
+                                        )}
+                                    </Formik>
+                                </>
+                            )}
+                        </div>
                     )}
 
+                    {priceForecast && showPriceForcast && (
+                        <PriceForecastPage priceForecast={priceForecast} request_id={request_id || ''} onAccept={handlePriceSelect} onBack={() => setPriceForecast(null)} />
+                    )}
+                    {priceForecast && !showPriceForcast && <BookingDetailsForm selectedPrice={selectedPrice} requestId={request_id || ''} onBack={handlePriceReselection} isVisible={true} />}
                 </div>
 
                 {/* Sidebar */}
@@ -599,31 +630,20 @@ const ServiceRequestForm: React.FC = () => {
                                     <h3 className="font-medium text-gray-800 dark:text-gray-200">Route Map</h3>
                                 </div>
                                 <div className="h-[400px] relative">
-                                    <MapContainer
-                                        center={mapCenter}
-                                        zoom={13}
-                                        className="h-full w-full"
-                                        scrollWheelZoom={false}
-                                    >
+                                    <MapContainer center={mapCenter} zoom={13} className="h-full w-full" scrollWheelZoom={false}>
                                         <TileLayer
                                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                         />
                                         {pickupCoords && dropoffCoords && (
                                             <>
-                                                <RouteLayer
-                    pickupCoords={pickupCoords}
-                    dropoffCoords={dropoffCoords}
-                                                    onRouteLoaded={setRouteCoordinates}
-                                                />
+                                                <RouteLayer pickupCoords={pickupCoords} dropoffCoords={dropoffCoords} onRouteLoaded={setRouteCoordinates} />
                                                 <Marker position={pickupCoords} icon={pickupIcon}>
                                                     <Popup>
                                                         <div className="text-sm">
                                                             <p className="font-medium text-blue-600">Pickup Location</p>
                                                             <p>{formValues.pickup_location}</p>
-                                                            {formValues.pickup_floor && (
-                                                                <p className="text-gray-600">Floor: {formValues.pickup_floor}</p>
-                                                            )}
+                                                            {formValues.pickup_floor && <p className="text-gray-600">Floor: {formValues.pickup_floor}</p>}
                                                         </div>
                                                     </Popup>
                                                 </Marker>
@@ -632,22 +652,12 @@ const ServiceRequestForm: React.FC = () => {
                                                         <div className="text-sm">
                                                             <p className="font-medium text-green-600">Dropoff Location</p>
                                                             <p>{formValues.dropoff_location}</p>
-                                                            {formValues.dropoff_floor && (
-                                                                <p className="text-gray-600">Floor: {formValues.dropoff_floor}</p>
-                                                            )}
+                                                            {formValues.dropoff_floor && <p className="text-gray-600">Floor: {formValues.dropoff_floor}</p>}
                                                         </div>
                                                     </Popup>
                                                 </Marker>
                                                 {routeCoordinates.length > 0 && (
-                                                    <Polyline
-                                                        positions={routeCoordinates}
-                                                        color="#3B82F6"
-                                                        weight={4}
-                                                        opacity={0.8}
-                                                        lineCap="round"
-                                                        lineJoin="round"
-                                                        dashArray="5, 10"
-                                                    />
+                                                    <Polyline positions={routeCoordinates} color="#3B82F6" weight={4} opacity={0.8} lineCap="round" lineJoin="round" dashArray="5, 10" />
                                                 )}
                                             </>
                                         )}
@@ -656,14 +666,7 @@ const ServiceRequestForm: React.FC = () => {
                             </div>
                         )}
 
-                        <RequestDetailsPanel
-                            values={formValues}
-                            onEditStep={handleEditStep}
-                            currentStep={currentStep}
-                            onRemoveItem={handleRemoveItem}
-                        />
-                        
-                      
+                        <RequestDetailsPanel values={formValues} onEditStep={handleEditStep} currentStep={currentStep} onRemoveItem={handleRemoveItem} onPriceReselection={handlePriceReselection} />
 
                         {/* Quick Actions */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
