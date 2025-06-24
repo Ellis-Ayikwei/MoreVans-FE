@@ -19,7 +19,7 @@ const JobBoardHeader: React.FC<JobBoardHeaderProps> = ({ jobs, activeTab, onTabC
     ];
 
     return (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 rounded-xl shadow-lg mb-8 overflow-hidden">
+        <div className="bg-gradient-to-r from-secondary-500 to-secondary-700 dark:from-blue-800 dark:to-indigo-900 rounded-xl shadow-lg mb-8 overflow-hidden">
             <div className="p-6 sm:p-8">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>

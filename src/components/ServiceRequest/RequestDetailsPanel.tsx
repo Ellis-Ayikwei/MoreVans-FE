@@ -148,7 +148,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                     'pickup',
                     faLocationDot,
                     <div className="space-y-2 text-sm">
-                        <p className="text-gray-600 dark:text-gray-400">{values.pickup_location}</p>
+                        <p className="text-gray-600 dark:text-gray-400">{typeof values.pickup_location === 'object' ? values.pickup_location.address : values.pickup_location}</p>
                         {(values.pickup_unit_number || values.pickup_floor > 0) && (
                             <p className="text-gray-500 dark:text-gray-400 text-xs">
                                 {values.pickup_unit_number && `Unit ${values.pickup_unit_number}, `}
@@ -171,7 +171,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                     'dropoff',
                     faBuilding,
                     <div className="space-y-2 text-sm">
-                        <p className="text-gray-600 dark:text-gray-400">{values.dropoff_location}</p>
+                        <p className="text-gray-600 dark:text-gray-400">{typeof values.dropoff_location === 'object' ? values.dropoff_location.address : values.dropoff_location}</p>
                         {(values.dropoff_unit_number || values.dropoff_floor > 0) && (
                             <p className="text-gray-500 dark:text-gray-400 text-xs">
                                 {values.dropoff_unit_number && `Unit ${values.dropoff_unit_number}, `}
@@ -196,7 +196,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                     <div className="space-y-4">
                         {values.journey_stops.map((stop: any, idx: number) => (
                             <div
-                                key={`summary-${stop.id}`}
+                                key={`summary-${stop.id || idx}`}
                                 className={`p-3 rounded-lg border ${
                                     stop.type === 'pickup'
                                         ? 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20'
@@ -218,7 +218,7 @@ const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({ values, onEdi
                                     </div>
                                     <div>
                                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{stop.type.charAt(0).toUpperCase() + stop.type.slice(1)}:</span>
-                                        <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">{stop.location || '(Address not entered)'}</span>
+                                        <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">{stop.location.address || '(Address not entered)'}</span>
                                     </div>
                                 </div>
 

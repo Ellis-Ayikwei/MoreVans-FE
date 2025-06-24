@@ -1129,7 +1129,7 @@ const JobBoard: React.FC = () => {
 
     return (
         <div className="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <div className="mx-auto px-4 sm:px-6 py-8">
                 <JobBoardHeader jobs={jobs} activeTab={activeTab} onTabChange={setActiveTab} />
 
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">

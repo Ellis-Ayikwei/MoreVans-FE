@@ -36,6 +36,7 @@ import {
     faLaptop,
     faPlug,
     faBoxOpen,
+    faCheckCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -48,7 +49,15 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 interface JourneyStop {
     id: string;
     type: 'pickup' | 'dropoff' | 'stop';
-    location: string;
+    location: {
+        address: string;
+        postcode: string;
+        latitude: number | null;
+        longitude: number | null;
+        contact_name: string;
+        contact_phone: string;
+        special_instructions: string;
+    };
     coordinates: [number, number] | null;
     floor: string;
     unit_number: string;
@@ -64,6 +73,10 @@ interface JourneyStop {
     dimensions?: string;
     weight?: string;
     value?: string;
+    address_line1?: string;
+    city?: string;
+    county?: string;
+    postcode?: string;
 }
 
 interface Item {
@@ -123,8 +136,8 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
         { value: 'ground', label: 'Ground Floor' },
         ...Array.from({ length: 100 }, (_, i) => ({
             value: `${i + 1}`,
-            label: `${i + 1}${getOrdinalSuffix(i + 1)} Floor`
-        }))
+            label: `${i + 1}${getOrdinalSuffix(i + 1)} Floor`,
+        })),
     ];
 
     // Define service types
@@ -243,7 +256,15 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
         const newStop = {
             id: uuidv4(),
             type,
-            location: '',
+            location: {
+                address: '',
+                postcode: '',
+                latitude: null,
+                longitude: null,
+                contact_name: '',
+                contact_phone: '',
+                special_instructions: '',
+            },
             coordinates: null,
             floor: 'ground',
             unit_number: '',
@@ -252,7 +273,7 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
             service_type: '',
             property_type: 'house',
             number_of_rooms: 1,
-            number_of_floors: 1
+            number_of_floors: 1,
         };
 
         setFieldValue('journey_stops', [...(values.journey_stops || []), newStop]);
@@ -264,19 +285,14 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
         // Get all pickup items
         const pickupStops = values.journey_stops.filter((s: any) => s.type === 'pickup');
         const allItems = pickupStops.flatMap((s: any) => s.items || []);
-        
+
         // Get items that are already assigned to other dropoffs (excluding current dropoff)
-        const assignedItems = values.journey_stops
-            .filter((s: any, idx: number) => s.type === 'dropoff' && idx !== dropoffIndex)
-            .flatMap((s: any) => s.linked_items || []);
+        const assignedItems = values.journey_stops.filter((s: any, idx: number) => s.type === 'dropoff' && idx !== dropoffIndex).flatMap((s: any) => s.linked_items || []);
 
         // Return items that either:
         // 1. Haven't been assigned to any dropoff, or
         // 2. Are already assigned to this dropoff
-        return allItems.filter((item: any) => 
-            !assignedItems.includes(item.id) || 
-            (values.journey_stops[dropoffIndex].linked_items || []).includes(item.id)
-        );
+        return allItems.filter((item: any) => !assignedItems.includes(item.id) || (values.journey_stops[dropoffIndex].linked_items || []).includes(item.id));
     };
 
     // Handle linking an item to a dropoff stop
@@ -311,12 +327,12 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                         <div>
                             {(values.journey_stops || []).length > 0 ? (
                                 <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="journey-stops">
-                {(provided) => (
+                                    <Droppable droppableId="journey-stops">
+                                        {(provided) => (
                                             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4 mb-6">
                                                 {(values.journey_stops || []).map((stop: JourneyStop, stopIndex: number) => (
-                            <Draggable key={stop.id} draggableId={stop.id} index={stopIndex}>
-                                {(provided) => (
+                                                    <Draggable key={stop.id} draggableId={stop.id} index={stopIndex}>
+                                                        {(provided) => (
                                                             <div
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
@@ -340,20 +356,23 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                                                     <div className="flex items-center">
                                                                         <div {...provided.dragHandleProps} className="mr-3 cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                                                                             <FontAwesomeIcon icon={faGripLines} />
-                                                </div>
+                                                                        </div>
                                                                         <div className={`h-7 w-7 rounded-full ${getStopColor(stop.type)} flex items-center justify-center text-white text-xs mr-3`}>
                                                                             {String.fromCharCode(65 + stopIndex)}
-                                            </div>
+                                                                        </div>
                                                                         <h4 className="font-medium text-gray-800 dark:text-gray-200">
-                                                                            {getStopTypeLabel(stop.type)}: {stop.location || '(No address)'}
+                                                                            {getStopTypeLabel(stop.type)}:{(stop.location as any)?.address || '(No address)'}
+                                                                            {(stop.location as any)?.postcode && (
+                                                                                <span className="text-gray-500 dark:text-gray-400 ml-2">({(stop.location as any).postcode})</span>
+                                                                            )}
                                                                         </h4>
 
                                                                         {/* Show item count badge for pickup points */}
                                                                         {stop.items && stop.items.length > 0 && (
                                                                             <div className="ml-3 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 text-xs rounded-full">
                                                                                 {stop.items.length} {stop.items.length === 1 ? 'item' : 'items'}
-                                            </div>
-                                        )}
+                                                                            </div>
+                                                                        )}
 
                                                                         {/* Show linked items count for dropoff points */}
                                                                         {stop.type === 'dropoff' && stop.linked_items && stop.linked_items.length > 0 && (
@@ -382,39 +401,76 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                                                     </div>
                                                                 </div>
 
-                                        {expandedStopIndex === stopIndex && (
-                                            <div className="p-4 pt-0 border-t border-gray-200 dark:border-gray-700">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stop Type</label>
-                                                        <Field
-                                                            as="select"
-                                                            name={`journey_stops.${stopIndex}.type`}
-                                                            className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                                        >
-                                                            <option value="pickup">Pickup Point</option>
-                                                            <option value="dropoff">Dropoff Point</option>
-                                                            <option value="stop">Intermediate Stop</option>
-                                                        </Field>
-                                                    </div>
+                                                                {expandedStopIndex === stopIndex && (
+                                                                    <div className="p-4 pt-0 border-t border-gray-200 dark:border-gray-700">
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                                            <div>
+                                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stop Type</label>
+                                                                                <Field
+                                                                                    as="select"
+                                                                                    name={`journey_stops.${stopIndex}.type`}
+                                                                                    className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                                                                >
+                                                                                    <option value="pickup">Pickup Point</option>
+                                                                                    <option value="dropoff">Dropoff Point</option>
+                                                                                    <option value="stop">Intermediate Stop</option>
+                                                                                </Field>
+                                                                            </div>
 
                                                                             <div>
                                                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                                                     Street Address <span className="text-red-500">*</span>
                                                                                 </label>
                                                                                 <AddressAutocomplete
-                                                                                        name={`journey_stops.${stopIndex}.location`}
-                                                                                    value={stop.location}
-                                                                                    onChange={(value, coords) => {
-                                                                                        setFieldValue(`journey_stops.${stopIndex}.location`, value);
+                                                                                    name={`journey_stops.${stopIndex}.location`}
+                                                                                    value={stop?.location?.address || ''}
+                                                                                    onChange={(value, coords, addressDetails) => {
+                                                                                        setFieldValue(`journey_stops.${stopIndex}.location`, {
+                                                                                            address: value,
+                                                                                            postcode: addressDetails?.postcode || '',
+                                                                                            latitude: coords?.lat || null,
+                                                                                            longitude: coords?.lng || null,
+                                                                                            contact_name: '',
+                                                                                            contact_phone: '',
+                                                                                            special_instructions: '',
+                                                                                        });
                                                                                         if (coords) {
-                                                                                            setFieldValue(`journey_stops.${stopIndex}.coordinates`, coords);
+                                                                                            setFieldValue(`journey_stops.${stopIndex}.coordinates`, [coords.lat, coords.lng]);
+                                                                                        }
+                                                                                        if (addressDetails) {
+                                                                                            setFieldValue(`journey_stops.${stopIndex}.address_line1`, addressDetails.address_line1);
+                                                                                            setFieldValue(`journey_stops.${stopIndex}.city`, addressDetails.city);
+                                                                                            setFieldValue(`journey_stops.${stopIndex}.county`, addressDetails.county);
+                                                                                            setFieldValue(`journey_stops.${stopIndex}.postcode`, addressDetails.postcode);
                                                                                         }
                                                                                     }}
                                                                                     error={errors?.journey_stops?.[stopIndex]?.location}
                                                                                     touched={touched?.journey_stops?.[stopIndex]?.location}
                                                                                     required
                                                                                 />
+
+                                                                                {/* Address validation feedback */}
+                                                                                <div className="mt-2">
+                                                                                    {stop?.location?.address && (
+                                                                                        <div className="flex items-center space-x-2">
+                                                                                            {(stop.location?.latitude !== null && stop.location?.longitude !== null) ||
+                                                                                            (stop.coordinates &&
+                                                                                                Array.isArray(stop.coordinates) &&
+                                                                                                stop.coordinates[0] !== null &&
+                                                                                                stop.coordinates[1] !== null) ? (
+                                                                                                <div className="flex items-center text-green-600 dark:text-green-400">
+                                                                                                    <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4 mr-1" />
+                                                                                                    <span className="text-xs">Address verified</span>
+                                                                                                </div>
+                                                                                            ) : (
+                                                                                                <div className="flex items-center text-amber-600 dark:text-amber-400">
+                                                                                                    <FontAwesomeIcon icon={faInfoCircle} className="w-4 h-4 mr-1" />
+                                                                                                    <span className="text-xs">Please select address from dropdown suggestions</span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
 
@@ -425,8 +481,8 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                                                                     as="select"
                                                                                     name={`journey_stops.${stopIndex}.floor`}
                                                                                     className={`block w-full border ${
-                                                                                        errors?.journey_stops?.[stopIndex]?.floor && touched?.journey_stops?.[stopIndex]?.floor 
-                                                                                            ? 'border-red-300 dark:border-red-700' 
+                                                                                        errors?.journey_stops?.[stopIndex]?.floor && touched?.journey_stops?.[stopIndex]?.floor
+                                                                                            ? 'border-red-300 dark:border-red-700'
                                                                                             : 'border-gray-300 dark:border-gray-600'
                                                                                     } rounded-lg py-2.5 px-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white`}
                                                                                 >
@@ -438,11 +494,10 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                                                                 </Field>
                                                                                 <ErrorMessage name={`journey_stops.${stopIndex}.floor`} component="p" className="text-red-500 text-sm mt-1" />
                                                                             </div>
-                                                                       
-                                                </div>
+                                                                        </div>
 
                                                                         {/* Service Type section */}
-                                                {stop.type === 'pickup' && (
+                                                                        {stop.type === 'pickup' && (
                                                                             <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                                                                                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                                                                                     What type of service do you need?
@@ -500,7 +555,7 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                                                         )}
 
                                                                         {/* Service Details section */}
-                                                    <div className="mb-4">
+                                                                        <div className="mb-4">
                                                                             <button
                                                                                 type="button"
                                                                                 onClick={() => toggleServiceSection(stopIndex)}
@@ -516,11 +571,12 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                                                             {expandedServiceSection[stopIndex] && (
                                                                                 <div className="mt-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-750">
                                                                                     {/* Property Details */}
-                                                                                    {((stop.type === 'pickup' && stop.service_type && requiresPropertyDetails(stop.service_type)) ||
+                                                                                    {(stop.type === 'pickup' && stop.service_type && requiresPropertyDetails(stop.service_type)) ||
                                                                                     (stop.type === 'dropoff' &&
                                                                                         values.journey_stops.some(
-                                                                                            (s: { type: string; service_type: string }) => s.type === 'pickup' && s.service_type && requiresPropertyDetails(s.service_type)
-                                                                                        ))) ? (
+                                                                                            (s: { type: string; service_type: string }) =>
+                                                                                                s.type === 'pickup' && s.service_type && requiresPropertyDetails(s.service_type)
+                                                                                        )) ? (
                                                                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                                                                             <div>
                                                                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Property Type</label>
@@ -648,281 +704,315 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                                                                         <FontAwesomeIcon icon={faBox} className="mr-2 text-blue-600 dark:text-blue-400" />
                                                                                         Items to be Picked Up
                                                                                     </h4>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setShowCommonItems(stopIndex)}
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => setShowCommonItems(stopIndex)}
                                                                                         className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md text-sm hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-                                                            >
+                                                                                    >
                                                                                         <FontAwesomeIcon icon={faPlus} className="mr-1" />
-                                                                Add Common Items
-                                                            </button>
-                                                        </div>
+                                                                                        Add Common Items
+                                                                                    </button>
+                                                                                </div>
 
                                                                                 {/* Items List */}
                                                                                 <div className="space-y-3">
-                                                                                            {stop.items && stop.items.length > 0 ? (
+                                                                                    {stop.items && stop.items.length > 0 ? (
                                                                                         stop.items.map((item: any, itemIndex: number) => (
-                                                                                                        <div
+                                                                                            <div
                                                                                                 key={item.id}
                                                                                                 className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-                                                                                                        >
-                                                                    <div className="flex items-center justify-between">
+                                                                                            >
+                                                                                                <div className="flex items-center justify-between">
                                                                                                     <div className="flex items-center">
-                                                                                                                    <FontAwesomeIcon
-                                                                                                            icon={getItemIcon(item.category).icon as IconProp} 
-                                                                                                            className={`mr-2 ${getItemIcon(item.category).color}`} 
-                                                                                                                    />
-                                                                        <div>
+                                                                                                        <FontAwesomeIcon
+                                                                                                            icon={getItemIcon(item.category).icon as IconProp}
+                                                                                                            className={`mr-2 ${getItemIcon(item.category).color}`}
+                                                                                                        />
+                                                                                                        <div>
                                                                                                             <h5 className="font-medium text-gray-800 dark:text-gray-200">{item.name}</h5>
                                                                                                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                                                                 {item.quantity} {item.quantity === 1 ? 'item' : 'items'}
-                                                                            </p>
-                                                                        </div>
+                                                                                                            </p>
+                                                                                                        </div>
                                                                                                     </div>
                                                                                                     <div className="flex items-center space-x-2">
-                                                                                                                    <button
-                                                                                                                        type="button"
-                                                                                                                        onClick={() => toggleItemExpansion(stopIndex, itemIndex)}
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            onClick={() => toggleItemExpansion(stopIndex, itemIndex)}
                                                                                                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                                                                                                    >
-                                                                                                                        <FontAwesomeIcon
-                                                                                                                            icon={expandedItemIndex[stopIndex] === itemIndex ? faChevronUp : faChevronDown}
-                                                                                                                        />
-                                                                                                                    </button>
-                                                                                                                    <button
-                                                                                                                        type="button"
+                                                                                                        >
+                                                                                                            <FontAwesomeIcon
+                                                                                                                icon={expandedItemIndex[stopIndex] === itemIndex ? faChevronUp : faChevronDown}
+                                                                                                            />
+                                                                                                        </button>
+                                                                                                        <button
+                                                                                                            type="button"
                                                                                                             onClick={() => {
                                                                                                                 const updatedItems = [...stop.items];
                                                                                                                 updatedItems.splice(itemIndex, 1);
                                                                                                                 setFieldValue(`journey_stops.${stopIndex}.items`, updatedItems);
                                                                                                             }}
                                                                                                             className="text-gray-400 hover:text-red-500"
-                                                                                                                    >
+                                                                                                        >
                                                                                                             <FontAwesomeIcon icon={faTrash} />
-                                                                        </button>
-                                                                                                                </div>
-                                                                    </div>
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                </div>
 
-                                                                    {expandedItemIndex[stopIndex] === itemIndex && (
+                                                                                                {expandedItemIndex[stopIndex] === itemIndex && (
                                                                                                     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                                                                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                                <div>
+                                                                                                            <div>
                                                                                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Quantity</label>
-                                                                                    <Field
-                                                                                        type="number"
-                                                                                        name={`journey_stops.${stopIndex}.items.${itemIndex}.quantity`}
-                                                                                        min="1"
+                                                                                                                <Field
+                                                                                                                    type="number"
+                                                                                                                    name={`journey_stops.${stopIndex}.items.${itemIndex}.quantity`}
+                                                                                                                    min="1"
                                                                                                                     className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                                                                    />
-                                                                                </div>
-                                                                                <div>
-                                                                                                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Dimensions</label>
-                                                                                    <Field
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                            <div>
+                                                                                                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                                                                                                    Dimensions
+                                                                                                                </label>
+                                                                                                                <Field
                                                                                                                     name={`journey_stops.${stopIndex}.items.${itemIndex}.dimensions`}
                                                                                                                     className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                                                                                                                     placeholder="L × W × H"
-                                                                                                                                />
-                                                                                </div>
-                                                                                                                        <div>
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                            <div>
                                                                                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Weight</label>
-                                                                                                                            <Field
+                                                                                                                <Field
                                                                                                                     name={`journey_stops.${stopIndex}.items.${itemIndex}.weight`}
                                                                                                                     className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                                                                                                                     placeholder="kg"
-                                                                                                                            />
-                                                                            </div>
-                                                                                                                            <div>
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                            <div>
                                                                                                                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Value</label>
-                                                                                                                                <Field
-                                                                                                                                    name={`journey_stops.${stopIndex}.items.${itemIndex}.value`}
+                                                                                                                <Field
+                                                                                                                    name={`journey_stops.${stopIndex}.items.${itemIndex}.value`}
                                                                                                                     className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                                                                                                                     placeholder="$"
-                                                                                                                                />
-                                                        </div>
-                                                    </div>
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                        </div>
 
                                                                                                         <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
-                                                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                                                    <Field
-                                                                        type="checkbox"
-                                                                                                                                        name={`journey_stops.${stopIndex}.items.${itemIndex}.fragile`}
-                                                                                                                                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600"
-                                                                                                                                    />
+                                                                                                            <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                                                                                                <Field
+                                                                                                                    type="checkbox"
+                                                                                                                    name={`journey_stops.${stopIndex}.items.${itemIndex}.fragile`}
+                                                                                                                    className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600"
+                                                                                                                />
                                                                                                                 <span className="ml-2">Fragile</span>
-                                                                </label>
+                                                                                                            </label>
 
-                                                                                    <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                                                                        <Field
-                                                                                            type="checkbox"
-                                                                                                                                        name={`journey_stops.${stopIndex}.items.${itemIndex}.needs_disassembly`}
-                                                                                                                                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600"
-                                                                                                                                    />
-                                                                                                                                    <span className="ml-2">Needs Disassembly</span>
-                                                                                    </label>
-                                                                                </div>
+                                                                                                            <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                                                                                                <Field
+                                                                                                                    type="checkbox"
+                                                                                                                    name={`journey_stops.${stopIndex}.items.${itemIndex}.needs_disassembly`}
+                                                                                                                    className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600"
+                                                                                                                />
+                                                                                                                <span className="ml-2">Needs Disassembly</span>
+                                                                                                            </label>
+                                                                                                        </div>
 
                                                                                                         <div className="mt-4">
-                                                                                                            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Special Instructions</label>
-                                                                                            <Field
-                                                                                                                                as="textarea"
+                                                                                                            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                                                                                                Special Instructions
+                                                                                                            </label>
+                                                                                                            <Field
+                                                                                                                as="textarea"
                                                                                                                 name={`journey_stops.${stopIndex}.items.${itemIndex}.special_instructions`}
                                                                                                                 className="block w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                                                                                                                rows={2}
+                                                                                                                rows={2}
                                                                                                                 placeholder="Any special handling instructions..."
-                                                                                                                            />
-                                                                                </div>
-                                                                            </div>
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                    </div>
                                                                                                 )}
-                                                            </div>
+                                                                                            </div>
                                                                                         ))
-                                                                                            ) : (
+                                                                                    ) : (
                                                                                         <div className="text-center py-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
                                                                                             <FontAwesomeIcon icon={faBox} className="text-gray-400 text-3xl mb-3" />
                                                                                             <p className="text-gray-500 dark:text-gray-400">No items added yet</p>
                                                                                             <p className="text-sm text-gray-400 dark:text-gray-500">Add items to be picked up at this location</p>
-                                                                        </div>
-                                                                    )}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Dropoff points - Select items from pickups */}
-                                                {stop.type === 'dropoff' && (
-                                                    <div className="mb-4">
-                                                        <div className="flex justify-between items-center mb-3">
-                                                            <h4 className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                                                                <FontAwesomeIcon icon={faBox} className="mr-2 text-green-600 dark:text-green-400" />
-                                                                Items to Dropoff
-                                                            </h4>
-                                                        </div>
-
-                                                        {/* Select which items from pickup points should be dropped off here */}
-                                                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                                        <div className="flex justify-between items-center mb-3">
-                                                            <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">Select items from pickup points:</h5>
-
-                                                                {/* Add Select All checkbox */}
-                                                                {getAvailableItemsForDropoff(stopIndex).length > 0 && (
-                                                                <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                                                        <input
-                                                                        type="checkbox"
-                                                                        className="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700"
-                                                                            checked={getAvailableItemsForDropoff(stopIndex).every((item: any) => (stop.linked_items || []).includes(item.id))}
-                                                                            onChange={(e) => {
-                                                                                const availableItemIds = getAvailableItemsForDropoff(stopIndex).map((item: any) => item.id);
-                                                                                
-                                                                            if (e.target.checked) {
-                                                                                    // Select all available items
-                                                                                    setFieldValue(`journey_stops.${stopIndex}.linked_items`, availableItemIds);
-                                                                            } else {
-                                                                                    // Deselect all items
-                                                                                    setFieldValue(`journey_stops.${stopIndex}.linked_items`, []);
-                                                                            }
-                                                                        }}
-                                                                    />
-                                                                    <span className="ml-2 font-medium text-green-700 dark:text-green-400">Select All Available Items</span>
-                                                                </label>
-                                                            )}
-                                                        </div>
-
-                                                            {getAvailableItemsForDropoff(stopIndex).length > 0 ? (
-                                                            <div className="space-y-4">
-                                                                {values.journey_stops
-                                                                    .filter((s: any) => s.type === 'pickup' && s.items && s.items.length > 0)
-                                                                        .map((pickupStop: any) => {
-                                                                            // Filter items for this pickup that are available
-                                                                            const availableItems = pickupStop.items.filter((item: any) => 
-                                                                                getAvailableItemsForDropoff(stopIndex).some((availableItem: any) => availableItem.id === item.id)
-                                                                            );
-
-                                                                            if (availableItems.length === 0) return null;
-
-                                                                        return (
-                                                                                <div key={pickupStop.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-green-300 dark:hover:border-green-600 transition-colors">
-                                                                                    <div className="flex justify-between items-center mb-2">
-                                                                                        <h6 className="font-medium text-gray-800 dark:text-gray-200">
-                                                                                            Pickup {String.fromCharCode(65 + values.journey_stops.findIndex((s: any) => s.id === pickupStop.id))}: {pickupStop.location || '(No address)'}
-                                                                                        </h6>
-                                                                                        
-                                                                                        {/* Add Select All for this pickup point */}
-                                                                                        <label className="flex items-center text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                                                                                            <input
-                                                                                            type="checkbox"
-                                                                                            className="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700"
-                                                                                                checked={availableItems.every((item: any) => (stop.linked_items || []).includes(item.id))}
-                                                                                                onChange={(e) => {
-                                                                                                    const pickupItemIds = availableItems.map((item: any) => item.id);
-                                                                                                const currentLinkedItems = stop.linked_items || [];
-                                                                                                    
-                                                                                                if (e.target.checked) {
-                                                                                                      const newLinkedItems = [...new Set([...currentLinkedItems, ...pickupItemIds])];
-                                                                                                      setFieldValue(`journey_stops.${stopIndex}.linked_items`, newLinkedItems);
-                                                                                                } else {
-                                                                                                      const newLinkedItems = currentLinkedItems.filter(id => !pickupItemIds.includes(id));
-                                                                                                      setFieldValue(`journey_stops.${stopIndex}.linked_items`, newLinkedItems);
-                                                                                                }
-                                                                                            }}
-                                                                                        />
-                                                                                        <span className="ml-2">Select All from this Pickup</span>
-                                                                                    </label>
-                                                                                </div>
-
-                                                                                    <div className="space-y-2 pl-2">
-                                                                                        {availableItems.map((item: any) => (
-                                                                                        <div key={item.id} className="flex items-center">
-                                                                                            <Field
-                                                                                                type="checkbox"
-      name={`journey_stops.${stopIndex}.linked_items`}
-                                                                                                value={item.id}
-      checked={(stop.linked_items || []).includes(item.id)}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-        const currentLinkedItems = stop.linked_items || [];
-        if (e.target.checked) {
-          setFieldValue(`journey_stops.${stopIndex}.linked_items`, [...currentLinkedItems, item.id]);
-        } else {
-          setFieldValue(
-            `journey_stops.${stopIndex}.linked_items`,
-            currentLinkedItems.filter(id => id !== item.id)
-          );
-        }
-      }}
-    />
-                                                                                                <label className="ml-2 flex items-center">
-                                                                                                    <FontAwesomeIcon
-                                                                                                        icon={getItemIcon(item.category || 'furniture').icon}
-                                                                                                        className="mr-2 text-gray-500 dark:text-gray-400"
-                                                                                                    />
-                                                                                                    <span>
-                                                                                                        {item.name} {item.quantity > 1 && `(x${item.quantity})`}
-                                                                                            </span>
-                                                                                                </label>
                                                                                         </div>
-                                                                                    ))}
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
-                                                                        );
-                                                                    })}
-                                                            </div>
-                                                        ) : (
-                                                                <div className="text-center py-4">
-                                                                    <p className="text-sm text-gray-500 dark:text-gray-400">No items available from pickup points.</p>
-                                                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">All items have been assigned to other dropoff locations.</p>
+                                                                        )}
+
+                                                                        {/* Dropoff points - Select items from pickups */}
+                                                                        {stop.type === 'dropoff' && (
+                                                                            <div className="mb-4">
+                                                                                <div className="flex justify-between items-center mb-3">
+                                                                                    <h4 className="font-medium text-gray-800 dark:text-gray-200 flex items-center">
+                                                                                        <FontAwesomeIcon icon={faBox} className="mr-2 text-green-600 dark:text-green-400" />
+                                                                                        Items to Dropoff
+                                                                                    </h4>
+                                                                                </div>
+
+                                                                                {/* Select which items from pickup points should be dropped off here */}
+                                                                                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                                                                    <div className="flex justify-between items-center mb-3">
+                                                                                        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">Select items from pickup points:</h5>
+
+                                                                                        {/* Add Select All checkbox */}
+                                                                                        {getAvailableItemsForDropoff(stopIndex).length > 0 && (
+                                                                                            <label className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                                                                                <input
+                                                                                                    type="checkbox"
+                                                                                                    className="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700"
+                                                                                                    checked={getAvailableItemsForDropoff(stopIndex).every((item: any) =>
+                                                                                                        (stop.linked_items || []).includes(item.id)
+                                                                                                    )}
+                                                                                                    onChange={(e) => {
+                                                                                                        const availableItemIds = getAvailableItemsForDropoff(stopIndex).map((item: any) => item.id);
+
+                                                                                                        if (e.target.checked) {
+                                                                                                            // Select all available items
+                                                                                                            setFieldValue(`journey_stops.${stopIndex}.linked_items`, availableItemIds);
+                                                                                                        } else {
+                                                                                                            // Deselect all items
+                                                                                                            setFieldValue(`journey_stops.${stopIndex}.linked_items`, []);
+                                                                                                        }
+                                                                                                    }}
+                                                                                                />
+                                                                                                <span className="ml-2 font-medium text-green-700 dark:text-green-400">Select All Available Items</span>
+                                                                                            </label>
+                                                                                        )}
+                                                                                    </div>
+
+                                                                                    {getAvailableItemsForDropoff(stopIndex).length > 0 ? (
+                                                                                        <div className="space-y-4">
+                                                                                            {values.journey_stops
+                                                                                                .filter((s: any) => s.type === 'pickup' && s.items && s.items.length > 0)
+                                                                                                .map((pickupStop: any) => {
+                                                                                                    // Filter items for this pickup that are available
+                                                                                                    const availableItems = pickupStop.items.filter((item: any) =>
+                                                                                                        getAvailableItemsForDropoff(stopIndex).some(
+                                                                                                            (availableItem: any) => availableItem.id === item.id
+                                                                                                        )
+                                                                                                    );
+
+                                                                                                    if (availableItems.length === 0) return null;
+
+                                                                                                    return (
+                                                                                                        <div
+                                                                                                            key={pickupStop.id}
+                                                                                                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-green-300 dark:hover:border-green-600 transition-colors"
+                                                                                                        >
+                                                                                                            <div className="flex justify-between items-center mb-2">
+                                                                                                                <h6 className="font-medium text-gray-800 dark:text-gray-200">
+                                                                                                                    Pickup{' '}
+                                                                                                                    {String.fromCharCode(
+                                                                                                                        65 + values.journey_stops.findIndex((s: any) => s.id === pickupStop.id)
+                                                                                                                    )}
+                                                                                                                    :
+                                                                                                                    {pickupStop.location && typeof pickupStop.location === 'object'
+                                                                                                                        ? pickupStop.location.address
+                                                                                                                        : pickupStop.location || '(No address)'}
+                                                                                                                </h6>
+                                                                                                                {/* Add Select All for this pickup point */}
+                                                                                                                <label className="flex items-center text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                                                                                                                    <input
+                                                                                                                        type="checkbox"
+                                                                                                                        className="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700"
+                                                                                                                        checked={availableItems.every((item: any) =>
+                                                                                                                            (stop.linked_items || []).includes(item.id)
+                                                                                                                        )}
+                                                                                                                        onChange={(e) => {
+                                                                                                                            const pickupItemIds = availableItems.map((item: any) => item.id);
+                                                                                                                            const currentLinkedItems = stop.linked_items || [];
+
+                                                                                                                            if (e.target.checked) {
+                                                                                                                                const newLinkedItems = [
+                                                                                                                                    ...new Set([...currentLinkedItems, ...pickupItemIds]),
+                                                                                                                                ];
+                                                                                                                                setFieldValue(
+                                                                                                                                    `journey_stops.${stopIndex}.linked_items`,
+                                                                                                                                    newLinkedItems
+                                                                                                                                );
+                                                                                                                            } else {
+                                                                                                                                const newLinkedItems = currentLinkedItems.filter(
+                                                                                                                                    (id) => !pickupItemIds.includes(id)
+                                                                                                                                );
+                                                                                                                                setFieldValue(
+                                                                                                                                    `journey_stops.${stopIndex}.linked_items`,
+                                                                                                                                    newLinkedItems
+                                                                                                                                );
+                                                                                                                            }
+                                                                                                                        }}
+                                                                                                                    />
+                                                                                                                    <span className="ml-2">Select All from this Pickup</span>
+                                                                                                                </label>
+                                                                                                            </div>
+
+                                                                                                            <div className="space-y-2 pl-2">
+                                                                                                                {availableItems.map((item: any) => (
+                                                                                                                    <div key={item.id} className="flex items-center">
+                                                                                                                        <Field
+                                                                                                                            type="checkbox"
+                                                                                                                            name={`journey_stops.${stopIndex}.linked_items`}
+                                                                                                                            value={item.id}
+                                                                                                                            checked={(stop.linked_items || []).includes(item.id)}
+                                                                                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                                                                                                const currentLinkedItems = stop.linked_items || [];
+                                                                                                                                if (e.target.checked) {
+                                                                                                                                    setFieldValue(`journey_stops.${stopIndex}.linked_items`, [
+                                                                                                                                        ...currentLinkedItems,
+                                                                                                                                        item.id,
+                                                                                                                                    ]);
+                                                                                                                                } else {
+                                                                                                                                    setFieldValue(
+                                                                                                                                        `journey_stops.${stopIndex}.linked_items`,
+                                                                                                                                        currentLinkedItems.filter((id) => id !== item.id)
+                                                                                                                                    );
+                                                                                                                                }
+                                                                                                                            }}
+                                                                                                                        />
+                                                                                                                        <label className="ml-2 flex items-center">
+                                                                                                                            <FontAwesomeIcon
+                                                                                                                                icon={getItemIcon(item.category || 'furniture').icon}
+                                                                                                                                className="mr-2 text-gray-500 dark:text-gray-400"
+                                                                                                                            />
+                                                                                                                            <span>
+                                                                                                                                {item.name} {item.quantity > 1 && `(x${item.quantity})`}
+                                                                                                                            </span>
+                                                                                                                        </label>
+                                                                                                                    </div>
+                                                                                                                ))}
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    );
+                                                                                                })}
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <div className="text-center py-4">
+                                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">No items available from pickup points.</p>
+                                                                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                                                                All items have been assigned to other dropoff locations.
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         )}
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
                                             </div>
                                         )}
-                                    </div>
-                                )}
-                            </Draggable>
-                        ))}
-                        {provided.placeholder}
-                    </div>
-                )}
-            </Droppable>
-        </DragDropContext>
+                                    </Droppable>
+                                </DragDropContext>
                             ) : (
                                 <div className="text-center py-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg mb-6">
                                     <FontAwesomeIcon icon={faMapMarkerAlt} className="text-gray-400 text-4xl mb-3" />
@@ -975,27 +1065,29 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Add Custom Item</h3>
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const newItem: Item = {
-                                id: uuidv4(),
-                                name: formData.get('name') as string,
-                                category: formData.get('category') as string,
-                                quantity: parseInt(formData.get('quantity') as string) || 1,
-                                weight: formData.get('weight') as string,
-                                dimensions: formData.get('dimensions') as string,
-                                value: formData.get('value') as string,
-                                fragile: formData.get('fragile') === 'on',
-                                needs_disassembly: formData.get('needs_disassembly') === 'on',
-                            };
-                            
-                            if (showCustomItemModal !== null) {
-                                const currentItems = values.journey_stops[showCustomItemModal].items || [];
-                                setFieldValue(`journey_stops.${showCustomItemModal}.items`, [...currentItems, newItem]);
-                                setShowCustomItemModal(null);
-                            }
-                        }}>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                const newItem: Item = {
+                                    id: uuidv4(),
+                                    name: formData.get('name') as string,
+                                    category: formData.get('category') as string,
+                                    quantity: parseInt(formData.get('quantity') as string) || 1,
+                                    weight: formData.get('weight') as string,
+                                    dimensions: formData.get('dimensions') as string,
+                                    value: formData.get('value') as string,
+                                    fragile: formData.get('fragile') === 'on',
+                                    needs_disassembly: formData.get('needs_disassembly') === 'on',
+                                };
+
+                                if (showCustomItemModal !== null) {
+                                    const currentItems = values.journey_stops[showCustomItemModal].items || [];
+                                    setFieldValue(`journey_stops.${showCustomItemModal}.items`, [...currentItems, newItem]);
+                                    setShowCustomItemModal(null);
+                                }
+                            }}
+                        >
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Item Name</label>
@@ -1076,10 +1168,7 @@ export const JourneyPlanning: React.FC<JourneyPlanningProps> = ({ values, setFie
                                 >
                                     Cancel
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-                                >
+                                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
                                     Add Item
                                 </button>
                             </div>

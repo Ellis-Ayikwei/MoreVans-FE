@@ -24,7 +24,7 @@ const propertyTypes = [
     { value: 'studio', label: 'Studio' },
     { value: 'storage', label: 'Storage Unit' },
     { value: 'flatshare', label: 'Flatshare' },
-    { value: 'other', label: 'Other' }
+    { value: 'other', label: 'Other' },
 ];
 
 const floorLevelOptions = [
@@ -32,13 +32,13 @@ const floorLevelOptions = [
     { value: 'ground', label: 'Ground Floor' },
     ...Array.from({ length: 100 }, (_, i) => ({
         value: `${i + 1}`,
-        label: `${i + 1}${getOrdinalSuffix(i + 1)} Floor`
-    }))
+        label: `${i + 1}${getOrdinalSuffix(i + 1)} Floor`,
+    })),
 ];
 
 const totalFloorsOptions = Array.from({ length: 100 }, (_, i) => ({
     value: `${i + 1}`,
-    label: `${i + 1} ${i === 0 ? 'Floor' : 'Floors'}`
+    label: `${i + 1} ${i === 0 ? 'Floor' : 'Floors'}`,
 }));
 
 function getOrdinalSuffix(n: number): string {
@@ -81,35 +81,70 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleRequestTypeChange = (type: 'instant' | 'bidding' | 'journey') => {
+        // Update the form values
         setFieldValue('request_type', type);
 
+        // If switching to journey type, initialize journey stops
         if (type === 'journey' && (!values.journey_stops || values.journey_stops.length === 0)) {
-            const initialStops = [
-                {
-                    id: uuidv4(),
-                    type: 'pickup',
-                    location: values.pickup_location || '',
-                    unit_number: values.pickup_unit_number || '',
-                    floor: values.pickup_floor || 0,
-                    parking_info: values.pickup_parking_info || '',
-                    has_elevator: values.pickup_has_elevator || false,
-                    instructions: '',
-                    estimated_time: '',
+            const pickupStop = {
+                type: 'pickup',
+                location: {
+                    address: values.pickup_location,
+                    postcode: values.pickup_postcode,
+                    latitude: values.pickup_coordinates?.lat,
+                    longitude: values.pickup_coordinates?.lng,
+                    contact_name: values.contact_name,
+                    contact_phone: values.contact_phone,
+                    special_instructions: values.pickup_instructions,
                 },
-                {
-                    id: uuidv4(),
-                    type: 'dropoff',
-                    location: values.dropoff_location || '',
-                    unit_number: values.dropoff_unit_number || '',
-                    floor: values.dropoff_floor || 0,
-                    parking_info: values.dropoff_parking_info || '',
-                    has_elevator: values.dropoff_has_elevator || false,
-                    instructions: '',
-                    estimated_time: '',
+                unit_number: values.pickup_unit_number || '',
+                floor: values.pickup_floor || 0,
+                has_elevator: values.pickup_has_elevator || false,
+                parking_info: values.pickup_parking_info || '',
+                instructions: values.pickup_instructions || '',
+                property_type: values.pickup_property_type || 'house',
+                number_of_rooms: values.pickup_number_of_rooms || 1,
+                number_of_floors: values.pickup_number_of_floors || 1,
+                service_type: values.service_type || '',
+                sequence: 0,
+            };
+
+            const dropoffStop = {
+                type: 'dropoff',
+                location: {
+                    address: values.dropoff_location,
+                    postcode: values.dropoff_postcode,
+                    latitude: values.dropoff_coordinates?.lat,
+                    longitude: values.dropoff_coordinates?.lng,
+                    contact_name: values.contact_name,
+                    contact_phone: values.contact_phone,
+                    special_instructions: values.dropoff_instructions,
                 },
-            ];
-            setFieldValue('journey_stops', initialStops);
+                unit_number: values.dropoff_unit_number || '',
+                floor: values.dropoff_floor || 0,
+                has_elevator: values.dropoff_has_elevator || false,
+                parking_info: values.dropoff_parking_info || '',
+                instructions: values.dropoff_instructions || '',
+                property_type: values.dropoff_property_type || 'house',
+                number_of_rooms: values.dropoff_number_of_rooms || 1,
+                number_of_floors: values.dropoff_number_of_floors || 1,
+                service_type: values.service_type || '',
+                sequence: 1,
+            };
+            setFieldValue('journey_stops', [pickupStop, dropoffStop]);
+        } else if (type !== 'journey') {
+            // Clear journey stops if switching to non-journey type
+            setFieldValue('journey_stops', []);
         }
+
+        // Update Redux state
+        dispatch(
+            updateFormValues({
+                ...values,
+                request_type: type,
+                journey_stops: type === 'journey' ? values.journey_stops : [],
+            })
+        );
     };
 
     // Initialize journey stops when selecting journey type
@@ -126,65 +161,185 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
         }
     }, [setFieldValue, values.service_type]);
 
+    // Add this function to handle address changes
+    const handleAddressChange = (field: string, value: string, coords?: { lat: number; lng: number }) => {
+        console.log('Address change:', { field, value, coords }); // Debug log
+
+        // Update form state
+        setFieldValue(field, value);
+        if (coords) {
+            setFieldValue(`${field}_coordinates`, coords);
+        }
+
+        // Update journey stops if present
+        if (values.journey_stops && values.journey_stops.length > 0) {
+            const updatedStops = values.journey_stops.map((stop: any) => {
+                if (field === 'pickup_location' && stop.type === 'pickup') {
+                    return {
+                        ...stop,
+                        location: {
+                            ...stop.location,
+                            address: value,
+                            latitude: coords?.lat || 0,
+                            longitude: coords?.lng || 0,
+                            postcode: value.split(',').pop()?.trim() || '',
+                            contact_name: values.contact_name || '',
+                            contact_phone: values.contact_phone || '',
+                            special_instructions: stop.location?.special_instructions || '',
+                        },
+                    };
+                } else if (field === 'dropoff_location' && stop.type === 'dropoff') {
+                    return {
+                        ...stop,
+                        location: {
+                            ...stop.location,
+                            address: value,
+                            latitude: coords?.lat || 0,
+                            longitude: coords?.lng || 0,
+                            postcode: value.split(',').pop()?.trim() || '',
+                            contact_name: values.contact_name || '',
+                            contact_phone: values.contact_phone || '',
+                            special_instructions: stop.location?.special_instructions || '',
+                        },
+                    };
+                }
+                return stop;
+            });
+            console.log('Updated stops:', updatedStops); // Debug log
+            setFieldValue('journey_stops', updatedStops);
+        }
+
+        // Update Redux state
+        const updatedValues = {
+            ...values,
+            [field]: value,
+        };
+
+        if (coords) {
+            updatedValues[`${field}_coordinates`] = coords;
+        }
+
+        dispatch(updateFormValues(updatedValues));
+    };
+
     const handleSubmit = async () => {
+        console.log('handleSubmit called'); // Debug log
+        showMessage('Submitting step: ' + stepNumber);
         try {
             setIsSubmitting(true);
-            
-            // For journey requests, skip validation and only send request type
-            if (values.request_type === 'journey') {
-                dispatch(updateFormValues(values));
-                const result = await dispatch(
-                    submitStepToAPI({
-                        step: stepNumber,
-                        payload: {
-                            request_type: values.request_type,
-                        },
-                        isEditing,
-                        request_id: values.id,
-                    })
-                ).unwrap();
-
-                if (result.status === 201) {
-                    onNext();
-                } else {
-                    showMessage('Failed to save request type. Please try again.', 'error');
-                }
-                return;
-            }
-
-            // For other request types, proceed with normal validation
             const errors = await validateForm();
+            console.log('Form validation errors:', errors); // Debug log
+
             if (Object.keys(errors).length > 0) {
+                console.log('Form has errors, not submitting'); // Debug log
                 setTouched(
                     Object.keys(errors).reduce((acc, key) => {
                         acc[key] = true;
                         return acc;
                     }, {} as { [key: string]: boolean })
                 );
+                setIsSubmitting(false);
                 return;
             }
-            dispatch(updateFormValues(values));
+
+            // For instant requests, create initial journey stops
+            let journeyStops = values.journey_stops;
+            if (values.request_type === 'instant') {
+                // Ensure we only have pickup and dropoff stops
+                journeyStops = [
+                    {
+                        type: 'pickup',
+                        location: {
+                            address: values.pickup_location,
+                            postcode: values.pickup_postcode,
+                            latitude: values.pickup_coordinates?.lat || 0,
+                            longitude: values.pickup_coordinates?.lng || 0,
+                            contact_name: values.contact_name,
+                            contact_phone: values.contact_phone,
+                            special_instructions: values.pickup_instructions,
+                        },
+                        unit_number: values.pickup_unit_number || '',
+                        floor: values.pickup_floor || 0,
+                        parking_info: values.pickup_parking_info || '',
+                        has_elevator: values.pickup_has_elevator || false,
+                        instructions: values.pickup_instructions || '',
+                        property_type: values.pickup_property_type || 'house',
+                        number_of_rooms: values.pickup_number_of_rooms || 1,
+                        number_of_floors: values.pickup_number_of_floors || 1,
+                        service_type: values.service_type || '',
+                    },
+                    {
+                        type: 'dropoff',
+                        location: {
+                            address: values.dropoff_location,
+                            postcode: values.dropoff_postcode,
+                            latitude: values.dropoff_coordinates?.lat || 0,
+                            longitude: values.dropoff_coordinates?.lng || 0,
+                            contact_name: values.contact_name,
+                            contact_phone: values.contact_phone,
+                            special_instructions: values.dropoff_instructions,
+                        },
+                        unit_number: values.dropoff_unit_number || '',
+                        floor: values.dropoff_floor || 0,
+                        parking_info: values.dropoff_parking_info || '',
+                        has_elevator: values.dropoff_has_elevator || false,
+                        instructions: values.dropoff_instructions || '',
+                        property_type: values.dropoff_property_type || 'house',
+                        number_of_rooms: values.dropoff_number_of_rooms || 1,
+                        number_of_floors: values.dropoff_number_of_floors || 1,
+                        service_type: values.service_type || '',
+                    },
+                ];
+
+                // Update the form state with the journey stops
+                setFieldValue('journey_stops', journeyStops);
+            }
+
+            console.log('Submitting journey stops:', journeyStops); // Debug log
+
+            // Only send necessary data for step 1
+            const step1Data = {
+                contact_name: values.contact_name,
+                contact_email: values.contact_email,
+                contact_phone: values.contact_phone,
+                request_type: values.request_type,
+                journey_stops: journeyStops,
+            };
+
+            console.log('Submitting step1Data:', step1Data); // Debug log
+
+            // Update Redux state before API call
+            dispatch(
+                updateFormValues({
+                    ...values,
+                    journey_stops: journeyStops,
+                })
+            );
+
+            console.log('Dispatching submitStepToAPI...'); // Debug log
+
+            // Submit to API
             const result = await dispatch(
                 submitStepToAPI({
                     step: stepNumber,
-                    payload: {
-                        contact_name: values.contact_name,
-                        contact_phone: values.contact_phone,
-                        contact_email: values.contact_email,
-                        request_type: values.request_type,
-                    },
+                    payload: step1Data,
                     isEditing,
                     request_id: values.id,
                 })
             ).unwrap();
 
-            if (result.status === 201) {
+            console.log('API Response:', result); // Debug log
+
+            if (result.status === 200 || result.status === 201) {
+                console.log('API call successful, calling onNext'); // Debug log
                 onNext();
             } else {
+                console.log('API call failed:', result); // Debug log
                 showMessage('Failed to save contact details. Please try again.', 'error');
             }
-        } catch (error: any) {
-            showMessage('An error occurred. Please try again.', 'error');
+        } catch (error) {
+            console.error('Error submitting step:', error);
+            showMessage('Failed to save contact details. Please try again.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -331,13 +486,42 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                     </label>
                                     <AddressAutocomplete
                                         name="pickup_location"
-                                        value={values.pickup_location}
-                                        onChange={(value, coords) => {
+                                        value={values.pickup_location || ''}
+                                        onChange={(value, coords, addressDetails) => {
+                                            console.log('Pickup coords:', coords); // Debug log
                                             setFieldValue('pickup_location', value);
-                                            if (coords) {
-                                                setFieldValue('pickup_coordinates', coords);
+                                            setFieldValue('pickup_coordinates', coords);
+                                            if (addressDetails) {
+                                                setFieldValue('pickup_postcode', addressDetails.postcode);
+                                            }
+                                            // Update journey stops
+                                            if (values.journey_stops && values.journey_stops.length > 0) {
+                                                const updatedStops = values.journey_stops.map((stop: any) => {
+                                                    if (stop.type === 'pickup') {
+                                                        return {
+                                                            ...stop,
+                                                            location: {
+                                                                ...stop.location,
+                                                                address: value,
+                                                                address_line1: addressDetails?.address_line1 || '',
+                                                                city: addressDetails?.city || '',
+                                                                county: addressDetails?.county || '',
+                                                                postcode: addressDetails?.postcode || '',
+                                                                latitude: coords?.lat || 0,
+                                                                longitude: coords?.lng || 0,
+                                                                contact_name: values.contact_name || '',
+                                                                contact_phone: values.contact_phone || '',
+                                                                special_instructions: stop.location?.special_instructions || '',
+                                                            },
+                                                        };
+                                                    }
+                                                    return stop;
+                                                });
+                                                setFieldValue('journey_stops', updatedStops);
                                             }
                                         }}
+                                        label="Pickup Address"
+                                        placeholder="Enter pickup address"
                                         error={errors.pickup_location}
                                         touched={touched.pickup_location}
                                         required
@@ -432,13 +616,42 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({
                                     </label>
                                     <AddressAutocomplete
                                         name="dropoff_location"
-                                        value={values.dropoff_location}
-                                        onChange={(value, coords) => {
+                                        value={values.dropoff_location || ''}
+                                        onChange={(value, coords, addressDetails) => {
+                                            console.log('Dropoff coords:', coords); // Debug log
                                             setFieldValue('dropoff_location', value);
-                                            if (coords) {
-                                                setFieldValue('dropoff_coordinates', coords);
+                                            setFieldValue('dropoff_coordinates', coords);
+                                            if (addressDetails) {
+                                                setFieldValue('dropoff_postcode', addressDetails.postcode);
+                                            }
+                                            // Update journey stops
+                                            if (values.journey_stops && values.journey_stops.length > 0) {
+                                                const updatedStops = values.journey_stops.map((stop: any) => {
+                                                    if (stop.type === 'dropoff') {
+                                                        return {
+                                                            ...stop,
+                                                            location: {
+                                                                ...stop.location,
+                                                                address: value,
+                                                                address_line1: addressDetails?.address_line1 || '',
+                                                                city: addressDetails?.city || '',
+                                                                county: addressDetails?.county || '',
+                                                                postcode: addressDetails?.postcode || '',
+                                                                latitude: coords?.lat || 0,
+                                                                longitude: coords?.lng || 0,
+                                                                contact_name: values.contact_name || '',
+                                                                contact_phone: values.contact_phone || '',
+                                                                special_instructions: stop.location?.special_instructions || '',
+                                                            },
+                                                        };
+                                                    }
+                                                    return stop;
+                                                });
+                                                setFieldValue('journey_stops', updatedStops);
                                             }
                                         }}
+                                        label="Dropoff Address"
+                                        placeholder="Enter dropoff address"
                                         error={errors.dropoff_location}
                                         touched={touched.dropoff_location}
                                         required

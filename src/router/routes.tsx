@@ -4,6 +4,8 @@ import Homepage from '../pages/website-preauth/Homepage';
 import HowItWorks from '../pages/website-preauth/HowItWorks';
 import About from '../pages/website-preauth/About';
 import Contact from '../pages/website-preauth/Contact';
+import ProtectedRoute from '../components/Auth/ProtectedRoute';
+import AuthRedirect from '../components/Auth/AuthRedirect';
 
 // import AnalyticsPage from '../pages/analytics';
 import Login from '../pages/auth/login';
@@ -19,14 +21,14 @@ import BookingConfirmation from '../pages/user/BookingConfirmation';
 import BookingTracking from '../pages/user/BookingTracking';
 import ProviderListings from '../pages/user/ProviderListings';
 import UserDashboard from '../pages/user/UserDashboard';
-import UserSettings from '../pages/user/UserSettings';
+import UserSettings from '../pages/user/userAccoutSettings/UserSettings';
 import MyBookings from '../pages/user/MyBookings';
 import CustomerPayments from '../pages/user/MyPayments';
 import ProviderPayments from '../pages/provider/ProviderPayments';
 import InstantQuoteCalculator from '../pages/website-preauth/InstantQuoteCalculator';
 import NotificationsPage from '../pages/Notifications/NotificationsPage';
 import NotificationDetail from '../pages/Notifications/NotificationDetail';
-import BookingDetail from '../pages/user/BookingDetail';
+import BookingDetail from '../components/ServiceRequest/BookingDetail';
 import BidSelection from '../pages/user/BidSelection';
 import EditRequestForm from '../pages/EditRequestForm';
 import DisputesPage from '../pages/help and support/DisputesPage';
@@ -57,6 +59,8 @@ import ProviderJobDetailPage from '../pages/ProviderJobDetailPage';
 import PaymentDetail from '../components/Payment/PaymentDetail';
 import UserBookingDetail from '../pages/user/UserBookingDetail';
 import MyJobs from '../pages/provider/MyJobs';
+import PaymentSuccess from '../pages/user/PaymentSuccess';
+import PaymentCancel from '../pages/user/PaymentCancel';
 
 // Import vehicle components
 import VehicleList from '../components/vehicle/VehicleList';
@@ -98,7 +102,7 @@ const ConditionalDashboard = () => {
 };
 
 const routes = [
-    // Public routes
+    // Public routes (no authentication required)
     {
         path: '/',
         element: <Homepage />,
@@ -124,25 +128,9 @@ const routes = [
         element: <BlogPostDetail />,
         layout: 'blank',
     },
-
     {
         path: '/services',
         element: <Services />,
-        layout: 'blank',
-    },
-    {
-        path: '/login',
-        element: <Login />,
-        layout: 'blank',
-    },
-    {
-        path: '/register',
-        element: <Register />,
-        layout: 'blank',
-    },
-    {
-        path: '/forgot-password',
-        element: <ForgotPassword />,
         layout: 'blank',
     },
     {
@@ -151,380 +139,564 @@ const routes = [
         layout: 'blank',
     },
     {
+        path: '/instant-quote',
+        element: <InstantQuoteCalculator />,
+        layout: 'blank',
+    },
+
+    // Auth routes (redirect if already authenticated)
+    {
+        path: '/login',
+        element: (
+            <AuthRedirect>
+                <Login />
+            </AuthRedirect>
+        ),
+        layout: 'blank',
+    },
+    {
+        path: '/register',
+        element: (
+            <AuthRedirect>
+                <Register />
+            </AuthRedirect>
+        ),
+        layout: 'blank',
+    },
+    {
+        path: '/forgot-password',
+        element: (
+            <AuthRedirect>
+                <ForgotPassword />
+            </AuthRedirect>
+        ),
+        layout: 'blank',
+    },
+
+    // Protected routes for authenticated users
+    {
+        path: '/dashboard',
+        element: (
+            <ProtectedRoute customerOnly>
+                <UserDashboard />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
         path: '/faq',
-        element: <FAQPage />,
+        element: (
+            <ProtectedRoute>
+                <FAQPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/disputes',
-        element: <DisputesPage />,
-        layout: 'default',
-    },
-
-    // Customer routes - aligned with sidebar
-    {
-        path: '/dashboard',
-        element: <UserDashboard />,
+        element: (
+            <ProtectedRoute>
+                <DisputesPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/testmap-api',
-        element: <TestMapApi />,
+        element: (
+            <ProtectedRoute>
+                <TestMapApi />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
 
-    {
-        path: '/instant-quote',
-        element: <InstantQuoteCalculator />,
-        layout: 'default',
-    },
+    // Customer routes
     {
         path: '/service-request',
         element: <ServiceRequestForm />,
-        layout: 'default',
+        layout: 'flexible',
     },
     {
         path: '/service-request2',
         element: <ServiceRequestForm />,
-        layout: 'default',
+        layout: 'flexible',
     },
-
     {
         path: '/service-requests/:id',
-        element: <ServiceRequestDetailPage />,
+        element: (
+            <ProtectedRoute>
+                <ServiceRequestDetailPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/bookings/:bookingId/review',
-        element: <LeaveReviewPage />,
+        element: (
+            <ProtectedRoute customerOnly>
+                <LeaveReviewPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/edit-request/:id',
-        element: <EditRequestForm />,
+        element: (
+            <ProtectedRoute customerOnly>
+                <EditRequestForm />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/notifications',
-        element: <NotificationsPage />,
+        element: (
+            <ProtectedRoute>
+                <NotificationsPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/notifications/:id',
-        element: <NotificationDetail />,
+        element: (
+            <ProtectedRoute>
+                <NotificationDetail />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/saved-providers',
-        element: <SavedProviders />,
+        element: (
+            <ProtectedRoute customerOnly>
+                <SavedProviders />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/chat',
-        element: <ChatPage />,
+        element: (
+            <ProtectedRoute>
+                <ChatPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/chat/:id',
-        element: <ChatPage />,
+        element: (
+            <ProtectedRoute>
+                <ChatPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
-    // {
-    //     path: '/special-requirements',
-    //     element: <SpecialRequirements />,
-    //     layout: 'default',
-    // },
-    // My Moves route
+
+    // My Moves/Bookings routes
     {
         path: '/my-bookings',
-        element: <MyBookings />,
+        element: (
+            <ProtectedRoute customerOnly>
+                <MyBookings />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/bookings/new',
-        element: <ServiceRequestForm />,
+        element: (
+            <ProtectedRoute customerOnly>
+                <ServiceRequestForm />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/bookings/:id',
-        element: <BookingDetail />,
+        element: (
+            <ProtectedRoute>
+                <BookingDetail />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/bookings/:id/review',
-        element: <LeaveReviewPage />,
+        element: (
+            <ProtectedRoute customerOnly>
+                <LeaveReviewPage />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/bidding/:serviceId',
-        element: <BidSelection />,
-        layout: 'default',
-    },
-    // Payments route
-    {
-        path: '/payments',
-        element: <CustomerPayments />,
-        layout: 'default',
-    },
-    // Support routes
-    // {
-    //     path: '/help-center',
-    //     element: <HelpCenter />,
-    //     layout: 'default',
-    // },
-    // {
-    //     path: '/live-chat',
-    //     element: <LiveChat />,
-    //     layout: 'default',
-    // },
-    // {
-    //     path: '/disputes',
-    //     element: <DisputeResolution />,
-    //     layout: 'default',
-    // },
-    {
-        path: '/contact-support',
-        element: <ContactSupportPage />,
-        layout: 'default',
-    },
-    // Account settings
-    {
-        path: '/profile',
-        element: <UserSettings />,
+        element: (
+            <ProtectedRoute customerOnly>
+                <BidSelection />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
 
-    // Provider routes - aligned with sidebar
+    // Payment routes
+    {
+        path: '/payments',
+        element: (
+            <ProtectedRoute>
+                <CustomerPayments />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/payment/:requestId?',
+        element: (
+            <ProtectedRoute>
+                <PaymentPage />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/payment/detail/:requestId',
+        element: (
+            <ProtectedRoute>
+                <PaymentDetail />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/payment/success',
+        element: (
+            <ProtectedRoute>
+                <PaymentSuccess />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/payment/cancel',
+        element: (
+            <ProtectedRoute>
+                <PaymentCancel />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+
+    // Support routes
+    {
+        path: '/contact-support',
+        element: (
+            <ProtectedRoute>
+                <ContactSupportPage />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+
+    // Account settings
+    {
+        path: '/profile',
+        element: (
+            <ProtectedRoute>
+                <UserSettings />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+
+    // Provider routes
     {
         path: '/provider/dashboard',
-        element: <ProviderDashboard />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <ProviderDashboard />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/provider/jobs',
-        element: <JobBoard />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <JobBoard />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/provider/my-jobs',
-        element: <MyJobs />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <MyJobs />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/provider/my-jobs-bidding',
-        element: <BiddingJobs />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <BiddingJobs />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/provider/my-jobs-watching',
-        element: <WatchingJobs />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <WatchingJobs />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/provider/job/:id',
-        element: <JobDetail />,
-        layout: 'default',
-    },
-    {
-        path: '/provider/job/:id',
-        element: <UserBookingDetail />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <JobDetail />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/provider/payouts',
-        element: <ProviderPayments />,
-        layout: 'default',
-    },
-    // Provider Ratings & Reviews routes
-    // {
-    //     path: '/provider/feedback',
-    //     element: <ProviderFeedback />,
-    //     layout: 'default',
-    // },
-    // {
-    //     path: '/provider/responses',
-    //     element: <ProviderResponses />,
-    //     layout: 'default',
-    // },
-    // {
-    //     path: '/provider/score',
-    //     element: <ProviderScore />,
-    //     layout: 'default',
-    // },
-    // Provider Support routes
-    // {
-    //     path: '/provider/help-center',
-    //     element: <ProviderHelpCenter />,
-    //     layout: 'default',
-    // },
-    // {
-    //     path: '/provider/live-chat',
-    //     element: <ProviderLiveChat />,
-    //     layout: 'default',
-    // },
-    // Provider Profile Settings
-    // {
-    //     path: '/provider/profile',
-    //     element: <ProviderProfile />,
-    //     layout: 'default',
-    // },
-
-    // Additional flow routes
-    {
-        path: '/providers/:requestId',
-        element: <ProviderListings />,
-        layout: 'default',
-    },
-    {
-        path: '/providers/:providerId/ratings',
-        element: <ProviderReviews />,
-        layout: 'default',
-    },
-    {
-        path: '/booking-confirmation/:requestId/:providerId',
-        element: <BookingConfirmation />,
-        layout: 'default',
-    },
-    {
-        path: '/tracking/:id',
-        element: <BookingTracking />,
-        layout: 'default',
-    },
-    {
-        path: '/bookings/:id',
-        element: <UserBookingDetail />,
-        layout: 'default',
-    },
-    {
-        path: '/bidding/:serviceId',
-        element: <BidSelection />,
-        layout: 'default',
-    },
-    {
-        path: 'vehicle-management',
-        element: <VehicleManagement />,
-        layout: 'default',
-    },
-    {
-        path: 'driver-management',
-        element: <DriversManagement />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <ProviderPayments />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
     {
         path: '/provider/onboarding',
-        element: <ProviderOnboarding />,
+        element: (
+            <ProtectedRoute providerOnly>
+                <ProviderOnboarding />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+
+    // Vehicle management
+    {
+        path: 'vehicle-management',
+        element: (
+            <ProtectedRoute providerOnly>
+                <VehicleManagement />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: 'driver-management',
+        element: (
+            <ProtectedRoute providerOnly>
+                <DriversManagement />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/vehicles',
+        element: (
+            <ProtectedRoute>
+                <VehicleList />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/vehicles/:id',
+        element: (
+            <ProtectedRoute>
+                <VehicleDetail />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+
+    // Provider flow routes
+    {
+        path: '/providers/:requestId',
+        element: (
+            <ProtectedRoute customerOnly>
+                <ProviderListings />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/providers/:providerId/ratings',
+        element: (
+            <ProtectedRoute>
+                <ProviderReviews />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/booking-confirmation/:requestId/:providerId',
+        element: (
+            <ProtectedRoute customerOnly>
+                <BookingConfirmation />
+            </ProtectedRoute>
+        ),
+        layout: 'default',
+    },
+    {
+        path: '/tracking/:id',
+        element: (
+            <ProtectedRoute>
+                <BookingTracking />
+            </ProtectedRoute>
+        ),
         layout: 'default',
     },
 
     // Admin routes
     {
         path: '/admin/dashboard',
-        element: <AdminDashboard />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <AdminDashboard />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/users',
-        element: <UserManagement />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <UserManagement />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
-    // {
-    //     path: '/admin/users/:id',
-    //     element: <UserDetail userData={{ /* Provide appropriate userData object here */ }} />,
-    //     layout: 'admin',
-    // },
     {
         path: '/admin/users/:id/edit',
-        element: <UserEdit />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <UserEdit />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/providers',
-        element: <ProviderManagement />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <ProviderManagement />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/providers/:id',
-        element: <ProviderDetail />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <ProviderDetail />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/providers/:id/edit',
-        element: <ProviderEdit />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <ProviderEdit />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/bookings',
-        element: <BookingManagement />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <BookingManagement />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/bookings/:id',
-        element: <UserBookingDetail />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <UserBookingDetail />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/revenue',
-        element: <RevenueManagement />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <RevenueManagement />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/pricing',
-        element: <PricingAdmin />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <PricingAdmin />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/disputes',
-        element: <DisputeManagement />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <DisputeManagement />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/settings',
-        element: <AdminSettings />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <AdminSettings />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/permissions',
-        element: <RolesPermissions />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <RolesPermissions />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/maintenance',
-        element: <SystemMaintenance />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <SystemMaintenance />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
     {
         path: '/admin/support',
-        element: <SupportTickets />,
+        element: (
+            <ProtectedRoute adminOnly>
+                <SupportTickets />
+            </ProtectedRoute>
+        ),
         layout: 'admin',
     },
-    // {
-    //     path: '/analytics',
-    //     element: <AnalyticsPage />,
-    //     layout: 'default',
-    // },
-
-    // Vehicle routes
-    {
-        path: '/vehicles',
-        element: <VehicleList />,
-        layout: 'default',
-    },
-    {
-        path: '/vehicles/:id',
-        element: <VehicleDetail />,
-        layout: 'default',
-    },
-    {
-        path: '/payment/:requestId?',
-        element: <PaymentPage />,
-        layout: 'default',
-    },
-    {
-        path: '/payment/detail/:requestId',
-        element: <PaymentDetail />,
-        layout: 'default',
-    },
-   
 ];
 
 export { routes };

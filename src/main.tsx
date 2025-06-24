@@ -60,6 +60,7 @@ const authStore = createStore({
     authName: '_auth',
     cookieDomain: window.location.hostname,
     cookieSecure: window.location.protocol === 'https:',
+    debug: true,
     refresh: createRefresh({
         interval: 15,
         refreshApiCallback: async () => {

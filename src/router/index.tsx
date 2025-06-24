@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import BlankLayout from '../components/Layouts/BlankLayout';
 import DefaultLayout from '../components/Layouts/DefaultLayout';
 import AdminLayout from '../components/Layouts/AdminLayout';
+import FlexibleLayout from '../components/Layouts/FlexibleLayout';
 import { routes } from './routes';
 
 const finalRoutes = routes.map((route) => {
@@ -12,6 +13,8 @@ const finalRoutes = routes.map((route) => {
                 <BlankLayout>{route.element}</BlankLayout>
             ) : route.layout === 'admin' ? (
                 <AdminLayout>{route.element}</AdminLayout>
+            ) : route.layout === 'flexible' ? (
+                <FlexibleLayout>{route.element}</FlexibleLayout>
             ) : (
                 <div>
                     <DefaultLayout>{route.element}</DefaultLayout>

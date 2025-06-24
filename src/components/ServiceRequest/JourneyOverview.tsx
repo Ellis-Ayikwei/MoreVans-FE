@@ -89,12 +89,7 @@ const JourneyOverview: React.FC<JourneyOverviewProps> = ({ journeyStops }) => {
                                         )}
 
                                         {/* Fix property names to match the data structure */}
-                                        {(stop.instructions || stop.estimated_time) && (
-                                            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                                {stop.instructions && <div className="italic text-xs">{stop.instructions}</div>}
-                                                {stop.estimated_time && <div className="text-xs mt-1">Time at location: {stop.estimated_time}</div>}
-                                            </div>
-                                        )}
+                                        {stop.instructions && <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">{stop.instructions}</div>}
 
                                         {/* Show items for pickup points */}
                                         {stop.type === 'pickup' && stop.items && stop.items.length > 0 && (

@@ -84,8 +84,6 @@ const onRefreshed = (accessToken: string): void => {
 //     }
 // );
 
-
-
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import authAxiosInstance from './authAxiosInstance';
 
@@ -132,6 +130,5 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
 
 export default axiosInstance;

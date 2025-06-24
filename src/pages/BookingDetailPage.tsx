@@ -1,5 +1,5 @@
 import React from 'react';
-import BookingDetail from '../components/Booking/BookingDetail';
+import BookingDetail from '../components/ServiceRequest/Booking/BookingDetail';
 
 const BookingDetailPage: React.FC = () => {
     return (

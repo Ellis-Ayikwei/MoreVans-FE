@@ -27,55 +27,53 @@ const ERROR_MESSAGES = {
     FORGOT_PASSWORD_FAILED: 'Failed to request password reset. Please try again.',
 };
 
-export const LoginUser = createAsyncThunk(
-    'auth/LoginUser',
-    async ({ email, password, extra }: { email?: string; password: string; extra?: any }, { rejectWithValue }) => {
-        const payload = { email, password };
+export const LoginUser = createAsyncThunk('auth/LoginUser', async ({ email, password, extra }: { email?: string; password: string; extra?: any }, { rejectWithValue }) => {
+    const payload = { email, password };
 
-        try {
-            const response = await authAxiosInstance.post('/login/', payload);
+    try {
+        const response = await authAxiosInstance.post('/login/', payload);
 
-            const accessToken = response?.headers['authorization'];
-            const refreshToken = response?.headers['x-refresh-token'];
+        const accessToken = response?.headers['authorization'];
+        const refreshToken = response?.headers['x-refresh-token'];
+        console.log('the response...............SS', accessToken, refreshToken);
 
-            const user = response.data;
+        const user = response.data;
 
-            // if (!accessToken || !refreshToken) {
-            //     console.error('Error: Missing tokens from server response');
-            //     throw new Error('Invalid token response from server');
-            // }
+        // if (!accessToken |.............| !refreshToken) {
+        //     console.error('Error: Missing tokens from server response');
+        //     throw new Error('Invalid token response from server');
+        // }
 
-            const { signIn } = extra;
-            const isSignedIn = signIn({
-                auth: {
-                    token: accessToken,
-                    type: 'Bearer',
-                },
-                refresh: refreshToken,
-                userState: user,
-            });
-            localStorage.setItem('userId', user?.id);
+        const { signIn } = extra;
+        const isSignedIn = signIn({
+            auth: {
+                token: accessToken,
+                type: 'Bearer',
+            },
+            refresh: refreshToken,
+            userState: user,
+        });
+        localStorage.setItem('userId', user?.id);
 
-            if (!isSignedIn) {
-                console.error('Frontend sign-in failed');
-                throw new Error('Frontend sign-in failed');
-            }
-
-            return user;
-        } catch (error: any) {
-            ShowRequestError(error);
-            console.error('Error during login:', error);
-
-            const parser = new DOMParser();
-            const errorData = error.response.data;
-            const doc = parser.parseFromString(errorData, 'text/html');
-            const errorMess = doc.querySelector('body')?.innerText ?? 'An error occurred';
-            const errorMessage = errorMess.split('\n')[1];
-
-            return rejectWithValue(errorMessage);
+        if (!isSignedIn) {
+            console.error('Frontend sign-in failed');
+            throw new Error('Frontend sign-in failed');
         }
+
+        return user;
+    } catch (error: any) {
+        ShowRequestError(error);
+        console.error('Error during login:', error);
+
+        const parser = new DOMParser();
+        const errorData = error.response.data;
+        const doc = parser.parseFromString(errorData, 'text/html');
+        const errorMess = doc.querySelector('body')?.innerText ?? 'An error occurred';
+        const errorMessage = errorMess.split('\n')[1];
+
+        return rejectWithValue(errorMessage);
     }
-);
+});
 
 export const LogoutUser = createAsyncThunk('auth/LogoutUser', async (extra: any, { dispatch }) => {
     try {

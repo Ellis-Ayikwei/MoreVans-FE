@@ -49,6 +49,11 @@ const initialValues: ServiceRequest = {
     pickup_has_elevator: false,
     moving_items: [],
     journey_stops: [],
+    selected_price: undefined,
+    staff_count: undefined,
+    selected_date: undefined,
+    request_id: undefined,
+    user_id: undefined,
 };
 
 interface ServiceRequestState {
@@ -75,6 +80,35 @@ interface ServiceRequestState {
         error: string | null;
     };
     drafts: Record<string, ServiceRequest>;
+    bookingDetails: {
+        name: string;
+        email: string;
+        phone: string;
+        staffCount: number;
+        stops: Array<{
+            type: 'pickup' | 'dropoff' | 'stop';
+            location: string;
+            unit_number?: string;
+            floor?: string;
+            instructions?: string;
+            postcode?: string;
+        }>;
+        request_type: 'instant' | 'journey';
+        moving_items?: Array<{
+            id: string;
+            name: string;
+            category: string;
+            quantity: number;
+            weight?: string;
+            dimensions?: string;
+            value?: string;
+            fragile?: boolean;
+            needs_disassembly?: boolean;
+            notes?: string;
+            photo?: string | null;
+            special_instructions?: string;
+        }>;
+    } | null;
 }
 
 // API endpoints
@@ -97,14 +131,24 @@ const API_ENDPOINTS = {
 export const submitStepToAPI = createAsyncThunk(
     'createRequest/submitStepToAPI',
     async ({ step, payload, isEditing, request_id }: { step: number; payload: any; isEditing?: boolean; request_id?: string }, { rejectWithValue, dispatch, getState }) => {
-        console.log('hit api route');
-        console.log('step', step);
-        console.log('isEditing', isEditing);
-        console.log('request_id', request_id);
-        console.log(' the payload', payload);
         try {
+            console.log('Starting submitStepToAPI with:', { step, payload, isEditing, request_id });
+
             const state = getState() as { serviceRequest: ServiceRequestState };
             const currentrequest_id = request_id || state.serviceRequest.request_id;
+            const request_type = state.serviceRequest.formValues.request_type;
+
+            // Handle items based on step and request type
+            if (step === 2 && request_type === 'journey') {
+                // For journey requests, items come with journey stops in step 2
+                payload.journey_stops = payload.journey_stops.map((stop: any) => ({
+                    ...stop,
+                    items: state.serviceRequest.formValues.moving_items,
+                }));
+            } else if (step === 3 && request_type === 'instant') {
+                // For instant requests, items come in step 3
+                payload.moving_items = state.serviceRequest.formValues.moving_items;
+            }
 
             function getEndpoint(step: number, isEditing?: boolean, request_id?: string) {
                 if (step > 1 && !request_id) {
@@ -127,8 +171,6 @@ export const submitStepToAPI = createAsyncThunk(
             }
 
             const { data } = response;
-            console.log('the response', response);
-            console.log(' the data from the api ', data);
 
             // Save draft if this is a new request
             if (!isEditing && data.request_id) {
@@ -144,7 +186,8 @@ export const submitStepToAPI = createAsyncThunk(
                 isEditing,
             };
         } catch (error: any) {
-            console.error('API Error:', error);
+            console.log(error);
+            console.error('API Error Details:', error);
             return rejectWithValue({
                 error: error.response?.data?.message || error.message || 'An error occurred',
                 step,
@@ -177,6 +220,7 @@ const initialState: ServiceRequestState = {
         error: null,
     },
     drafts: {},
+    bookingDetails: null,
 };
 
 const serviceRequestSlice = createSlice({
@@ -255,6 +299,17 @@ const serviceRequestSlice = createSlice({
         setrequest_id: (state, action: PayloadAction<string>) => {
             state.request_id = action.payload;
         },
+        setBookingDetails: (state, action: PayloadAction<ServiceRequestState['bookingDetails']>) => {
+            state.bookingDetails = action.payload;
+        },
+        updateBookingDetails: (state, action: PayloadAction<Partial<ServiceRequestState['bookingDetails']>>) => {
+            if (state.bookingDetails) {
+                state.bookingDetails = {
+                    ...state.bookingDetails,
+                    ...action.payload,
+                };
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -313,6 +368,6 @@ const serviceRequestSlice = createSlice({
     },
 });
 
-export const { setEditingMode, resetForm, updateFormValues, setCurrentStep, setStepData, updateFormField, setrequest_id } = serviceRequestSlice.actions;
+export const { setEditingMode, resetForm, updateFormValues, setCurrentStep, setStepData, updateFormField, setrequest_id, setBookingDetails, updateBookingDetails } = serviceRequestSlice.actions;
 
 export default serviceRequestSlice.reducer;

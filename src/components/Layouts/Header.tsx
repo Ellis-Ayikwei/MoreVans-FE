@@ -39,6 +39,12 @@ const Header = () => {
     const userId = user?.id;
     const isLoggedIn = useSelector((state: IRootState) => state.auth.isLoggedIn);
     const signOut = useSignOut();
+    const navigate = useNavigate();
+
+    // Add loading state for logout
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
     useEffect(() => {
         const selector = document.querySelector('ul.horizontal-menu a[href="' + window.location.pathname + '"]');
         if (selector) {
@@ -70,31 +76,31 @@ const Header = () => {
     const [messages, setMessages] = useState([
         {
             id: 1,
-            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-success-light dark:bg-success text-success dark:text-success-light"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></span>',
-            title: 'Congratulations!',
-            message: 'Your OS has been updated.',
-            time: '1hr',
+            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-blue-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 11 2-2-2-2"></path><path d="M11 13h4"></path><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect></svg></span>',
+            title: 'New Shipment Assigned',
+            message: 'Shipment MV-23460 ready for pickup.',
+            time: '5min',
         },
         {
             id: 2,
-            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-info-light dark:bg-info text-info dark:text-info-light"><svg g xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></span>',
-            title: 'Did you know?',
-            message: 'You can switch between artboards.',
-            time: '2hr',
+            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-green-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg></span>',
+            title: 'Delivery Completed',
+            message: 'Package delivered successfully to customer.',
+            time: '15min',
         },
         {
             id: 3,
-            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-danger-light dark:bg-danger text-danger dark:text-danger-light"> <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>',
-            title: 'Something went wrong!',
-            message: 'Send Reposrt',
-            time: '2days',
+            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-orange-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>',
+            title: 'Route Delay Alert',
+            message: 'Traffic delay on Route A-205.',
+            time: '1hr',
         },
         {
             id: 4,
-            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-warning-light dark:bg-warning text-warning dark:text-warning-light"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">    <circle cx="12" cy="12" r="10"></circle>    <line x1="12" y1="8" x2="12" y2="12"></line>    <line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>',
-            title: 'Warning',
-            message: 'Your password strength is low.',
-            time: '5days',
+            image: '<span className="grid place-content-center w-9 h-9 rounded-full bg-purple-500 text-white"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></span>',
+            title: 'Fleet Maintenance',
+            message: 'Vehicle LN65 ABC due for service.',
+            time: '2hr',
         },
     ]);
 
@@ -106,20 +112,20 @@ const Header = () => {
         {
             id: 1,
             profile: 'user-profile.jpeg',
-            message: '<strong className="text-sm mr-1">John Doe</strong>invite you to <strong>Prototyping</strong>',
+            message: '<strong className="text-sm mr-1">Fleet Manager</strong>assigned you to <strong>Route Optimization</strong>',
             time: '45 min ago',
         },
         {
             id: 2,
             profile: 'profile-34.jpeg',
-            message: '<strong className="text-sm mr-1">Adam Nolan</strong>mentioned you to <strong>UX Basics</strong>',
-            time: '9h Ago',
+            message: '<strong className="text-sm mr-1">Dispatch Team</strong>updated <strong>Delivery Schedule</strong>',
+            time: '2h Ago',
         },
         {
             id: 3,
             profile: 'profile-16.jpeg',
-            message: '<strong className="text-sm mr-1">Anna Morgan</strong>Upload a file',
-            time: '9h Ago',
+            message: '<strong className="text-sm mr-1">Customer Service</strong>reported delivery confirmation',
+            time: '4h Ago',
         },
     ]);
 
@@ -141,58 +147,86 @@ const Header = () => {
 
     const { t } = useTranslation();
 
-    const navigate = useNavigate();
-
-    // const handleLogoutClick = async () => {
-    //     try {
-    //         dispatch(LogoutUser() as any).then((res: { statusCode: number }) => {
-    //             if (res.statusCode === 202) {
-    //                 localStorage.clear();
-    //                 localStorage.removeItem('accessToken');
-    //                 navigate('/login');
-    //             }
-    //         });
-    //     } catch (error) {
-    //         console.error('Logout failed:', error);
-    //     }
-    // };
-
-    // const handleLogoutClick = async () => {
-    //     try {
-    //         await dispatch(LogoutUser() as any);
-    //         navigate('/login');
-    //     } catch (error) {
-    //         console.error('Logout failed:', error);
-    //     }
-    // };
-
     const handleLogoutClick = async () => {
+        if (isLoggingOut) return; // Prevent multiple clicks
+
+        setIsLoggingOut(true);
         try {
+            // Call logout action with signOut hook
             const logoutResponse = await dispatch(LogoutUser({ signOut }) as any);
-            if (logoutResponse.meta.requestStatus === 'fulfilled') {
-                // Clear local storage after successful logout
+
+            if (logoutResponse.meta?.requestStatus === 'fulfilled' || logoutResponse.type?.endsWith('/fulfilled')) {
+                // Clear all local storage
                 localStorage.clear();
-                navigate('/login');
+                sessionStorage.clear();
+
+                // Navigate to login page
+                navigate('/login', { replace: true });
+
+                // Show success message (optional)
+                console.log('Logout successful');
             } else {
-                console.error('Logout failed:');
+                // Handle logout failure
+                console.error('Logout failed:', logoutResponse.error || 'Unknown error');
+
+                // Force logout on client side even if server call fails
+                signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+                navigate('/login', { replace: true });
             }
         } catch (error) {
-            console.error('Logout failed:', error);
+            console.error('Logout error:', error);
+
+            // Force logout on client side even if there's an error
+            try {
+                signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+                navigate('/login', { replace: true });
+            } catch (fallbackError) {
+                console.error('Fallback logout error:', fallbackError);
+                // Last resort - redirect to login
+                window.location.href = '/login';
+            }
+        } finally {
+            setIsLoggingOut(false);
         }
+    };
+
+    const confirmLogout = () => {
+        setShowLogoutConfirm(true);
+    };
+
+    const cancelLogout = () => {
+        setShowLogoutConfirm(false);
     };
 
     return (
         <header className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}>
-            <div className="shadow-sm">
-                <div className="relative bg-white flex w-full items-center px-5 py-2.5 dark:bg-black">
+            <div className="shadow-lg border-b border-white/20">
+                <div className="relative bg-gradient-to-r from-white via-blue-50 to-white dark:from-black dark:via-blue-900/20 dark:to-black flex w-full items-center px-6 py-3 backdrop-blur-sm">
                     <div className="horizontal-logo flex lg:hidden justify-between items-center ltr:mr-2 rtl:ml-2">
                         <Link to="/" className="main-logo lg:flex items-center shrink-0 hidden">
-                            <img className="w-36 ltr:-ml-1 rtl:-mr-1 inline brightness-0" src="/assets/images/morevanstext.png" alt="logo" />
-                            <span className="text-2xl ltr:ml-1.5 rtl:mr-1.5  font-semibold  align-middle hidden md:inline dark:text-white-light transition-all duration-300"></span>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
+                                        <path d="M15 18H9"></path>
+                                        <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path>
+                                        <circle cx="17" cy="18" r="2"></circle>
+                                        <circle cx="7" cy="18" r="2"></circle>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">MoreVans</h1>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Logistics Platform</p>
+                                </div>
+                            </div>
                         </Link>
                         <button
                             type="button"
-                            className="collapse-icon flex-none dark:text-[#d0d2d6] hover:text-primary dark:hover:text-primary flex lg:hidden ltr:ml-2 rtl:mr-2 p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:bg-white-light/90 dark:hover:bg-dark/60"
+                            className="collapse-icon flex-none dark:text-[#d0d2d6] hover:text-orange-500 dark:hover:text-orange-400 flex lg:hidden ltr:ml-2 rtl:mr-2 p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300"
                             onClick={() => {
                                 dispatch(toggleSidebar());
                             }}
@@ -201,73 +235,116 @@ const Header = () => {
                         </button>
                     </div>
 
-                    <div className="sm:flex-1 ltr:sm:ml-0 ltr:ml-auto sm:rtl:mr-0 rtl:mr-auto flex items-center space-x-1.5 lg:space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
-                        <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
-                            
+                    <div className="sm:flex-1 ltr:sm:ml-0 ltr:ml-auto sm:rtl:mr-0 rtl:mr-auto flex items-center space-x-2 lg:space-x-3 rtl:space-x-reverse dark:text-[#d0d2d6]">
+                        <div className="sm:ltr:mr-auto sm:rtl:ml-auto"></div>
+
+                        {/* Provider Rating Display */}
+                        <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-white/60 backdrop-blur-sm border border-white/30 rounded-xl dark:bg-gray-800/60 dark:border-gray-600">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-sm font-bold text-gray-900 dark:text-white">4.8</span>
+                                        <div className="flex items-center">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <svg
+                                                    key={star}
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className={`w-3 h-3 ${star <= 4 ? 'text-orange-500' : 'text-gray-300'}`}
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                </svg>
+                                            ))}
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="w-3 h-3 text-orange-500"
+                                                viewBox="0 0 24 24"
+                                                fill="currentColor"
+                                                style={{ clipPath: 'inset(0 20% 0 0)' }}
+                                            >
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">1,247 deliveries</div>
+                                </div>
+                            </div>
+                            <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                            <div className="text-center">
+                                <div className="text-xs font-medium text-green-600 dark:text-green-400">98.5%</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">On-time</div>
+                            </div>
                         </div>
-                        <div>
+
+                        {/* Theme Toggles */}
+                        <div className="flex items-center">
                             {themeConfig.theme === 'light' ? (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'light' &&
-                                        'flex items-center p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60'
-                                    }`}
+                                    className="flex items-center p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300"
                                     onClick={() => {
                                         dispatch(toggleTheme('dark'));
                                     }}
                                 >
-                                    <IconSun />
+                                    <IconSun className="w-5 h-5" />
                                 </button>
                             ) : (
                                 ''
                             )}
                             {themeConfig.theme === 'dark' && (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'dark' &&
-                                        'flex items-center p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60'
-                                    }`}
+                                    className="flex items-center p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300"
                                     onClick={() => {
                                         dispatch(toggleTheme('system'));
                                     }}
                                 >
-                                    <IconMoon />
+                                    <IconMoon className="w-5 h-5" />
                                 </button>
                             )}
                             {themeConfig.theme === 'system' && (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'system' &&
-                                        'flex items-center p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60'
-                                    }`}
+                                    className="flex items-center p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300"
                                     onClick={() => {
                                         dispatch(toggleTheme('light'));
                                     }}
                                 >
-                                    <IconLaptop />
+                                    <IconLaptop className="w-5 h-5" />
                                 </button>
                             )}
                         </div>
-                        <button onClick={() => console.log('new cooksnjdnf', getCookie('_auth'))}>
-                            <IconHome />
-                        </button>
+
+                        {/* Quick Actions */}
+                        <Link
+                            to="/"
+                            className="p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300"
+                        >
+                            <IconHome className="w-5 h-5" />
+                        </Link>
+
+                        {/* Language Selector */}
                         <div className="dropdown shrink-0">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                btnClassName="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60"
+                                btnClassName="block p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300"
                                 button={<img className="w-5 h-5 object-cover rounded-full" src={`/assets/images/flags/${flag.toUpperCase()}.svg`} alt="flag" />}
                             >
-                                <ul className="!px-2 text-dark dark:text-white-dark grid grid-cols-2 gap-2 font-semibold dark:text-white-light/90 w-[280px]">
+                                <ul className="!px-2 text-dark dark:text-white-dark grid grid-cols-2 gap-2 font-semibold dark:text-white-light/90 w-[280px] bg-white/80 backdrop-blur-sm border border-white/20 dark:bg-gray-800/80">
                                     {themeConfig.languageList.map((item: any) => {
                                         return (
                                             <li key={item.code}>
                                                 <button
                                                     type="button"
-                                                    className={`flex w-full hover:text-primary rounded-lg ${i18next.language === item.code ? 'bg-primary/10 text-primary' : ''}`}
+                                                    className={`flex w-full hover:text-orange-500 hover:bg-orange-50 rounded-lg p-2 transition-all duration-300 ${
+                                                        i18next.language === item.code ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30' : ''
+                                                    }`}
                                                     onClick={() => {
                                                         i18next.changeLanguage(item.code);
-                                                        // setFlag(item.code);
                                                         setLocale(item.code);
                                                     }}
                                                 >
@@ -280,26 +357,27 @@ const Header = () => {
                                 </ul>
                             </Dropdown>
                         </div>
+
+                        {/* Enhanced Messages */}
                         <div className="dropdown shrink-0">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                btnClassName="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60"
-                                button={<IconMailDot />}
+                                btnClassName="relative block p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300"
+                                button={
+                                    <div className="relative">
+                                        <IconMailDot className="w-5 h-5" />
+                                        {messages.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">{messages.length}</span>
+                                        )}
+                                    </div>
+                                }
                             >
-                                <ul className="!py-0 text-dark dark:text-white-dark w-[300px] sm:w-[375px] text-xs">
+                                <ul className="!py-0 text-dark dark:text-white-dark w-[350px] sm:w-[400px] text-xs bg-white/90 backdrop-blur-md border border-white/20 dark:bg-gray-800/90">
                                     <li className="mb-5" onClick={(e) => e.stopPropagation()}>
                                         <div className="hover:!bg-transparent overflow-hidden relative rounded-t-md p-5 text-white w-full !h-[68px]">
-                                            <div
-                                                className="absolute h-full w-full bg-no-repeat bg-center bg-cover inset-0 bg-"
-                                                style={{
-                                                    backgroundImage: `url('/assets/images/menu-header.jpg')`,
-                                                    backgroundRepeat: 'no-repeat',
-                                                    width: '100%',
-                                                    height: '100%',
-                                                }}
-                                            ></div>
-                                            <h4 className="font-semibold relative z-10 text-lg">Messages</h4>
+                                            <div className="absolute h-full w-full bg-gradient-to-r from-orange-500 to-blue-600 inset-0"></div>
+                                            <h4 className="font-semibold relative z-10 text-lg">Logistics Updates</h4>
                                         </div>
                                     </li>
                                     {messages.length > 0 ? (
@@ -307,25 +385,25 @@ const Header = () => {
                                             <li onClick={(e) => e.stopPropagation()}>
                                                 {messages.map((message) => {
                                                     return (
-                                                        <div key={message.id} className="flex items-center py-3 px-5">
+                                                        <div key={message.id} className="flex items-center py-3 px-5 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                                             <div dangerouslySetInnerHTML={createMarkup(message.image)}></div>
-                                                            <span className="px-3 dark:text-gray-500">
-                                                                <div className="font-semibold text-sm dark:text-white-light/90">{message.title}</div>
-                                                                <div>{message.message}</div>
+                                                            <span className="px-3 dark:text-gray-300">
+                                                                <div className="font-semibold text-sm dark:text-white/90">{message.title}</div>
+                                                                <div className="text-gray-600 dark:text-gray-400">{message.message}</div>
                                                             </span>
-                                                            <span className="font-semibold bg-white-dark/20 rounded text-dark/60 px-1 ltr:ml-auto rtl:mr-auto whitespace-pre dark:text-white-dark ltr:mr-2 rtl:ml-2">
+                                                            <span className="font-semibold bg-orange-100 text-orange-600 rounded-full text-xs px-2 py-1 ltr:ml-auto rtl:mr-auto whitespace-nowrap dark:bg-orange-900/30 dark:text-orange-400">
                                                                 {message.time}
                                                             </span>
-                                                            <button type="button" className="text-neutral-300 hover:text-danger" onClick={() => removeMessage(message.id)}>
-                                                                <IconXCircle />
+                                                            <button type="button" className="text-gray-300 hover:text-red-500 ml-2 transition-colors" onClick={() => removeMessage(message.id)}>
+                                                                <IconXCircle className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     );
                                                 })}
                                             </li>
-                                            <li className="border-t border-white-light text-center dark:border-white/10 mt-5">
-                                                <button type="button" className="text-primary font-semibold group dark:text-gray-400 justify-center !py-4 !h-[48px]">
-                                                    <span className="group-hover:underline ltr:mr-1 rtl:ml-1">VIEW ALL ACTIVITIES</span>
+                                            <li className="border-t border-gray-200 dark:border-gray-600 text-center mt-5">
+                                                <button type="button" className="text-orange-500 font-semibold group hover:text-orange-600 justify-center !py-4 !h-[48px] transition-colors">
+                                                    <span className="group-hover:underline ltr:mr-1 rtl:ml-1">VIEW ALL UPDATES</span>
                                                     <IconArrowLeft className="group-hover:translate-x-1 transition duration-300 ltr:ml-1 rtl:mr-1" />
                                                 </button>
                                             </li>
@@ -333,58 +411,105 @@ const Header = () => {
                                     ) : (
                                         <li className="mb-5" onClick={(e) => e.stopPropagation()}>
                                             <button type="button" className="!grid place-content-center hover:!bg-transparent text-lg min-h-[200px]">
-                                                <div className="mx-auto ring-4 ring-primary/30 rounded-full mb-4 text-primary">
+                                                <div className="mx-auto ring-4 ring-orange-500/30 rounded-full mb-4 text-orange-500">
                                                     <IconInfoCircle fill={true} className="w-10 h-10" />
                                                 </div>
-                                                No data available.
+                                                No logistics updates available.
                                             </button>
                                         </li>
                                     )}
                                 </ul>
                             </Dropdown>
                         </div>
+
+                        {/* Enhanced Notifications */}
                         <div className="dropdown shrink-0">
-                           
                             <NotificationBell />
                         </div>
+
+                        {/* Enhanced User Profile */}
                         <div className="dropdown shrink-0 flex">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
                                 btnClassName="relative group block"
                                 button={
-                                    <IconUser className="w-7 h-7 block p-1 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60" />
-
-                                    // <img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/assets/images/user-profile.jpeg" alt="userProfile" />
+                                    <div className="flex items-center gap-3 p-2 rounded-xl bg-white/60 backdrop-blur-sm dark:bg-gray-800/60 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-blue-600 flex items-center justify-center">
+                                            <IconUser className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div className="text-left hidden md:block">
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.full_name || 'User'}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{user?.role || 'Member'}</p>
+                                        </div>
+                                        <IconCaretDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    </div>
                                 }
                             >
-                                <ul className="text-dark dark:text-white-dark !py-0 w-[430px] font-semibold dark:text-white-light/90">
+                                <ul className="text-dark dark:text-white-dark !py-0 w-[450px] font-semibold dark:text-white-light/90 bg-white/90 backdrop-blur-md border border-white/20 dark:bg-gray-800/90">
                                     <li>
-                                        <div className="flex items-center px-4 py-4">
-                                            {/* <img className="rounded-md w-10 h-10 object-cover" src="/assets/images/user-profile.jpeg" alt="userProfile" /> */}
-                                            <IconUser className="w-4.5 h-4.5 ltr:ml-2 rtl:mr-2 shrink-0" />
-                                            <div className="ltr:pl-4 rtl:pr-4 truncate flex-col flex justify-left items-start">
-                                                <h4 className="text-base">
+                                        <div className="flex items-center px-6 py-4 bg-gradient-to-r from-orange-50 to-blue-50 dark:from-orange-900/20 dark:to-blue-900/20">
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-blue-600 flex items-center justify-center mr-4">
+                                                <IconUser className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="text-base font-semibold text-gray-900 dark:text-white">
                                                     {user?.full_name}
-                                                    <span className="text-xs bg-success-light rounded text-success px-1 ltr:ml-2 rtl:ml-2">{user?.role}</span>
+                                                    <span className="text-xs bg-orange-500 text-white rounded-full px-2 py-1 ltr:ml-2 rtl:ml-2">{user?.role}</span>
                                                 </h4>
-                                                <span className="text-black/60">{user?.email}</span>
-                                                <span className="text-black/60">ID: {user?.id}</span>
+                                                <span className="text-sm text-gray-600 dark:text-gray-300">{user?.email}</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block">ID: {user?.id}</span>
                                             </div>
                                         </div>
                                     </li>
                                     <li>
-                                        <Link to={`/userAccountSetting/${userId}`} className="dark:hover:text-white">
+                                        <Link to="/profile" className="dark:hover:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors !py-3">
                                             <IconUser className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0" />
-                                            Profile
+                                            Profile Settings
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/dashboard" className="dark:hover:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors !py-3">
+                                            <IconMenuDashboard className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0" />
+                                            Dashboard
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/fleet" className="dark:hover:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors !py-3">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                            >
+                                                <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
+                                                <path d="M15 18H9"></path>
+                                                <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path>
+                                                <circle cx="17" cy="18" r="2"></circle>
+                                                <circle cx="7" cy="18" r="2"></circle>
+                                            </svg>
+                                            Fleet Management
                                         </Link>
                                     </li>
 
-                                    <li className="border-t border-white-light dark:border-white-light/10">
-                                        <Link to="" className="text-danger !py-3" onClick={handleLogoutClick}>
-                                            <IconLogout className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 rotate-90 shrink-0" />
-                                            Sign Out
-                                        </Link>
+                                    <li className="border-t border-gray-200 dark:border-gray-600">
+                                        <button
+                                            type="button"
+                                            className={`text-red-500 !py-3 w-full text-left flex items-center transition-all duration-300 ${
+                                                isLoggingOut ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50 dark:hover:bg-red-900/20'
+                                            }`}
+                                            onClick={handleLogoutClick}
+                                            disabled={isLoggingOut}
+                                        >
+                                            {isLoggingOut ? (
+                                                <div className="animate-spin w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                                            ) : (
+                                                <IconLogout className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 rotate-90 shrink-0" />
+                                            )}
+                                            {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
+                                        </button>
                                     </li>
                                 </ul>
                             </Dropdown>
@@ -392,221 +517,197 @@ const Header = () => {
                     </div>
                 </div>
 
-                {/* horizontal menu */}
-                <ul className="horizontal-menu hidden py-1.5 font-semibold px-6 lg:space-x-1.5 xl:space-x-8 rtl:space-x-reverse bg-white border-t border-[#ebedf2] dark:border-[#191e3a] dark:bg-black text-black dark:text-white-dark">
+                {/* Enhanced Horizontal Menu - Logistics Focused */}
+                <ul className="horizontal-menu hidden py-2 font-semibold px-6 lg:space-x-2 xl:space-x-4 rtl:space-x-reverse bg-white/70 backdrop-blur-sm border-t border-white/30 dark:border-gray-700 dark:bg-gray-900/70 text-gray-700 dark:text-gray-300">
                     <li className="menu nav-item relative">
-                        <button type="button" className="nav-link">
+                        <button type="button" className="nav-link hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-300">
                             <div className="flex items-center">
                                 <IconMenuDashboard className="shrink-0" />
-                                <span className="px-1">{t('dashboard')}</span>
+                                <span className="px-1">Control Center</span>
                             </div>
                             <div className="right_arrow">
                                 <IconCaretDown />
                             </div>
                         </button>
-                        <ul className="sub-menu">
+                        <ul className="sub-menu bg-white/90 backdrop-blur-md border border-white/20 dark:bg-gray-800/90">
                             <li>
-                                <NavLink to="/">{t('sales')}</NavLink>
+                                <NavLink to="/" className="hover:text-orange-500">
+                                    Operations Dashboard
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/analytics">{t('analytics')}</NavLink>
+                                <NavLink to="/analytics" className="hover:text-orange-500">
+                                    Fleet Analytics
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/finance">{t('finance')}</NavLink>
+                                <NavLink to="/finance" className="hover:text-orange-500">
+                                    Financial Reports
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/crypto">{t('crypto')}</NavLink>
+                                <NavLink to="/performance" className="hover:text-orange-500">
+                                    Performance Metrics
+                                </NavLink>
                             </li>
                         </ul>
                     </li>
                     <li className="menu nav-item relative">
-                        <button type="button" className="nav-link">
+                        <button type="button" className="nav-link hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-300">
                             <div className="flex items-center">
-                                <IconMenuApps className="shrink-0" />
-                                <span className="px-1">{t('apps')}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
+                                    <path d="M15 18H9"></path>
+                                    <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path>
+                                    <circle cx="17" cy="18" r="2"></circle>
+                                    <circle cx="7" cy="18" r="2"></circle>
+                                </svg>
+                                <span className="px-1">Fleet Management</span>
                             </div>
                             <div className="right_arrow">
                                 <IconCaretDown />
                             </div>
                         </button>
-                        <ul className="sub-menu">
+                        <ul className="sub-menu bg-white/90 backdrop-blur-md border border-white/20 dark:bg-gray-800/90">
                             <li>
-                                <NavLink to="/apps/chat">{t('chat')}</NavLink>
+                                <NavLink to="/fleet/vehicles" className="hover:text-orange-500">
+                                    Vehicle Status
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/apps/mailbox">{t('mailbox')}</NavLink>
+                                <NavLink to="/fleet/drivers" className="hover:text-orange-500">
+                                    Driver Management
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/apps/todolist">{t('todo_list')}</NavLink>
+                                <NavLink to="/fleet/maintenance" className="hover:text-orange-500">
+                                    Maintenance Schedule
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/apps/notes">{t('notes')}</NavLink>
+                                <NavLink to="/fleet/fuel" className="hover:text-orange-500">
+                                    Fuel Management
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/apps/scrumboard">{t('scrumboard')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/apps/contacts">{t('contacts')}</NavLink>
-                            </li>
-                            <li className="relative">
-                                <button type="button">
-                                    {t('invoice')}
-                                    <div className="ltr:ml-auto rtl:mr-auto rtl:rotate-90 -rotate-90">
-                                        <IconCaretDown />
-                                    </div>
-                                </button>
-                                <ul className="rounded absolute top-0 ltr:left-[95%] rtl:right-[95%] min-w-[180px] bg-white z-[10] text-dark dark:text-white-dark dark:bg-[#1b2e4b] shadow p-0 py-2 hidden">
-                                    <li>
-                                        <NavLink to="/apps/invoice/list">{t('list')}</NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/apps/invoice/preview">{t('preview')}</NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/apps/invoice/add">{t('add')}</NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/apps/invoice/edit">{t('edit')}</NavLink>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <NavLink to="/apps/calendar">{t('calendar')}</NavLink>
+                                <NavLink to="/fleet/tracking" className="hover:text-orange-500">
+                                    Live Tracking
+                                </NavLink>
                             </li>
                         </ul>
                     </li>
                     <li className="menu nav-item relative">
-                        <button type="button" className="nav-link">
+                        <button type="button" className="nav-link hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-300">
                             <div className="flex items-center">
-                                <IconMenuComponents className="shrink-0" />
-                                <span className="px-1">{t('components')}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="7.5,4.21 12,6.81 16.5,4.21"></polyline>
+                                    <polyline points="7.5,19.79 7.5,14.6 3,12"></polyline>
+                                    <polyline points="21,12 16.5,14.6 16.5,19.79"></polyline>
+                                </svg>
+                                <span className="px-1">Shipments</span>
                             </div>
                             <div className="right_arrow">
                                 <IconCaretDown />
                             </div>
                         </button>
-                        <ul className="sub-menu">
+                        <ul className="sub-menu bg-white/90 backdrop-blur-md border border-white/20 dark:bg-gray-800/90">
                             <li>
-                                <NavLink to="/components/tabs">{t('tabs')}</NavLink>
+                                <NavLink to="/shipments/active" className="hover:text-orange-500">
+                                    Active Shipments
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/components/accordions">{t('accordions')}</NavLink>
+                                <NavLink to="/shipments/dispatch" className="hover:text-orange-500">
+                                    Dispatch Center
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/components/modals">{t('modals')}</NavLink>
+                                <NavLink to="/shipments/schedule" className="hover:text-orange-500">
+                                    Delivery Schedule
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/components/cards">{t('cards')}</NavLink>
+                                <NavLink to="/shipments/tracking" className="hover:text-orange-500">
+                                    Package Tracking
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/components/carousel">{t('carousel')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/countdown">{t('countdown')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/counter">{t('counter')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/sweetalert">{t('sweet_alerts')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/timeline">{t('timeline')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/notifications">{t('notifications')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/media-object">{t('media_object')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/list-group">{t('list_group')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/pricing-table">{t('pricing_tables')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/components/lightbox">{t('lightbox')}</NavLink>
+                                <NavLink to="/shipments/routes" className="hover:text-orange-500">
+                                    Route Planning
+                                </NavLink>
                             </li>
                         </ul>
                     </li>
                     <li className="menu nav-item relative">
-                        <button type="button" className="nav-link">
+                        <button type="button" className="nav-link hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-300">
                             <div className="flex items-center">
-                                <IconMenuElements className="shrink-0" />
-                                <span className="px-1">{t('elements')}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="m22 21-3-3m0 0a6 6 0 1 0-8.485-8.485A6 6 0 0 0 19 18Z"></path>
+                                </svg>
+                                <span className="px-1">Customer Hub</span>
                             </div>
                             <div className="right_arrow">
                                 <IconCaretDown />
                             </div>
                         </button>
-                        <ul className="sub-menu">
+                        <ul className="sub-menu bg-white/90 backdrop-blur-md border border-white/20 dark:bg-gray-800/90">
                             <li>
-                                <NavLink to="/elements/alerts">{t('alerts')}</NavLink>
+                                <NavLink to="/customers/orders" className="hover:text-orange-500">
+                                    Order Management
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/elements/avatar">{t('avatar')}</NavLink>
+                                <NavLink to="/customers/support" className="hover:text-orange-500">
+                                    Customer Support
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/elements/badges">{t('badges')}</NavLink>
+                                <NavLink to="/customers/feedback" className="hover:text-orange-500">
+                                    Feedback & Reviews
+                                </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/elements/breadcrumbs">{t('breadcrumbs')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/buttons">{t('buttons')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/buttons-group">{t('button_groups')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/color-library">{t('color_library')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/dropdown">{t('dropdown')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/infobox">{t('infobox')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/jumbotron">{t('jumbotron')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/loader">{t('loader')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/pagination">{t('pagination')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/popovers">{t('popovers')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/progress-bar">{t('progress_bar')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/search">{t('search')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/tooltips">{t('tooltips')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/treeview">{t('treeview')}</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/elements/typography">{t('typography')}</NavLink>
+                                <NavLink to="/customers/communications" className="hover:text-orange-500">
+                                    Communications
+                                </NavLink>
                             </li>
                         </ul>
                     </li>
                     <li className="menu nav-item relative">
-                        <button type="button" className="nav-link">
+                        <button type="button" className="nav-link hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-300">
                             <div className="flex items-center">
                                 <IconMenuDatatables className="shrink-0" />
-                                <span className="px-1">{t('tables')}</span>
+                                <span className="px-1">Reports & Analytics</span>
                             </div>
                             <div className="right_arrow">
                                 <IconCaretDown />
                             </div>
                         </button>
+                        <ul className="sub-menu bg-white/90 backdrop-blur-md border border-white/20 dark:bg-gray-800/90">
+                            <li>
+                                <NavLink to="/reports/operations" className="hover:text-orange-500">
+                                    Operations Report
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/reports/financial" className="hover:text-orange-500">
+                                    Financial Analysis
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/reports/performance" className="hover:text-orange-500">
+                                    Performance Metrics
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/reports/compliance" className="hover:text-orange-500">
+                                    Compliance Reports
+                                </NavLink>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </div>

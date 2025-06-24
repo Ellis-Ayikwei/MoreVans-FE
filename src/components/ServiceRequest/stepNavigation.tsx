@@ -1,41 +1,31 @@
 import React from 'react';
-import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 
 interface StepNavigationProps {
     onBack: () => void;
-    onNext?: () => void;
-    handleSubmit?: () => void;
-    isLastStep?: boolean;
-    isSubmitting?: boolean;
-    nextLabel?: string;
-    backLabel?: string;
+    onNext: () => void;
+    handleSubmit: () => void;
+    nextLabel: string;
+    isLastStep: boolean;
+    isSubmitting: boolean;
 }
 
-const StepNavigation: React.FC<StepNavigationProps> = ({ onBack, onNext, handleSubmit, isLastStep = false, isSubmitting = false, nextLabel = 'Next', backLabel = 'Back' }) => {
-    const handleNextClick = () => {
-        if (handleSubmit) {
-            handleSubmit();
-        } else if (onNext) {
-            onNext();
-        }
-    };
-
+const StepNavigation: React.FC<StepNavigationProps> = ({ onBack, onNext, handleSubmit, nextLabel, isLastStep, isSubmitting }) => {
     return (
         <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
                 type="button"
                 onClick={onBack}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-                <IconArrowLeft className="mr-2" size={18} />
-                {backLabel}
+                Back
             </button>
-
             <button
                 type="button"
-                onClick={handleNextClick}
+                onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
                 {isSubmitting ? (
                     <>
@@ -46,10 +36,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({ onBack, onNext, handleS
                         Processing...
                     </>
                 ) : (
-                    <>
-                        {nextLabel}
-                        <IconArrowRight className="ml-2" size={18} />
-                    </>
+                    nextLabel
                 )}
             </button>
         </div>

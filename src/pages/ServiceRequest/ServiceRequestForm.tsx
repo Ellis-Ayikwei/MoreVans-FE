@@ -28,45 +28,16 @@ import {
     IconBrandWhatsapp,
     IconArrowLeft,
 } from '@tabler/icons-react';
-import { getPricePreview, setCurrentStep, submitStepToAPI, resetForm, updateFormValues, setStepData } from '../../store/slices/createRequestSlice';
+import { getPricePreview, setCurrentStep, submitStepToAPI, resetForm, updateFormValues, setStepData, setBookingDetails } from '../../store/slices/createRequestSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
 import StepNavigation from '../../components/ServiceRequest/stepNavigation';
 import showMessage from '../../helper/showMessage';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import PriceForecastPage from '../../components/Booking/PriceForecastPage';
-import BookingDetailsForm from '../../components/Booking/BookingDetailsForm';
-// Fix for default marker icons in Leaflet with Next.js
-const DefaultIcon = L.icon({
-    iconUrl: '/images/marker-icon.png',
-    iconRetinaUrl: '/images/marker-icon-2x.png',
-    shadowUrl: '/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
-
-// Add custom marker icons
-const pickupIcon = L.icon({
-    iconUrl: '/images/pickup-marker.png',
-    iconRetinaUrl: '/images/pickup-marker-2x.png',
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32],
-});
-
-const dropoffIcon = L.icon({
-    iconUrl: '/images/dropoff-marker.png',
-    iconRetinaUrl: '/images/dropoff-marker-2x.png',
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32],
-});
+import RouteTracker from '../../components/mapsandlocations/routetracker';
+import PriceForecastPage from '../../components/ServiceRequest/Booking/PriceForecastPage';
+import BookingDetailsForm from '../../components/ServiceRequest/Booking/requestUserDetailForm';
+import GuestPaymentPage from '../../components/ServiceRequest/Booking/GuestPaymentPage';
+import { v4 as uuidv4 } from 'uuid';
 
 // Define payload types for each step
 interface Step1Payload {
@@ -228,7 +199,7 @@ const initialValues: ServiceRequest = {
     contact_email: '',
     pickup_location: '',
     dropoff_location: '',
-    service_type: 'Residential Moving',
+    service_type: '',
     item_size: 'medium',
     preferred_date: '',
     preferred_time: '',
@@ -337,6 +308,8 @@ const ServiceRequestForm: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPriceForcast, setShowPriceForcast] = useState(false);
     const [selectedPrice, setSelectedPrice] = useState<any>(null);
+    const [showPaymentForm, setShowPaymentForm] = useState(false);
+    const [bookingDetails, setBookingDetails] = useState<any>(null);
 
     // Handle form value changes
     const handleFormChange = (values: any) => {
@@ -476,6 +449,67 @@ const ServiceRequestForm: React.FC = () => {
         setShowPriceForcast(true);
     };
 
+    const handleBookingComplete = (details: any) => {
+        // Clear the current draft from localStorage
+        localStorage.removeItem('current_draft');
+
+        // Clear the form state from Redux
+        dispatch(resetForm());
+
+        // Clear any other related state
+        dispatch(setBookingDetails(null));
+
+        // Navigate to my bookings
+        navigate('/my-bookings');
+    };
+
+    // Add this function to handle request type changes
+    const handleRequestTypeChange = (type: 'instant' | 'bidding' | 'journey') => {
+        if (type === 'journey') {
+            // Initialize journey stops only if switching to journey type
+            const initialStops = [
+                {
+                    id: uuidv4(),
+                    type: 'pickup',
+                    location: formValues.pickup_location || '',
+                    unit_number: formValues.pickup_unit_number || '',
+                    floor: formValues.pickup_floor || 0,
+                    parking_info: formValues.pickup_parking_info || '',
+                    has_elevator: formValues.pickup_has_elevator || false,
+                    instructions: '',
+                    estimated_time: '',
+                },
+                {
+                    id: uuidv4(),
+                    type: 'dropoff',
+                    location: formValues.dropoff_location || '',
+                    unit_number: formValues.dropoff_unit_number || '',
+                    floor: formValues.dropoff_floor || 0,
+                    parking_info: formValues.dropoff_parking_info || '',
+                    has_elevator: formValues.dropoff_has_elevator || false,
+                    instructions: '',
+                    estimated_time: '',
+                },
+            ];
+            dispatch(
+                updateFormValues({
+                    ...formValues,
+                    journey_stops: initialStops,
+                    request_type: type,
+                })
+            );
+        } else {
+            // Clear journey stops if switching to non-journey type
+            dispatch(
+                updateFormValues({
+                    ...formValues,
+                    journey_stops: [],
+                    request_type: type,
+                })
+            );
+        }
+    };
+
     return (
         <div className="w-full px-1 md:px-2 py-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -486,7 +520,7 @@ const ServiceRequestForm: React.FC = () => {
                             <IconArrowLeft className="w-6 h-6 text-gray-600" /> Back to Form
                         </button>
                     )}
-                    {!priceForecast && (
+                    {!priceForecast && !showPaymentForm && (
                         /* Hero Section */
                         <div className="relative py-16 mb-10 overflow-hidden rounded-2xl shadow-2xl">
                             {/* Gradient Overlay + Background Image */}
@@ -617,56 +651,76 @@ const ServiceRequestForm: React.FC = () => {
                     {priceForecast && showPriceForcast && (
                         <PriceForecastPage priceForecast={priceForecast} request_id={request_id || ''} onAccept={handlePriceSelect} onBack={() => setPriceForecast(null)} />
                     )}
-                    {priceForecast && !showPriceForcast && <BookingDetailsForm selectedPrice={selectedPrice} requestId={request_id || ''} onBack={handlePriceReselection} isVisible={true} />}
+                    {priceForecast && !showPriceForcast && !showPaymentForm && (
+                        <BookingDetailsForm selectedPrice={selectedPrice} requestId={request_id || ''} onBack={handlePriceReselection} isVisible={true} onComplete={handleBookingComplete} />
+                    )}
                 </div>
 
                 {/* Sidebar */}
                 <div className="lg:col-span-1 ">
                     <div className="sticky top-16 space-y-6">
-                        {/* Map Component - Only show when locations are set */}
-                        {formValues.pickup_location && formValues.dropoff_location && (
+                        {/* Map Component - Show RouteTracker for all location types */}
+                        {((formValues.pickup_location && formValues.dropoff_location) || (formValues.journey_stops && formValues.journey_stops.length >= 2)) && (
                             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                                 <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/30 border-b border-gray-200 dark:border-gray-700">
                                     <h3 className="font-medium text-gray-800 dark:text-gray-200">Route Map</h3>
                                 </div>
                                 <div className="h-[400px] relative">
-                                    <MapContainer center={mapCenter} zoom={13} className="h-full w-full" scrollWheelZoom={false}>
-                                        <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        />
-                                        {pickupCoords && dropoffCoords && (
-                                            <>
-                                                <RouteLayer pickupCoords={pickupCoords} dropoffCoords={dropoffCoords} onRouteLoaded={setRouteCoordinates} />
-                                                <Marker position={pickupCoords} icon={pickupIcon}>
-                                                    <Popup>
-                                                        <div className="text-sm">
-                                                            <p className="font-medium text-blue-600">Pickup Location</p>
-                                                            <p>{formValues.pickup_location}</p>
-                                                            {formValues.pickup_floor && <p className="text-gray-600">Floor: {formValues.pickup_floor}</p>}
-                                                        </div>
-                                                    </Popup>
-                                                </Marker>
-                                                <Marker position={dropoffCoords} icon={dropoffIcon}>
-                                                    <Popup>
-                                                        <div className="text-sm">
-                                                            <p className="font-medium text-green-600">Dropoff Location</p>
-                                                            <p>{formValues.dropoff_location}</p>
-                                                            {formValues.dropoff_floor && <p className="text-gray-600">Floor: {formValues.dropoff_floor}</p>}
-                                                        </div>
-                                                    </Popup>
-                                                </Marker>
-                                                {routeCoordinates.length > 0 && (
-                                                    <Polyline positions={routeCoordinates} color="#3B82F6" weight={4} opacity={0.8} lineCap="round" lineJoin="round" dashArray="5, 10" />
-                                                )}
-                                            </>
-                                        )}
-                                    </MapContainer>
+                                    <RouteTracker
+                                        stops={(() => {
+                                            let stopsData;
+                                            if (formValues.journey_stops && formValues.journey_stops.length >= 2) {
+                                                // Transform Redux journey_stops to RouteTracker format
+                                                stopsData = formValues.journey_stops
+                                                    .map((stop: any, index: number) => {
+                                                        // Handle different coordinate structures
+                                                        let lat: number | null = null;
+                                                        let lng: number | null = null;
+
+                                                        // Try Redux store structure (coordinates inside location)
+                                                        if (stop.location?.coordinates && Array.isArray(stop.location.coordinates)) {
+                                                            [lat, lng] = stop.location.coordinates;
+                                                        }
+                                                        // Try JourneyPlanning structure (coordinates at root level)
+                                                        else if (stop.coordinates && Array.isArray(stop.coordinates)) {
+                                                            [lat, lng] = stop.coordinates;
+                                                        }
+                                                        // Try JourneyPlanning structure (lat/lng in location)
+                                                        else if (stop.location?.latitude && stop.location?.longitude) {
+                                                            lat = stop.location.latitude;
+                                                            lng = stop.location.longitude;
+                                                        }
+
+                                                        if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+                                                            return {
+                                                                lat,
+                                                                lng,
+                                                                role: stop.type === 'pickup' ? (index === 0 ? 'start' : 'intermediate') : stop.type === 'dropoff' ? 'stop' : 'intermediate',
+                                                            };
+                                                        }
+                                                        return null;
+                                                    })
+                                                    .filter(Boolean);
+
+                                                console.log('Transformed journey_stops for RouteTracker:', stopsData);
+                                            } else if (pickupCoords && dropoffCoords) {
+                                                stopsData = [
+                                                    { lat: pickupCoords[0], lng: pickupCoords[1], role: 'start' as const },
+                                                    { lat: dropoffCoords[0], lng: dropoffCoords[1], role: 'stop' as const },
+                                                ];
+                                                console.log('Using pickup/dropoff coords:', stopsData);
+                                            } else {
+                                                stopsData = [];
+                                                console.log('No valid stops data available');
+                                            }
+                                            return stopsData;
+                                        })()}
+                                    />
                                 </div>
                             </div>
                         )}
 
-                        <RequestDetailsPanel values={formValues} onEditStep={handleEditStep} currentStep={currentStep} onRemoveItem={handleRemoveItem} onPriceReselection={handlePriceReselection} />
+                        {/* <RequestDetailsPanel values={formValues} onEditStep={handleEditStep} currentStep={currentStep} onRemoveItem={handleRemoveItem} onPriceReselection={handlePriceReselection} /> */}
 
                         {/* Quick Actions */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">

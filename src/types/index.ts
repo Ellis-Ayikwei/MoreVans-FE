@@ -6,3 +6,10 @@ export interface ServiceRequest {
     request_id?: string;
     // ... existing fields ...
 }
+
+export interface GuestUserData {
+    name: string;
+    email: string;
+    phone: string;
+    user_id?: string;
+}

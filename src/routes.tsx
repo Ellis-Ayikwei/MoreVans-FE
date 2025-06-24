@@ -1,8 +1,9 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import PriceForecastPage from './components/Booking/PriceForecastPage';
-import BookingDetailsForm from './components/Booking/BookingDetailsForm';
-import GuestPaymentPage from './components/Booking/GuestPaymentPage';
+import PriceForecastPage from './components/ServiceRequest/Booking/PriceForecastPage';
+import BookingDetailsForm from './components/ServiceRequest/Booking/requestUserDetailForm';
+import GuestPaymentPage from './components/ServiceRequest/Booking/GuestPaymentPage';
+import AddressAutocompleteDemo from './components/AddressAutocompleteDemo';
 import { useLocation } from 'react-router-dom';
 
 // Wrapper component to handle route props
@@ -27,6 +28,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/price-forecast" element={<PriceForecastWrapper />} />
             <Route path="/booking-details" element={<BookingDetailsWrapper />} />
             <Route path="/guest-payment" element={<GuestPaymentWrapper />} />
+            <Route path="/address-demo" element={<AddressAutocompleteDemo />} />
             {/* Add other routes as needed */}
         </Routes>
     );

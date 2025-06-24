@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { IconArrowLeft, IconShieldLock, IconTruck, IconClock, IconStar, IconUsers, IconMapPin } from '@tabler/icons-react';
+import { IconArrowLeft, IconShieldLock, IconTruck, IconClock, IconStar, IconUsers, IconMapPin, IconShieldCheck } from '@tabler/icons-react';
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -47,161 +47,124 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle, show
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
-            {/* Background Elements */}
-            <div className="absolute inset-0 overflow-hidden">
-                {/* Enhanced gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/85 to-primary/75 z-10"></div>
-                <div className="absolute inset-0 bg-gradient-to-tr from-secondary/30 via-transparent to-primary/30 z-10"></div>
-                <div className="absolute inset-0 bg-gradient-to-bl from-primary/40 via-transparent to-secondary/40 z-10"></div>
+        <div className="min-h-screen flex">
+            {/* Left side - Form */}
+            <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-gradient-to-br from-gray-50 to-gray-100">
+                <div className="mx-auto w-full max-w-sm lg:w-96">
+                    {/* Logo */}
+                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+                        <div className="flex items-center justify-center mb-4">
+                            <motion.div whileHover={{ scale: 1.05, rotate: 5 }} className="bg-gradient-to-r from-blue-600 to-blue-700 p-3 rounded-2xl shadow-lg">
+                                <IconTruck className="h-8 w-8 text-white" />
+                            </motion.div>
+                        </div>
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">MoreVans</h1>
+                        <p className="text-sm text-gray-600 mt-1">Moving made simple</p>
+                    </motion.div>
 
-                {/* Animated background pattern */}
-                <div className="absolute inset-0 bg-grid-pattern opacity-10 z-10"></div>
+                    {/* Header */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2">{title}</h2>
+                        <p className="text-gray-600">{subtitle}</p>
+                    </motion.div>
 
-                {/* Enhanced gradient orbs */}
-                <motion.div
-                    className="absolute w-[50rem] h-[50rem] rounded-full bg-secondary/20 -top-40 -left-20 blur-3xl z-10"
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.15, 0.25, 0.15],
-                    }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 12,
-                        ease: 'easeInOut',
-                    }}
-                />
-                <motion.div
-                    className="absolute w-[60rem] h-[60rem] rounded-full bg-primary/20 -bottom-40 -right-20 blur-3xl z-10"
-                    animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.15, 0.3, 0.15],
-                    }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 15,
-                        ease: 'easeInOut',
-                        delay: 1,
-                    }}
-                />
+                    {/* Form */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                        {children}
+                    </motion.div>
 
-                {/* Additional gradient orbs for mobile */}
-                <motion.div
-                    className="absolute w-[35rem] h-[35rem] rounded-full bg-secondary/20 top-1/2 -left-20 blur-3xl z-10 sm:hidden"
-                    animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.1, 0.2, 0.1],
-                    }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 10,
-                        ease: 'easeInOut',
-                    }}
-                />
-                <motion.div
-                    className="absolute w-[30rem] h-[30rem] rounded-full bg-primary/20 top-1/3 -right-20 blur-3xl z-10 sm:hidden"
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.1, 0.25, 0.1],
-                    }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 8,
-                        ease: 'easeInOut',
-                        delay: 0.5,
-                    }}
-                />
+                    {/* Footer */}
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="mt-8 text-center text-sm text-gray-500">
+                        <p>© 2024 MoreVans. All rights reserved.</p>
+                    </motion.div>
+                </div>
             </div>
 
-            {/* Content Container */}
-            <div className="relative z-20 min-h-screen flex flex-col lg:flex-row">
-                {/* Left Side - Features (Only visible on large screens) */}
-                <motion.div
-                    className="hidden lg:flex  lg:flex-col lg:justify-center lg:items-center lg:px-12 lg:py-8 lg:border-r lg:border-white/10"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.8 }}
-                >
-                    <div className="flex-none p-4 sm:p-6 lg:absolute lg:top-0 lg:left-0 w-full lg:w-auto">
-                        {showBackButton && (
-                            <Link to="/" className="inline-flex items-center text-white/80 hover:text-white transition-colors lg:px-6 lg:py-4">
-                                <IconArrowLeft className="w-5 h-5 mr-2" />
-                                <span className="text-sm">Back to home</span>
-                            </Link>
-                        )}
-                    </div>
-                    <div className="max-w-lg w-full">
-                        <motion.h3
-                            className="text-3xl font-bold text-white mb-12 text-center"
+            {/* Right side - Hero */}
+            <div className="hidden lg:block relative flex-1 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 to-blue-800/90"></div>
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                    }}
+                ></div>
+
+                {/* Content */}
+                <div className="relative z-10 flex flex-col justify-center h-full px-12 py-12">
+                    <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="max-w-lg">
+                        <h1 className="text-4xl font-bold text-white mb-6 leading-tight">Your Trusted Moving Partner</h1>
+                        <p className="text-xl text-blue-100 mb-8 leading-relaxed">Connect with professional movers, get instant quotes, and make your next move stress-free.</p>
+
+                        {/* Features */}
+                        <div className="space-y-4">
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }} className="flex items-center text-white">
+                                <div className="bg-white/20 rounded-full p-2 mr-4">
+                                    <IconShieldCheck className="h-5 w-5" />
+                                </div>
+                                <span>Verified & insured providers</span>
+                            </motion.div>
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }} className="flex items-center text-white">
+                                <div className="bg-white/20 rounded-full p-2 mr-4">
+                                    <IconStar className="h-5 w-5" />
+                                </div>
+                                <span>Top-rated customer service</span>
+                            </motion.div>
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 }} className="flex items-center text-white">
+                                <div className="bg-white/20 rounded-full p-2 mr-4">
+                                    <IconTruck className="h-5 w-5" />
+                                </div>
+                                <span>Real-time tracking & updates</span>
+                            </motion.div>
+                        </div>
+
+                        {/* Testimonial */}
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.9 }}
+                            transition={{ delay: 0.8 }}
+                            className="mt-12 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
                         >
-                            Why Choose MoreVans?
-                        </motion.h3>
-                        <div className="grid grid-cols-1 gap-8">
-                            {features.map((feature, index) => (
-                                <motion.div
-                                    key={feature.title}
-                                    className="flex items-start space-x-6"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 1 + index * 0.1 }}
-                                >
-                                    <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                                        <feature.icon className="w-7 h-7 text-white" />
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                        <span className="text-white font-semibold">M</span>
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-xl font-semibold text-white mb-2">{feature.title}</h4>
-                                        <p className="text-base text-white/80 leading-relaxed">{feature.description}</p>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Right Side - Auth Form */}
-                <div className="flex-1 flex flex-col lg:items-center lg:justify-center ">
-                    {/* Main Content */}
-                    <motion.div
-                        className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8 -mt-8 sm:mt-0 lg:mt-0  w-full "
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                    >
-                        <div className="sm:mx-auto mt-20 md:mt-0">
-                            {/* Logo */}
-                            <motion.div className="flex justify-center mb-4" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 0.5 }}>
-                                <img src="/assets/images/morevanstext.png" alt="MoreVans" className="h-28 w-auto" />
-                            </motion.div>
-
-                            <motion.h2 className="text-3xl font-bold text-white text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
-                                {title}
-                            </motion.h2>
-                            {subtitle && (
-                                <motion.p className="mt-2 text-center text-sm text-white/80" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-                                    {subtitle}
-                                </motion.p>
-                            )}
-                        </div>
-
-                        {/* Mobile App-like Container */}
-                        <motion.div
-                            className="mt-8 sm:mx-auto w-full max-w-[600px] lg:max-w-[620px]"
-                            initial={{ y: '100%' }}
-                            animate={{ y: 0 }}
-                            transition={{
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 30,
-                                delay: 0.7,
-                            }}
-                        >
-                            <div className="bg-red-500/10 bottom-0 backdrop-blur-lg rounded-t-3xl sm:rounded-2xl shadow-xl border border-white/20 p-6 sm:p-8">{children}</div>
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-white/90 text-sm italic mb-2">"MoreVans made our office relocation seamless. Professional, reliable, and stress-free!"</p>
+                                    <p className="text-white/70 text-xs">- Maria Johnson, Operations Manager</p>
+                                </div>
+                            </div>
                         </motion.div>
                     </motion.div>
                 </div>
+
+                {/* Floating Elements */}
+                <motion.div
+                    animate={{
+                        y: [0, -10, 0],
+                    }}
+                    transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                    }}
+                    className="absolute top-1/4 right-12 w-16 h-16 bg-white/10 rounded-full backdrop-blur-sm"
+                ></motion.div>
+                <motion.div
+                    animate={{
+                        y: [0, 15, 0],
+                    }}
+                    transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                        delay: 1,
+                    }}
+                    className="absolute bottom-1/4 right-24 w-8 h-8 bg-white/20 rounded-full backdrop-blur-sm"
+                ></motion.div>
             </div>
         </div>
     );

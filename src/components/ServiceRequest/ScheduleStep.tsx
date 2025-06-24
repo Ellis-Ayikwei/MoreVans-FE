@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import StepNavigation from './stepNavigation';
 import { Formik, Form, Field } from 'formik';
 import { IconCalendar, IconCalendarCheck, IconClock, IconClipboardCheck, IconMapPin, IconRocket } from '@tabler/icons-react';
@@ -7,12 +7,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { IRootState, AppDispatch } from '../../store';
 import { submitStepToAPI, resetForm, setCurrentStep, getPricePreview, updateFormValues } from '../../store/slices/createRequestSlice';
 import { useNavigate } from 'react-router-dom';
-import PriceForecastModal from '../Booking/PriceForecastPage';
-import PreAnimationModal from '../Booking/PreAnimationModal';
-import ConfirmationModal from '../Booking/ConfirmationModal';
+import PriceForecastModal from './Booking/PriceForecastPage';
+import PreAnimationModal from './Booking/PreAnimationModal';
+import ConfirmationModal from './Booking/ConfirmationModal';
 import { JourneyStop, RequestItem } from '../../store/slices/serviceRequestSice';
 import showMessage from '../../helper/showMessage';
 import { calculateRouteDetails } from '../../helper/routeCalculator';
+import EmailModal from '../../pages/user/EmailModal';
+import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 
 interface StaffPrice {
     total_price: number;
@@ -36,6 +39,16 @@ interface DayPrice {
     staff_prices: {
         [key: string]: StaffPrice;
     };
+}
+
+interface AddressWithCoordinates {
+    address: string;
+    postcode: string;
+    coordinates: {
+        lat: number;
+        lng: number;
+    };
+    type: 'pickup' | 'dropoff' | 'stop';
 }
 
 interface BookingDetails {
@@ -79,6 +92,32 @@ interface ScheduleStepProps {
     onPriceForecast: (forecast: any) => void;
 }
 
+interface GuestUserData {
+    name: string;
+    email: string;
+    phone: string;
+    user_id?: string;
+}
+
+interface StoredGuestUserDetails {
+    user_id: string;
+    name: string;
+    email: string;
+    phone: string;
+    first_name: string;
+    last_name: string;
+    savedAt: string;
+}
+
+interface AuthUser {
+    user: {
+        id: string;
+        email: string;
+        user_type: string;
+        name?: string;
+    };
+}
+
 const ScheduleStep: React.FC<ScheduleStepProps> = ({
     values,
     handleChange,
@@ -109,34 +148,135 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
     const [selectedPrice, setSelectedPrice] = useState<number>(0);
     const [selectedStaffCount, setSelectedStaffCount] = useState<number>(0);
 
-    const calculateRouteInfo = async () => {
-        try {
-            if (values.request_type === 'journey') {
-                // For journey requests, calculate route between all stops
-                const stops = values.journey_stops || [];
-                const routeDetails = await calculateRouteDetails(stops);
-                return {
-                    total_distance: routeDetails.totalDistance,
-                    total_duration: routeDetails.totalDuration,
-                    route_details: routeDetails.legs,
-                };
-            } else {
-                // For instant requests, calculate route between pickup and dropoff
-                const routeDetails = await calculateRouteDetails([{ address: values.pickup_location }, { address: values.dropoff_location }]);
-                return {
-                    total_distance: routeDetails.totalDistance,
-                    total_duration: routeDetails.totalDuration,
-                    route_details: routeDetails.legs,
-                };
+    // Email modal state management
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const [guestUserData, setGuestUserData] = useState<GuestUserData | null>(null);
+    const isAuthenticated = useIsAuthenticated();
+    const authUser = useAuthUser() as AuthUser | null;
+
+    // Get stored guest user details (with user_id)
+    const getStoredGuestDetails = (): StoredGuestUserDetails | null => {
+        const storedDetails = localStorage.getItem('guestUserDetails');
+        if (storedDetails) {
+            try {
+                const parsedDetails = JSON.parse(storedDetails);
+                // Check if the data is not too old (optional: 30 days)
+                const savedAt = new Date(parsedDetails.savedAt);
+                const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+                if (savedAt > thirtyDaysAgo) {
+                    return parsedDetails;
+                } else {
+                    // Remove old data
+                    localStorage.removeItem('guestUserDetails');
+                }
+            } catch (error) {
+                console.error('Error parsing stored guest details:', error);
+                localStorage.removeItem('guestUserDetails');
             }
-        } catch (error) {
-            console.error('Error calculating route:', error);
-            return null;
         }
+        return null;
     };
 
+    // Memoize getCurrentUserData to prevent infinite re-renders
+    const getCurrentUserData = useCallback((): GuestUserData | null => {
+        if (isAuthenticated && authUser?.user) {
+            return {
+                name: authUser.user.name || '',
+                email: authUser.user.email || '',
+                phone: '',
+                user_id: authUser.user.id,
+            };
+        }
+
+        // Check for stored guest details first (includes user_id)
+        const storedDetails = getStoredGuestDetails();
+        if (storedDetails) {
+            return {
+                name: storedDetails.name,
+                email: storedDetails.email,
+                phone: storedDetails.phone,
+                user_id: storedDetails.user_id,
+            };
+        }
+
+        if (guestUserData) {
+            return guestUserData;
+        }
+
+        // Check legacy localStorage for backward compatibility
+        const storedGuestData = localStorage.getItem('guestUserData');
+        if (storedGuestData) {
+            try {
+                return JSON.parse(storedGuestData);
+            } catch (error) {
+                localStorage.removeItem('guestUserData');
+            }
+        }
+
+        return null;
+    }, [isAuthenticated, authUser, guestUserData]);
+
+    // Auto-populate contact details from guest user data or authenticated user
+    useEffect(() => {
+        const userData = getCurrentUserData();
+        if (userData) {
+            // Always update if we have user data, but don't overwrite manually entered data
+            if (!values.contact_name || values.contact_name === '') {
+                setFieldValue('contact_name', userData.name);
+            }
+            if (!values.contact_email || values.contact_email === '') {
+                setFieldValue('contact_email', userData.email);
+            }
+            if (!values.contact_phone || values.contact_phone === '') {
+                setFieldValue('contact_phone', userData.phone);
+            }
+            if (!values.user_id && userData.user_id) {
+                setFieldValue('user_id', userData.user_id);
+            }
+        }
+    }, [getCurrentUserData, values.contact_name, values.contact_email, values.contact_phone, values.user_id]); // Remove setFieldValue and other unstable dependencies
+
+    // Additional effect to handle when guest user submits data through modal
+    useEffect(() => {
+        if (guestUserData) {
+            console.log('Prefilling form with guest user data:', guestUserData);
+            setFieldValue('contact_name', guestUserData.name);
+            setFieldValue('contact_email', guestUserData.email);
+            setFieldValue('contact_phone', guestUserData.phone);
+            if (guestUserData.user_id) {
+                setFieldValue('user_id', guestUserData.user_id);
+            }
+        }
+    }, [guestUserData]); // Remove setFieldValue from dependencies
+
     const handleSubmit = async () => {
-        console.log('handleSubmit');
+        console.log('handleSubmit called'); // Debug log
+
+        // For guest users, check if we need contact details first
+        if (!isAuthenticated) {
+            console.log('executeWithContactDetails called user is not authed...................');
+            console.log('user auth status', isAuthenticated);
+            executeWithContactDetails((userData) => {
+                if (userData) {
+                    // Update form values with guest user data
+                    setFieldValue('contact_name', userData.name);
+                    setFieldValue('contact_email', userData.email);
+                    setFieldValue('contact_phone', userData.phone);
+                    setFieldValue('user_id', userData.user_id);
+                }
+                // Proceed with actual submission
+                performSubmission();
+            });
+            return;
+        }
+
+        // For authenticated users, proceed directly
+        performSubmission();
+    };
+
+    const performSubmission = async () => {
+        console.log('performSubmission called');
         try {
             setShowLoading(true);
             setIsSubmitting(true);
@@ -149,6 +289,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                     }, {} as { [key: string]: boolean })
                 );
                 setShowLoading(false);
+                setIsSubmitting(false);
                 return;
             }
 
@@ -163,9 +304,9 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
             const addresses: AddressWithCoordinates[] =
                 values.request_type === 'journey'
                     ? (values.journey_stops || []).map((stop: JourneyStop) => ({
-                          address: stop.address,
-                          postcode: stop.postcode,
-                          coordinates: stop.coordinates,
+                          address: stop.location || '',
+                          postcode: stop.postcode || '',
+                          coordinates: stop.coordinates || { lat: 0, lng: 0 },
                           type: stop.type,
                       }))
                     : [
@@ -190,6 +331,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
                         preferred_date: values.preferred_date,
                         preferred_time: values.preferred_time,
                         service_level: values.service_speed,
+                        user_id: values.user_id,
                         addresses, // Send addresses with coordinates
                     },
                     isEditing,
@@ -219,6 +361,20 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Handle when guest user provides their details through the modal
+    const handleGuestDataSubmit = (userData: { name: string; email: string; phone: string; user_id: string }) => {
+        handleGuestUserSubmit(userData);
+
+        // Update form values with the provided data
+        setFieldValue('contact_name', userData.name);
+        setFieldValue('contact_email', userData.email);
+        setFieldValue('contact_phone', userData.phone);
+        setFieldValue('user_id', userData.user_id);
+
+        // Continue with the submission
+        performSubmission();
     };
 
     const handleAnimationComplete = async () => {
@@ -299,20 +455,122 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({
             staffCount: selectedStaffCount,
             priorityType: values.service_speed,
             pickupLocation: {
-                address: values.pickup_location,
-                postcode: values.pickup_postcode,
-                coordinates: values.pickup_coordinates,
+                address: values.pickup_location || '',
+                postcode: values.pickup_postcode || '',
+                coordinates: values.pickup_coordinates || { lat: 0, lng: 0 },
             },
             dropoffLocation: {
-                address: values.dropoff_location,
-                postcode: values.dropoff_postcode,
-                coordinates: values.dropoff_coordinates,
+                address: values.dropoff_location || '',
+                postcode: values.dropoff_postcode || '',
+                coordinates: values.dropoff_coordinates || { lat: 0, lng: 0 },
             },
         };
     };
 
+    // Execute action with contact details
+    const executeWithContactDetails = (callback: (userData?: GuestUserData) => void) => {
+        if (!requiresContactDetails()) {
+            // User is authenticated or guest data is available
+            let userData: GuestUserData;
+
+            if (isAuthenticated && authUser?.user) {
+                userData = {
+                    name: authUser.user.name || '',
+                    email: authUser.user.email || '',
+                    phone: '',
+                    user_id: authUser.user.id,
+                };
+            } else {
+                // Use guest data (which now includes user_id if available)
+                const storedDetails = getStoredGuestDetails();
+                userData = storedDetails
+                    ? {
+                          name: storedDetails.name,
+                          email: storedDetails.email,
+                          phone: storedDetails.phone,
+                          user_id: storedDetails.user_id,
+                      }
+                    : guestUserData || {
+                          name: '',
+                          email: '',
+                          phone: '',
+                      };
+            }
+
+            callback(userData);
+        } else {
+            // Show modal to collect guest user details
+            setIsEmailModalOpen(true);
+        }
+    };
+
+    // Check if user needs to provide contact details
+    const requiresContactDetails = (): boolean => {
+        // If user is authenticated, they don't need to provide details
+        if (isAuthenticated && authUser?.user) {
+            return false;
+        }
+
+        // Check if we have stored guest details with user_id
+        const storedDetails = getStoredGuestDetails();
+        if (storedDetails) {
+            // Convert stored details to GuestUserData format and set it
+            const userData: GuestUserData = {
+                name: storedDetails.name,
+                email: storedDetails.email,
+                phone: storedDetails.phone,
+                user_id: storedDetails.user_id,
+            };
+            setGuestUserData(userData);
+            return false;
+        }
+
+        // If guest user data is already provided, they don't need to provide again
+        if (guestUserData) {
+            return false;
+        }
+
+        // Check legacy localStorage format for backward compatibility
+        const storedGuestData = localStorage.getItem('guestUserData');
+        if (storedGuestData) {
+            try {
+                const parsedData = JSON.parse(storedGuestData);
+                setGuestUserData(parsedData);
+                return false;
+            } catch (error) {
+                localStorage.removeItem('guestUserData');
+            }
+        }
+
+        return true;
+    };
+
+    // Handle email modal submission
+    const handleGuestUserSubmit = (userData: GuestUserData) => {
+        setGuestUserData(userData);
+        setIsEmailModalOpen(false);
+
+        // Note: The detailed user info with user_id is saved by the EmailModal itself
+        // This is just for backward compatibility
+        const legacyData = {
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+        };
+        localStorage.setItem('guestUserData', JSON.stringify(legacyData));
+    };
+
     return (
         <div className="space-y-6 animate-fadeIn">
+            {/* Email Modal for guest users */}
+            <EmailModal
+                isOpen={isEmailModalOpen}
+                onClose={() => setIsEmailModalOpen(false)}
+                onSubmit={handleGuestDataSubmit}
+                title="Get Your Moving Quotes!"
+                subtitle="Enter your contact details to receive personalized quotes from professional movers."
+            />
+
             <h2 className="text-2xl font-bold mb-6">Step {stepNumber}: Schedule Your Service</h2>
             <div className="space-y-6 animate-fadeIn">
                 <div className="flex items-center mb-6">

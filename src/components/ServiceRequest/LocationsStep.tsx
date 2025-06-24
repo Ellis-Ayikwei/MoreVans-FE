@@ -67,7 +67,8 @@ import { setStepData, updateFormValues } from '../../store/slices/createRequestS
 import { AppDispatch } from '../../store';
 import { submitStepToAPI } from '../../store/slices/createRequestSlice';
 import showMessage from '../../helper/showMessage';
-import AddressAutocomplete from './AddressAutocomplete';
+import AddressAutocomplete from '../AddressAutocomplete';
+import { v4 as uuidv4 } from 'uuid';
 
 const propertyTypes = ['house', 'apartment', 'office', 'storage'];
 const vehicleTypes = ['motorcycle', 'car', 'suv', 'truck', 'van'];
@@ -188,53 +189,92 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
     const handleSubmit = async () => {
         try {
             setIsSubmitting(true);
-            dispatch(updateFormValues(values));
 
-            if (values.request_type === 'instant') {
-                onNext();
+            // First run the standard form validation
+            const validationErrors = await validateForm();
+            if (Object.keys(validationErrors).length > 0) {
+                setTouched(validationErrors);
+                showMessage('Please fill in all required fields', 'error');
                 return;
             }
 
-            // For other request types, proceed with validation
-            const errors = await validateForm();
-            console.log('errors', errors);
-            if (Object.keys(errors).length > 0) {
-                setTouched(
-                    Object.keys(errors).reduce((acc, key) => {
-                        acc[key] = true;
-                        return acc;
-                    }, {} as { [field: string]: boolean })
-                );
-                return;
+            // Additional validation for journey stops
+            if (values.request_type === 'journey' && values.journey_stops && values.journey_stops.length > 0) {
+                const stopValidationErrors: string[] = [];
+
+                values.journey_stops.forEach((stop: any, index: number) => {
+                    // Check if address is selected
+                    const hasAddress = stop.location?.address && stop.location.address.trim() !== '';
+
+                    // Check if coordinates are available (either from location or coordinates array)
+                    const hasCoordinates =
+                        (stop.location?.latitude !== null && stop.location?.longitude !== null) ||
+                        (stop.coordinates && Array.isArray(stop.coordinates) && stop.coordinates[0] !== null && stop.coordinates[1] !== null);
+
+                    if (!hasAddress) {
+                        stopValidationErrors.push(`Stop ${index + 1}: Please select a valid address from the dropdown suggestions`);
+                    }
+
+                    if (!hasCoordinates) {
+                        stopValidationErrors.push(`Stop ${index + 1}: Address coordinates are missing. Please reselect the address from suggestions`);
+                    }
+
+                    // Check for minimum required stops
+                    const pickupStops = values.journey_stops.filter((s: any) => s.type === 'pickup');
+                    const dropoffStops = values.journey_stops.filter((s: any) => s.type === 'dropoff');
+
+                    if (pickupStops.length === 0) {
+                        stopValidationErrors.push('At least one pickup location is required');
+                    }
+
+                    if (dropoffStops.length === 0) {
+                        stopValidationErrors.push('At least one dropoff location is required');
+                    }
+                });
+
+                if (stopValidationErrors.length > 0) {
+                    showMessage(stopValidationErrors.join('. '), 'error');
+                    return;
+                }
             }
 
-            const result = await dispatch(
-                submitStepToAPI({
-                    step: stepNumber,
-                    payload: {
-                        pickup_location: values.pickup_location,
-                        dropoff_location: values.dropoff_location,
-                        pickup_unit_number: values.pickup_unit_number,
-                        pickup_floor: values.pickup_floor,
-                        pickup_parking_info: values.pickup_parking_info,
-                        dropoff_unit_number: values.dropoff_unit_number,
-                        dropoff_floor: values.dropoff_floor,
-                        dropoff_parking_info: values.dropoff_parking_info,
-                        pickup_has_elevator: values.pickup_has_elevator,
-                        dropoff_has_elevator: values.dropoff_has_elevator,
-                    },
-                    isEditing,
-                    request_id: values.id,
-                })
-            ).unwrap();
+            // Format journey stops data
+            const formattedJourneyStops = values.journey_stops.map((stop: any) => ({
+                type: stop.type,
+                location: {
+                    address: stop.location.address,
+                    address_line1: stop.address_line1,
+                    city: stop.city,
+                    county: stop.county,
+                    postcode: stop.location.postcode || stop.postcode || '',
+                    latitude: stop.location.latitude || stop.coordinates?.[0] || null,
+                    longitude: stop.location.longitude || stop.coordinates?.[1] || null,
+                    contact_name: stop.location.contact_name || stop.contact_name || '',
+                    contact_phone: stop.location.contact_phone || stop.contact_phone || '',
+                    special_instructions: stop.location.special_instructions || '',
+                },
+                unit_number: stop.unit_number || '',
+                floor: stop.floor || 0,
+                parking_info: stop.parking_info || '',
+                has_elevator: stop.has_elevator || false,
+                instructions: stop.instructions || '',
+                property_type: stop.property_type || 'house',
+                number_of_rooms: stop.number_of_rooms || 1,
+                number_of_floors: stop.number_of_floors || 1,
+                service_type: stop.service_type || '',
+            }));
 
-            if (result.status === 200 || result.status === 201) {
-                onNext();
-            } else {
-                showMessage('Failed to save location details. Please try again.', 'error');
-            }
-        } catch (error: any) {
-            showMessage('An error occurred. Please try again.', 'error');
+            const stepData = {
+                journey_stops: formattedJourneyStops,
+            };
+
+            await dispatch(submitStepToAPI({ step: stepNumber, payload: stepData }));
+            showMessage('Locations updated successfully', 'success');
+
+            onNext();
+        } catch (error) {
+            console.error('Error submitting locations:', error);
+            showMessage('Error submitting locations. Please try again.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -317,57 +357,25 @@ const LocationsStep: React.FC<LocationsStepProps> = ({ values, handleChange, han
 
                     {/* Journey Planning - show only if request_type is 'journey' */}
                     {values.request_type === 'journey' && (
-                        <JourneyPlanning values={values} setFieldValue={setFieldValue} onStopUpdate={handleStopUpdate} onStopAdd={handleStopAdd} onStopRemove={handleStopRemove} />
+                        <>
+                            {/* Validation reminder for journey stops */}
+                            {values.journey_stops && values.journey_stops.length > 0 && (
+                                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                                    <div className="flex items-start">
+                                        <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
+                                        <div>
+                                            <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">Address Selection Required</p>
+                                            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                                Please ensure all stops have valid addresses selected from the dropdown suggestions. This ensures accurate route mapping and coordinate data.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <JourneyPlanning values={values} setFieldValue={setFieldValue} />
+                        </>
                     )}
-
-                    {/* Type selector - visible but shows current selection */}
-                    <div className="mt-6">
-                        <h4 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-3">Request Type</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => handleRequestTypeChange('instant')}
-                                className={`py-4 px-5 rounded-lg border-2 flex flex-col items-center justify-center text-center transition-colors 
-                      ${
-                          values.request_type === 'instant'
-                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/10'
-                      }`}
-                            >
-                                <FontAwesomeIcon icon={faArrowRight} className={`text-2xl mb-2 ${values.request_type === 'instant' ? 'text-blue-500' : 'text-gray-400'}`} />
-                                <span className={`font-medium ${values.request_type === 'instant' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>Direct Route</span>
-                                <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Simple pickup and dropoff locations</p>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => handleRequestTypeChange('journey')}
-                                className={`py-4 px-5 rounded-lg border-2 flex flex-col items-center justify-center text-center transition-colors 
-                      ${
-                          values.request_type === 'journey'
-                              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/10'
-                      }`}
-                            >
-                                <FontAwesomeIcon icon={faRoute} className={`text-2xl mb-2 ${values.request_type === 'journey' ? 'text-purple-500' : 'text-gray-400'}`} />
-                                <span className={`font-medium ${values.request_type === 'journey' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'}`}>
-                                    Multi-Stop Journey
-                                </span>
-                                <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">Multiple pickup, dropoff and intermediate stops</p>
-                            </button>
-                        </div>
-
-                        {/* Info message about type conversion */}
-                        <div className="mt-4 flex items-start text-sm text-gray-600 dark:text-gray-400">
-                            <FontAwesomeIcon icon={faInfoCircle} className="mt-0.5 mr-2 text-blue-500" />
-                            <p>
-                                You can switch between direct route and multi-stop journey at any time.
-                                {values.request_type === 'instant'
-                                    ? ' When you add more than two stops, your request will automatically convert to a multi-stop journey.'
-                                    : ' Converting to a direct route will keep only one pickup and one dropoff location if you have multiple stops.'}
-                            </p>
-                        </div>
-                    </div>
 
                     {/* <div className="p-6 space-y-6">
                         <AddressAutocomplete

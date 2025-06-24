@@ -1,34 +1,39 @@
 import { FC } from 'react';
+import aluminiLogo from './morevans.png'; // Adjust path to your image
 
 interface IconLoaderProps {
     className?: string;
     fill?: boolean;
     duotone?: boolean;
+    imageSize?: number;
+    spinnerSize?: number;
+    borderColor?: string;
+    fullScreen?: boolean;
 }
 
-const IconLoader: FC<IconLoaderProps> = ({ className, fill = false, duotone = true }) => {
+const IconLoader: FC<IconLoaderProps> = ({ className = '', fill = false, duotone = true, imageSize = 80, spinnerSize = 90, borderColor = '#1976d2', fullScreen = false }) => {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <line x1="12" y1="2" x2="12" y2="6"></line>
-            <line x1="12" y1="18" x2="12" y2="22"></line>
-            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-            <line x1="2" y1="12" x2="6" y2="12"></line>
-            <line x1="18" y1="12" x2="22" y2="12"></line>
-            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-        </svg>
+        <div className={fullScreen ? 'flex items-center justify-center h-screen' : 'inline-flex items-center justify-center'}>
+            <div className="relative">
+                {/* The spinner with fixed styling */}
+                <div
+                    className={`animate-spin ${className}`}
+                    style={{
+                        width: `${spinnerSize}px`,
+                        height: `${spinnerSize}px`,
+                        borderRadius: '50%',
+                        borderWidth: '2px',
+                        borderStyle: 'solid',
+                        borderColor: 'transparent transparent ' + borderColor + ' transparent',
+                    }}
+                ></div>
+
+                {/* The centered image */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ width: `${imageSize}px`, height: `${imageSize}px` }}>
+                    <img src={aluminiLogo} alt="Alumni Logo" className="w-full h-full object-contain" />
+                </div>
+            </div>
+        </div>
     );
 };
 

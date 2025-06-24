@@ -6,11 +6,17 @@ import DraftRequestsModal from './components/DraftRequestsModal';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { fetchDrafts } from './store/slices/draftRequestsSlice';
 
+interface AuthUser {
+    user: {
+        id: string;
+    };
+}
+
 function App({ children }: PropsWithChildren) {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const dispatch = useDispatch<AppDispatch>();
     const authUser = useAuthUser();
-    const user = authUser as { id: string };
+    const user = authUser as AuthUser | null;
     const drafts = useSelector((state: IRootState) => state.draftRequests.drafts);
     const [showDraftModal, setShowDraftModal] = useState(false);
 
@@ -24,8 +30,8 @@ function App({ children }: PropsWithChildren) {
         dispatch(toggleLocale(localStorage.getItem('i18nextLng') || themeConfig.locale));
         dispatch(toggleSemidark(localStorage.getItem('semidark') === 'true' || themeConfig.semidark));
 
-        if (user?.id) {
-            dispatch(fetchDrafts({ user_id: user.id }));
+        if (user?.user.id) {
+            dispatch(fetchDrafts({ user_id: user.user.id }));
         }
 
         // Show draft modal if there are drafts and user is on the home page

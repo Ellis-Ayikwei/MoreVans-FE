@@ -125,14 +125,14 @@ const Sidebar = () => {
             label: 'My Moves ',
             children: null,
         },
-        {
-            name: 'saved-providers',
-            path: '/saved-providers',
-            icon: <IconBookmark className="!w-8 !h-8 !text-white" />,
-            label: 'Saved Providers ',
-            badge: '3',
-            children: null,
-        },
+        // {
+        //     name: 'saved-providers',
+        //     path: '/saved-providers',
+        //     icon: <IconBookmark className="!w-8 !h-8 !text-white" />,
+        //     label: 'Saved Providers ',
+        //     badge: '3',
+        //     children: null,
+        // },
         {
             name: 'messages',
             path: '/chat',

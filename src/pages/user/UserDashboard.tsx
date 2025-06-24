@@ -52,7 +52,7 @@ interface AuthUser {
 
 interface Booking {
     id: string;
-    status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'in_transit';
+    status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'in_transit' | 'accepted';
     date: string;
     pickup_location: string;
     dropoff_location: string;
@@ -63,6 +63,16 @@ interface Booking {
     price?: number;
     trackingUrl?: string;
     journey_stops?: { id: string; type: string; address: string }[];
+    request_type?: string;
+    created_at?: string;
+    propertyDetails?: {
+        type: string;
+        rooms: number;
+        floors: number;
+        hasElevator: boolean;
+        parkingAvailable: boolean;
+        specialInstructions: string;
+    };
 }
 
 // Update the ServiceRequest interface with additional fields
@@ -129,6 +139,7 @@ const UserDashboard: React.FC = () => {
     const [isChatMinimized, setIsChatMinimized] = useState<boolean>(false);
     const auth = useAuthUser() as AuthUser;
     const user = auth?.user;
+    console.log('the auth user', user);
     const [activeChatProvider, setActiveChatProvider] = useState<any>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const [showNotifications, setShowNotifications] = useState<boolean>(false);
@@ -136,6 +147,7 @@ const UserDashboard: React.FC = () => {
     const notificationsRef = useRef<HTMLDivElement>(null);
     const [activeDisputes, setActiveDisputes] = useState<any[]>([]);
     const [chatMessages, setChatMessages] = useState<any[]>([]);
+    const [chatInput, setChatInput] = useState<string>('');
     const navigate = useNavigate();
 
     const { data: bookingsData, isLoading: bookingsLoading, error: bookingsError } = useSWR(user?.id ? `/requests/?user_id=${user?.id}` : null, fetcher);
@@ -147,8 +159,6 @@ const UserDashboard: React.FC = () => {
         //   setUser(userData);
         // }
 
-        // Fetch bookings
-        fetchBookings();
         fetchActiveDisputes();
 
         // Set upcoming move
@@ -202,61 +212,6 @@ const UserDashboard: React.FC = () => {
             chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [chatMessages, showChat, isChatMinimized]);
-
-    const fetchBookings = () => {
-        // Mock data for bookings
-        const mockBookings: Booking[] = [
-            {
-                id: 'BK-12345',
-                status: 'completed',
-                date: '2023-06-10T14:00:00',
-                pickup_location: '123 Main St, New York, NY',
-                dropoff_location: '456 Park Ave, New York, NY',
-                itemType: 'Furniture',
-                item_size: 'Large',
-                providerName: 'Express Movers',
-                providerRating: 4.8,
-                price: 120,
-                trackingUrl: '/tracking/BK-12345',
-            },
-            {
-                id: 'BK-12346',
-                status: 'in_progress',
-                date: '2023-06-15T10:30:00',
-                pickup_location: '789 Broadway, New York, NY',
-                dropoff_location: '101 5th Ave, New York, NY',
-                itemType: 'Electronics',
-                item_size: 'Medium',
-                providerName: 'Safe Transport',
-                providerRating: 4.9,
-                price: 85,
-                trackingUrl: '/tracking/BK-12346',
-            },
-            {
-                id: 'BK-12347',
-                status: 'confirmed',
-                date: '2023-06-20T09:00:00',
-                pickup_location: '222 E 44th St, New York, NY',
-                dropoff_location: '888 7th Ave, New York, NY',
-                itemType: 'Boxes',
-                item_size: 'Small',
-                providerName: 'City Logistics',
-                providerRating: 4.6,
-                price: 65,
-                trackingUrl: '/tracking/BK-12347',
-            },
-            {
-                id: 'BK-12348',
-                status: 'pending',
-                date: '2023-06-25T13:00:00',
-                pickup_location: '350 5th Ave, New York, NY',
-                dropoff_location: '1 World Trade Center, New York, NY',
-                itemType: 'Artwork',
-                item_size: 'Medium',
-                trackingUrl: '/tracking/BK-12348',
-            },
-        ];
-    };
 
     // Add function for active disputes
     const fetchActiveDisputes = () => {
@@ -540,441 +495,497 @@ const UserDashboard: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-            <div className="container mx-auto px-4 py-8">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 rounded-xl shadow-lg mb-8 overflow-hidden relative">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                        <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-white animate-pulse"></div>
-                        <div className="absolute bottom-10 right-10 w-24 h-24 rounded-full bg-white animate-pulse delay-700"></div>
-                        <div className="absolute top-24 right-32 w-16 h-16 rounded-full bg-white animate-pulse delay-300"></div>
-                    </div>
-
-                    <div className="p-6 relative z-10">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                            <div className="animate-fade-in-up">
-                                <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, {user?.name || 'Customer'}</h1>
-                                <p className="text-blue-100">Track your shipments and manage your moving services</p>
-                                <div className="flex flex-wrap mt-4 gap-2">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-200 text-blue-800 dark:bg-blue-300 dark:text-blue-900">
-                                        <FontAwesomeIcon icon={faTruck} className="mr-1" />
-                                        {bookings.filter((b) => b.status === 'in_progress').length} Active Moves
-                                    </span>
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-200 text-green-800 dark:bg-green-300 dark:text-green-900">
-                                        <FontAwesomeIcon icon={faCalendarCheck} className="mr-1" />
-                                        Premium Member
-                                    </span>
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-200 text-purple-800 dark:bg-purple-300 dark:text-purple-900">
-                                        <FontAwesomeIcon icon={faStar} className="mr-1" />
-                                        320 Loyalty Points
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="mt-6 md:mt-0 flex flex-col sm:flex-row gap-3">
-                                <button
-                                    onClick={() => document.getElementById('quick-estimate')?.scrollIntoView({ behavior: 'smooth' })}
-                                    className="inline-flex items-center px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                                >
-                                    <FontAwesomeIcon icon={faCalculator} className="mr-2" />
-                                    Quick Estimate
-                                </button>
-                                <Link
-                                    to="/service-request"
-                                    className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 font-medium rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                                    </svg>
-                                    Book a Move
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <StatCard
-                        icon={faBox}
-                        title="Total Bookings"
-                        value={bookings.length}
-                        color="blue"
-                        trend={{
-                            value: 12,
-                            isPositive: true,
-                        }}
-                    />
-
-                    <StatCard icon={faMapMarkerAlt} title="Active Moves" value={bookings.filter((b) => b.status === 'in_transit' || b.status === 'accepted').length} color="purple" />
-
-                    <StatCard
-                        icon={faUser}
-                        title="Completed Moves"
-                        value={bookings.filter((b) => b.status === 'completed').length}
-                        color="green"
-                        trend={{
-                            value: 5,
-                            isPositive: true,
-                        }}
-                    />
-
-                    <StatCard icon={faStar} title="Pending Approval" value={bookings.filter((b) => b.status === 'pending').length} color="yellow" />
-                </div>
-
-                <div className="flex flex-col lg:flex-row gap-8">
-                    <div className="w-full lg:w-1/4 space-y-6">
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Quick Actions</h2>
-                            <ul className="space-y-2">
-                                <li>
-                                    <Link
-                                        to="/service-request"
-                                        className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                                    >
-                                        <div className="rounded-full bg-blue-100 dark:bg-blue-900/50 p-2 mr-3">
-                                            <FontAwesomeIcon icon={faBox} className="text-blue-500 dark:text-blue-400" />
-                                        </div>
-                                        <span>Request New Move</span>
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/support" className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-                                        <div className="rounded-full bg-purple-100 dark:bg-purple-900/50 p-2 mr-3">
-                                            <FontAwesomeIcon icon={faHeadset} className="text-purple-500 dark:text-purple-400" />
-                                        </div>
-                                        <span>Contact Support</span>
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/profile" className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-                                        <div className="rounded-full bg-green-100 dark:bg-green-900/50 p-2 mr-3">
-                                            <FontAwesomeIcon icon={faUser} className="text-green-500 dark:text-green-400" />
-                                        </div>
-                                        <span>Update Profile</span>
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/invoices" className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-                                        <div className="rounded-full bg-yellow-100 dark:bg-yellow-900/50 p-2 mr-3">
-                                            <FontAwesomeIcon icon={faFileInvoice} className="text-yellow-500 dark:text-yellow-400" />
-                                        </div>
-                                        <span>View Invoices</span>
-                                    </Link>
-                                </li>
-                            </ul>
+        <>
+            <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-slate-900 dark:via-blue-900 dark:to-slate-900 min-h-screen transition-colors duration-300">
+                <div className="container mx-auto px-4 py-8">
+                    {/* Enhanced Header with Logistics Branding */}
+                    <div className="bg-gradient-to-r from-blue-800 via-blue-900 to-slate-800 rounded-3xl shadow-xl mb-8 overflow-hidden relative">
+                        {/* Background Pattern */}
+                        <div className="absolute inset-0 opacity-10">
+                            <div
+                                className="w-full h-full"
+                                style={{
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Cpath d='M15 30c8.284 0 15-6.716 15-15 0 8.284 6.716 15 15 15-8.284 0-15 6.716-15 15 0-8.284-6.716-15-15-15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                                }}
+                            ></div>
                         </div>
 
-                        <div id="quick-estimate" className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Quick Moving Estimate</h2>
-                            <form className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Move Size</label>
-                                    <select
-                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                        defaultValue=""
-                                    >
-                                        <option value="" disabled>
-                                            Select size
-                                        </option>
-                                        <option value="studio">Studio / 1 Room</option>
-                                        <option value="1bedroom">1 Bedroom</option>
-                                        <option value="2bedroom">2 Bedrooms</option>
-                                        <option value="3bedroom">3+ Bedrooms</option>
-                                        <option value="office">Office</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Moving Distance</label>
-                                    <select
-                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                        defaultValue=""
-                                    >
-                                        <option value="" disabled>
-                                            Select distance
-                                        </option>
-                                        <option value="local">Local (&lt; 50 miles)</option>
-                                        <option value="regional">Regional (50-250 miles)</option>
-                                        <option value="longDistance">Long Distance (250+ miles)</option>
-                                        <option value="international">International</option>
-                                    </select>
-                                </div>
-                                <button type="button" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
-                                    Get Estimate
-                                </button>
-                            </form>
+                        {/* Floating Elements */}
+                        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+                            <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-orange-500/20 animate-pulse"></div>
+                            <div className="absolute bottom-10 right-10 w-24 h-24 rounded-full bg-blue-500/20 animate-pulse delay-700"></div>
+                            <div className="absolute top-24 right-32 w-16 h-16 rounded-full bg-orange-400/30 animate-pulse delay-300"></div>
                         </div>
 
-                        {bookings.some((b) => b.status === 'in_progress') && (
-                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Active Move Tracker</h2>
-                                {bookings
-                                    .filter((b) => b.status === 'in_progress')
-                                    .map((booking) => (
-                                        <div key={booking.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                            <div className="flex justify-between items-center mb-3">
-                                                <span className="text-sm font-medium text-gray-500">{booking.id}</span>
-                                                <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">In Progress</span>
-                                            </div>
-                                            <div className="mb-4">
-                                                <div className="text-sm mb-1">
-                                                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mr-2" />
-                                                    <span className="font-medium">From:</span> {booking?.pickup_location?.split(',')[0]}
-                                                </div>
-                                                <div className="text-sm">
-                                                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-blue-500 mr-2" />
-                                                    <span className="font-medium">To:</span> {booking?.dropoff_location?.split(',')[0]}
-                                                </div>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                                                <div className="bg-blue-600 h-2.5 rounded-full w-2/3"></div>
-                                            </div>
-                                            <Link to={booking.trackingUrl || '#'} className="w-full text-center block bg-blue-50 text-blue-700 py-2 rounded-lg hover:bg-blue-100 transition-colors">
-                                                View Live Tracking
-                                            </Link>
-                                        </div>
-                                    ))}
-                            </div>
-                        )}
-
-                        {upcomingMove && <UpcomingMoveWeather booking={upcomingMove} />}
-
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mt-4">
-                            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Payments & Refunds</h2>
-
-                            <div className="space-y-3">
-                                {activeDisputes.some((d) => d.resolution?.outcome === 'refunded') ? (
-                                    <div className="flex items-start p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-900/40">
-                                        <div className="mr-3 text-green-500">
-                                            <FontAwesomeIcon icon={faCheckCircle} className="text-xl" />
+                        <div className="p-8 relative z-10">
+                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                                <div className="animate-fade-in-up">
+                                    {/* Logo and Company Info */}
+                                    <div className="flex items-center mb-4">
+                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-3 rounded-2xl shadow-lg mr-4">
+                                            <FontAwesomeIcon icon={faTruck} className="h-8 w-8 text-white" />
                                         </div>
                                         <div>
-                                            <h3 className="font-medium text-green-800 dark:text-green-300">Refund Processed</h3>
-                                            <p className="text-sm text-green-700 dark:text-green-400 mt-0.5">
-                                                Your refund of {activeDisputes.find((d) => d.resolution?.outcome === 'refunded')?.resolution.currency}{' '}
-                                                {activeDisputes.find((d) => d.resolution?.outcome === 'refunded')?.resolution.amount}
-                                                has been processed and will appear in your account in 3-5 business days.
-                                            </p>
+                                            <h1 className="text-3xl font-bold text-white">Welcome back, {user?.first_name || user?.user_type}</h1>
+                                            <p className="text-blue-200 text-sm">Professional Logistics Dashboard</p>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="flex items-start p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/40">
-                                        <div className="mr-3 text-blue-500">
-                                            <FontAwesomeIcon icon={faCreditCard} className="text-xl" />
+                                    <p className="text-blue-100 text-lg mb-6">Manage your shipments, track deliveries, and optimize your logistics operations</p>
+
+                                    {/* Enhanced Status Badges */}
+                                    <div className="flex flex-wrap gap-3">
+                                        <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-orange-500/20 text-orange-100 border border-orange-400/30 backdrop-blur-sm">
+                                            <FontAwesomeIcon icon={faTruck} className="mr-2" />
+                                            {bookings.filter((b) => b.status === 'in_progress' || b.status === 'in_transit').length} Active Shipments
+                                        </span>
+                                        <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-green-500/20 text-green-100 border border-green-400/30 backdrop-blur-sm">
+                                            <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
+                                            Premium Business Account
+                                        </span>
+                                        <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-purple-500/20 text-purple-100 border border-purple-400/30 backdrop-blur-sm">
+                                            <FontAwesomeIcon icon={faStar} className="mr-2" />
+                                            320 Loyalty Points
+                                        </span>
+                                        <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500/20 text-blue-100 border border-blue-400/30 backdrop-blur-sm">
+                                            <FontAwesomeIcon icon={faShieldAlt} className="mr-2" />
+                                            Enterprise Protected
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="mt-8 lg:mt-0 flex flex-col sm:flex-row gap-4">
+                                    <Link
+                                        to="/service-request"
+                                        className="inline-flex items-center px-6 py-4 bg-white/10 backdrop-blur-sm border border-secondary text-secondary font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                                        </svg>
+                                        Book A Move
+                                    </Link>
+                                    <button className="inline-flex items-center px-6 py-4 bg-white/5 backdrop-blur-sm border border-white/20 text-white font-medium rounded-xl hover:bg-white/10 transition-all duration-300">
+                                        <FontAwesomeIcon icon={faHeadset} className="mr-2" />
+                                        24/7 Support
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Enhanced Stats Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="flex items-center mb-2">
+                                        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl mr-3">
+                                            <FontAwesomeIcon icon={faBox} className="h-6 w-6 text-white" />
                                         </div>
                                         <div>
-                                            <h3 className="font-medium text-blue-800 dark:text-blue-300">No Pending Payments</h3>
-                                            <p className="text-sm text-blue-700 dark:text-blue-400 mt-0.5">All your payments are up to date. View your payment history in the Billing section.</p>
+                                            <p className="text-sm font-medium text-gray-600">Total Shipments</p>
+                                            <p className="text-3xl font-bold text-gray-900">{bookings.length}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center text-sm">
+                                        <span className="text-green-600 font-medium flex items-center">
+                                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            +12%
+                                        </span>
+                                        <span className="text-gray-500 ml-2">vs last month</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="flex items-center mb-2">
+                                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-3 rounded-xl mr-3">
+                                            <FontAwesomeIcon icon={faTruck} className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600">In Transit</p>
+                                            <p className="text-3xl font-bold text-gray-900">{bookings.filter((b) => b.status === 'in_transit' || b.status === 'in_progress').length}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center text-sm text-orange-600">
+                                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1" />
+                                        <span>Live tracking active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="flex items-center mb-2">
+                                        <div className="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-xl mr-3">
+                                            <FontAwesomeIcon icon={faCheckCircle} className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600">Delivered</p>
+                                            <p className="text-3xl font-bold text-gray-900">{bookings.filter((b) => b.status === 'completed').length}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center text-sm">
+                                        <span className="text-green-600 font-medium flex items-center">
+                                            <FontAwesomeIcon icon={faClock} className="mr-1" />
+                                            98.5% on-time
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="flex items-center mb-2">
+                                        <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-3 rounded-xl mr-3">
+                                            <FontAwesomeIcon icon={faCalendarCheck} className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600">Scheduled</p>
+                                            <p className="text-3xl font-bold text-gray-900">{bookings.filter((b) => b.status === 'confirmed').length}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center text-sm text-purple-600">
+                                        <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" />
+                                        <span>Next: Tomorrow 9 AM</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        <div className="w-full lg:w-1/4 space-y-6">
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Quick Actions</h2>
+                                <ul className="space-y-2">
+                                    <li>
+                                        <Link
+                                            to="/service-request"
+                                            className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                        >
+                                            <div className="rounded-full bg-blue-100 dark:bg-blue-900/50 p-2 mr-3">
+                                                <FontAwesomeIcon icon={faBox} className="text-blue-500 dark:text-blue-400" />
+                                            </div>
+                                            <span>Request New Move</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/support" className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                            <div className="rounded-full bg-purple-100 dark:bg-purple-900/50 p-2 mr-3">
+                                                <FontAwesomeIcon icon={faHeadset} className="text-purple-500 dark:text-purple-400" />
+                                            </div>
+                                            <span>Contact Support</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/profile" className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                            <div className="rounded-full bg-green-100 dark:bg-green-900/50 p-2 mr-3">
+                                                <FontAwesomeIcon icon={faUser} className="text-green-500 dark:text-green-400" />
+                                            </div>
+                                            <span>Update Profile</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/invoices" className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                            <div className="rounded-full bg-yellow-100 dark:bg-yellow-900/50 p-2 mr-3">
+                                                <FontAwesomeIcon icon={faFileInvoice} className="text-yellow-500 dark:text-yellow-400" />
+                                            </div>
+                                            <span>View Invoices</span>
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            {bookings.some((b) => b.status === 'in_progress') && (
+                                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                    <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Active Move Tracker</h2>
+                                    {bookings
+                                        .filter((b) => b.status === 'in_progress')
+                                        .map((booking) => (
+                                            <div key={booking.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <span className="text-sm font-medium text-gray-500">{booking.id}</span>
+                                                    <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">In Progress</span>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <div className="text-sm mb-1">
+                                                        <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mr-2" />
+                                                        <span className="font-medium">From:</span> {booking?.pickup_location?.split(',')[0]}
+                                                    </div>
+                                                    <div className="text-sm">
+                                                        <FontAwesomeIcon icon={faMapMarkerAlt} className="text-blue-500 mr-2" />
+                                                        <span className="font-medium">To:</span> {booking?.dropoff_location?.split(',')[0]}
+                                                    </div>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                                                    <div className="bg-blue-600 h-2.5 rounded-full w-2/3"></div>
+                                                </div>
+                                                <Link to={booking.trackingUrl || '#'} className="w-full text-center block bg-blue-50 text-blue-700 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+                                                    View Live Tracking
+                                                </Link>
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
+
+                            {upcomingMove && <UpcomingMoveWeather booking={upcomingMove} />}
+
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mt-4">
+                                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Payments & Refunds</h2>
+
+                                <div className="space-y-3">
+                                    {activeDisputes.some((d) => d.resolution?.outcome === 'refunded') ? (
+                                        <div className="flex items-start p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-900/40">
+                                            <div className="mr-3 text-green-500">
+                                                <FontAwesomeIcon icon={faCheckCircle} className="text-xl" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-medium text-green-800 dark:text-green-300">Refund Processed</h3>
+                                                <p className="text-sm text-green-700 dark:text-green-400 mt-0.5">
+                                                    Your refund of {activeDisputes.find((d) => d.resolution?.outcome === 'refunded')?.resolution.currency}{' '}
+                                                    {activeDisputes.find((d) => d.resolution?.outcome === 'refunded')?.resolution.amount}
+                                                    has been processed and will appear in your account in 3-5 business days.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-start p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/40">
+                                            <div className="mr-3 text-blue-500">
+                                                <FontAwesomeIcon icon={faCreditCard} className="text-xl" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-medium text-blue-800 dark:text-blue-300">No Pending Payments</h3>
+                                                <p className="text-sm text-blue-700 dark:text-blue-400 mt-0.5">All your payments are up to date. View your payment history in the Billing section.</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-full lg:w-3/4">
+                            <div className="bg-white rounded-xl shadow-md p-6">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-gray-800 mb-4 md:mb-0">My Bookings</h2>
+
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Search bookings..."
+                                            className="border border-gray-300 rounded-lg pl-10 pr-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                        <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-3 text-gray-400" />
+                                    </div>
+                                </div>
+
+                                <div className="mb-6">
+                                    <div className="border-b border-gray-200">
+                                        <nav className="-mb-px flex">
+                                            <button
+                                                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+                                                    activeTab === 'bookings' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                }`}
+                                                onClick={() => setActiveTab('bookings')}
+                                            >
+                                                All Bookings
+                                            </button>
+                                            <button
+                                                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+                                                    activeTab === 'active' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                }`}
+                                                onClick={() => setActiveTab('active')}
+                                            >
+                                                Active
+                                            </button>
+                                            <button
+                                                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+                                                    activeTab === 'completed' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                }`}
+                                                onClick={() => setActiveTab('completed')}
+                                            >
+                                                Completed
+                                            </button>
+                                        </nav>
+                                    </div>
+                                </div>
+
+                                {filteredBookings.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <FontAwesomeIcon icon={faBox} className="mx-auto text-gray-400 text-5xl mb-4" />
+                                        <h3 className="text-xl font-medium text-gray-900 mb-1">No bookings found</h3>
+                                        <p className="text-gray-500">{searchTerm ? `No results matching "${searchTerm}"` : "You haven't made any bookings yet"}</p>
+                                        {!searchTerm && (
+                                            <Link
+                                                to="/service-request"
+                                                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                Create your first booking
+                                            </Link>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto -mx-4 sm:mx-0">
+                                        <div className="inline-block min-w-full align-middle">
+                                            <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5">
+                                                <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                                                    <thead className="bg-gray-50 dark:bg-gray-800">
+                                                        <tr>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Booking ID
+                                                            </th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Status
+                                                            </th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Move Type
+                                                            </th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Date
+                                                            </th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Locations
+                                                            </th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Provider
+                                                            </th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Price
+                                                            </th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Actions
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                                                        {filteredBookings.map((booking) => (
+                                                            <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.id}</td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(booking.status)}`}>{getStatusText(booking.status)}</span>
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{booking?.request_type}</td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {booking.created_at ? new Date(booking.created_at).toLocaleString() : new Date(booking.date).toLocaleString()}
+                                                                </td>
+                                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                                    <div className="flex items-start">
+                                                                        <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mt-1 mr-1 flex-shrink-0" />
+                                                                        <div>
+                                                                            {booking.journey_stops?.map((stop, index) => (
+                                                                                <div key={stop.id} className="truncate max-w-xs">
+                                                                                    <span className="text-xs font-medium text-gray-400 mr-1">{stop.type === 'pickup' ? 'A' : 'B'}:</span>
+                                                                                    {stop.address}
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {booking.providerName ? (
+                                                                        <div>
+                                                                            <div>{booking.providerName}</div>
+                                                                            {booking.providerRating && (
+                                                                                <div className="flex items-center">
+                                                                                    <FontAwesomeIcon icon={faStar} className="text-yellow-400 mr-1" />
+                                                                                    <span>{booking.providerRating}</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-gray-400">Not assigned</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.price ? `$${booking.price.toFixed(2)}` : '-'}</td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                                    <Link to={`/tracking/${booking.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                                                                        Track
+                                                                    </Link>
+
+                                                                    <Link to={`/bookings/${booking.id}`} className="text-blue-600 hover:text-blue-900">
+                                                                        Details
+                                                                    </Link>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="w-full lg:w-3/4">
-                        <div className="bg-white rounded-xl shadow-md p-6">
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                                <h2 className="text-xl font-bold text-gray-800 mb-4 md:mb-0">My Bookings</h2>
-
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Search bookings..."
-                                        className="border border-gray-300 rounded-lg pl-10 pr-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                    <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-3 text-gray-400" />
-                                </div>
-                            </div>
-
-                            <div className="mb-6">
-                                <div className="border-b border-gray-200">
-                                    <nav className="-mb-px flex">
-                                        <button
-                                            className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
-                                                activeTab === 'bookings' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                            }`}
-                                            onClick={() => setActiveTab('bookings')}
-                                        >
-                                            All Bookings
-                                        </button>
-                                        <button
-                                            className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
-                                                activeTab === 'active' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                            }`}
-                                            onClick={() => setActiveTab('active')}
-                                        >
-                                            Active
-                                        </button>
-                                        <button
-                                            className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
-                                                activeTab === 'completed' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                            }`}
-                                            onClick={() => setActiveTab('completed')}
-                                        >
-                                            Completed
-                                        </button>
-                                    </nav>
-                                </div>
-                            </div>
-
-                            {filteredBookings.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <FontAwesomeIcon icon={faBox} className="mx-auto text-gray-400 text-5xl mb-4" />
-                                    <h3 className="text-xl font-medium text-gray-900 mb-1">No bookings found</h3>
-                                    <p className="text-gray-500">{searchTerm ? `No results matching "${searchTerm}"` : "You haven't made any bookings yet"}</p>
-                                    {!searchTerm && (
-                                        <Link
-                                            to="/service-request"
-                                            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-                                        >
-                                            Create your first booking
+                            {activeDisputes.length > 0 && (
+                                <div className="mb-8 mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                                        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0 flex items-center">
+                                            <FontAwesomeIcon icon={faGavel} className="mr-2 text-blue-600" />
+                                            Active Disputes
+                                        </h2>
+                                        <Link to="/disputes" className="text-sm text-blue-600 hover:underline flex items-center">
+                                            View All Disputes
+                                            <FontAwesomeIcon icon={faAngleRight} className="ml-1" />
                                         </Link>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto -mx-4 sm:mx-0">
-                                    <div className="inline-block min-w-full align-middle">
-                                        <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5">
-                                            <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                                                <thead className="bg-gray-50 dark:bg-gray-800">
-                                                    <tr>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Booking ID
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Status
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Move Type
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Date
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Locations
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Provider
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Price
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Actions
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                                                    {filteredBookings.map((booking) => (
-                                                        <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.id}</td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                                <span className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(booking.status)}`}>{getStatusText(booking.status)}</span>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm">{booking?.request_type}</td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(booking.created_at).toLocaleString()}</td>
-                                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                                <div className="flex items-start">
-                                                                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mt-1 mr-1 flex-shrink-0" />
-                                                                    <div>
-                                                                        {booking.journey_stops?.map((stop, index) => (
-                                                                            <div key={stop.id} className="truncate max-w-xs">
-                                                                                <span className="text-xs font-medium text-gray-400 mr-1">{stop.type === 'pickup' ? 'A' : 'B'}:</span>
-                                                                                {stop.address}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {booking.providerName ? (
-                                                                    <div>
-                                                                        <div>{booking.providerName}</div>
-                                                                        {booking.providerRating && (
-                                                                            <div className="flex items-center">
-                                                                                <FontAwesomeIcon icon={faStar} className="text-yellow-400 mr-1" />
-                                                                                <span>{booking.providerRating}</span>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                ) : (
-                                                                    <span className="text-gray-400">Not assigned</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.price ? `$${booking.price.toFixed(2)}` : '-'}</td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                                <Link to={`/tracking/${booking.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
-                                                                    Track
-                                                                </Link>
+                                    </div>
 
-                                                                <Link to={`/bookings/${booking.id}`} className="text-blue-600 hover:text-blue-900">
-                                                                    Details
-                                                                </Link>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {activeDisputes.map((dispute) => (
+                                            <div
+                                                key={dispute.id}
+                                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                                                onClick={() => navigate(`/disputes?id=${dispute.id}`)}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h3 className="font-medium text-gray-900 dark:text-white">{dispute.title}</h3>
+                                                        <p className="text-sm text-gray-500">Booking: {dispute.bookingId}</p>
+                                                    </div>
+                                                    <span className={`px-2 py-1 text-xs rounded-full ${getDisputeStatusColor(dispute.status)}`}>{getDisputeStatusText(dispute.status)}</span>
+                                                </div>
+
+                                                <div className="mt-3 flex justify-between items-center text-sm">
+                                                    <span className="text-gray-500">
+                                                        {dispute.provider} • {new Date(dispute.updatedAt).toLocaleDateString()}
+                                                    </span>
+
+                                                    <div className="flex items-center">
+                                                        <FontAwesomeIcon icon={faCommentAlt} className="text-gray-400 mr-1" />
+                                                        <span>{dispute.responses} messages</span>
+                                                    </div>
+                                                </div>
+
+                                                {dispute.resolution && (
+                                                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                        <div className="flex items-center text-green-600">
+                                                            <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
+                                                            <span className="text-sm font-medium">
+                                                                {dispute.resolution.outcome === 'refunded' ? 'Full refund' : 'Partially refunded'}: {dispute.resolution.currency}{' '}
+                                                                {dispute.resolution.amount}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
                         </div>
-                        {activeDisputes.length > 0 && (
-                            <div className="mb-8 mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                                    <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0 flex items-center">
-                                        <FontAwesomeIcon icon={faGavel} className="mr-2 text-blue-600" />
-                                        Active Disputes
-                                    </h2>
-                                    <Link to="/disputes" className="text-sm text-blue-600 hover:underline flex items-center">
-                                        View All Disputes
-                                        <FontAwesomeIcon icon={faAngleRight} className="ml-1" />
-                                    </Link>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {activeDisputes.map((dispute) => (
-                                        <div
-                                            key={dispute.id}
-                                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                                            onClick={() => navigate(`/disputes?id=${dispute.id}`)}
-                                        >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <h3 className="font-medium text-gray-900 dark:text-white">{dispute.title}</h3>
-                                                    <p className="text-sm text-gray-500">Booking: {dispute.bookingId}</p>
-                                                </div>
-                                                <span className={`px-2 py-1 text-xs rounded-full ${getDisputeStatusColor(dispute.status)}`}>{getDisputeStatusText(dispute.status)}</span>
-                                            </div>
-
-                                            <div className="mt-3 flex justify-between items-center text-sm">
-                                                <span className="text-gray-500">
-                                                    {dispute.provider} • {new Date(dispute.updatedAt).toLocaleDateString()}
-                                                </span>
-
-                                                <div className="flex items-center">
-                                                    <FontAwesomeIcon icon={faCommentAlt} className="text-gray-400 mr-1" />
-                                                    <span>{dispute.responses} messages</span>
-                                                </div>
-                                            </div>
-
-                                            {dispute.resolution && (
-                                                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                    <div className="flex items-center text-green-600">
-                                                        <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
-                                                        <span className="text-sm font-medium">
-                                                            {dispute.resolution.outcome === 'refunded' ? 'Full refund' : 'Partially refunded'}: {dispute.resolution.currency}{' '}
-                                                            {dispute.resolution.amount}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
@@ -1107,7 +1118,7 @@ const UserDashboard: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 

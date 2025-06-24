@@ -1,5 +1,5 @@
 import React from 'react';
-import BookingsList from '../components/Booking/BookingsList';
+import BookingsList from '../components/ServiceRequest/Booking/BookingsList';
 
 const BookingsPage: React.FC = () => {
     return (
