@@ -57,9 +57,9 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                     to={to}
                                         className={`flex items-center text-base lg:text-lg font-medium transition-colors duration-200 ${
                                         active
-                                            ? 'text-secondary-600 dark:text-secondary-400'
+                                            ? 'text-secondary-600 dark:text-secondary-400 font-bold'
                                             : isScrolled
-                                            ? 'text-secondary-700 dark:text-secondary-300 hover:text-secondary-600 dark:hover:text-secondary-400'
+                                            ? 'text-blue-700 dark:text-blue-300 hover:text-blue-600 dark:hover:text-blue-400 '
                                             : 'text-white hover:text-secondary-200'
                                     }`}
                                 >
@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                             to={to}
                                         className={`flex items-center px-4 py-2.5 rounded-lg text-base font-medium transition-colors duration-200 ${
                                             active 
-                                                ? 'bg-secondary-50 dark:bg-secondary-900/20 text-secondary dark:text-secondary-400' 
+                                                ? 'bg-secondary-50 dark:bg-secondary-900/20 text-secondary dark:text-secondary-400 font-bold' 
                                                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                                             }`}
                                             onClick={() => setMobileMenuOpen(false)}
