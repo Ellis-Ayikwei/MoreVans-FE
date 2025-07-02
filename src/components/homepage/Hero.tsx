@@ -341,7 +341,7 @@ const Hero: React.FC = () => {
                             {serviceCards.map((card, index) => (
                                 <motion.div
                                     key={card.id}
-                                    className="bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:bg-white group relative"
+                                    className="bg-white/95 backdrop-blur-sm rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:bg-white group relative"
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.1 * index, duration: 0.5 }}
