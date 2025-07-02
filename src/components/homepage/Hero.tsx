@@ -366,7 +366,7 @@ const Hero: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{card.title}</h3>
+                                        <h3 className="font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{card.title}</h3>
                                         <p className="text-sm text-gray-600">{card.description}</p>
                                     </div>
                                 </motion.div>
