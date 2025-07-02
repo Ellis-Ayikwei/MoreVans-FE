@@ -198,7 +198,7 @@ const Hero: React.FC = () => {
                         </div>
 
                         {/* Key benefits */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <motion.div className="flex items-center space-x-3" whileHover={{ scale: 1.05 }}>
                                 <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
                                     <IconCheck className="w-4 h-4 text-green-400" />
