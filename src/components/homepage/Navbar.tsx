@@ -57,10 +57,10 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                     to={to}
                                         className={`flex items-center text-base lg:text-lg font-medium transition-colors duration-200 ${
                                         active
-                                            ? 'text-blue-600 dark:text-blue-400'
+                                            ? 'text-secondary-600 dark:text-secondary-400'
                                             : isScrolled
-                                            ? 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-                                            : 'text-white hover:text-blue-200'
+                                            ? 'text-secondary-700 dark:text-secondary-300 hover:text-secondary-600 dark:hover:text-secondary-400'
+                                            : 'text-white hover:text-secondary-200'
                                     }`}
                                 >
                                         <Icon className={`w-5 h-5 lg:w-6 lg:h-6 mr-2 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
