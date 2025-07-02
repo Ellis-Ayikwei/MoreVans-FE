@@ -57,7 +57,7 @@ const Hero: React.FC = () => {
             id: 2,
             title: 'Furniture Removal',
             description: 'Professional furniture moving service',
-            image: 'https://images.unsplash.com/photo-1586864387789-628af9feed72?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+            image: 'https://images.unsplash.com/photo-1639322132757-14ee19fb04f5?q=80&w=1267&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
             price: 'Get Instant Prices',
             serviceType: 'furniture',
         },
