@@ -63,7 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                             : 'text-white hover:text-secondary-200'
                                     }`}
                                 >
-                                        <Icon className={`w-5 h-5 lg:w-6 lg:h-6 mr-2 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                                        <Icon className={`w-5 h-5 lg:w-6 lg:h-6 mr-2 ${active ? 'text-secodary-600 dark:text-secondary-400' : ''}`} />
                                     {label}
                                 </Link>
                             );
@@ -128,7 +128,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                             }`}
                                             onClick={() => setMobileMenuOpen(false)}
                                         >
-                                        <Icon className={`w-5 h-5 mr-3 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                                        <Icon className={`w-5 h-5 mr-3 ${active ? 'text-secondary-600 dark:text-secondary-400' : ''}`} />
                                             {label}
                                         </Link>
                                     );
