@@ -188,7 +188,7 @@ const Hero: React.FC = () => {
                     {/* Content Column */}
                     <motion.div className="space-y-8" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
                         <div>
-                            <h1 className="text-6xl text-5xl sm:text-8xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight">
+                            <h1 className="text-6xl sm:text-8xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight">
                                 Moving Made
                                 <span className="block text-blue-200 drop-shadow-md">Simple & Safe</span>
                             </h1>
