@@ -361,14 +361,14 @@ const Hero: React.FC = () => {
                                         setIsQuickQuoteModalOpen(true);
                                     }}
                                 >
-                                    <div className="aspect-[4/3] relative overflow-hidden">
+                                    <div className={`relative overflow-hidden ${
+                                        card.id === 5 ? 'aspect-[8/3]' : 'aspect-[4/3]'
+                                    }`}>
                                         <img src={card.image} alt={card.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                                         <div className="absolute top-3 right-3 bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold shadow-lg">{card.price}</div>
 
-                                        {/* Hover overlay with "Get Price Now" - using secondary color for Others card */}
-                                        <div className={`absolute inset-0 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 ${
-                                            card.id === 5 ? 'bg-secondary/90' : 'bg-blue-600/90'
-                                        }`}>
+                                        {/* Hover overlay with "Get Price Now" - using secondary color for all cards */}
+                                        <div className="absolute inset-0 bg-secondary/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                                             <div className="text-center">
                                                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                                                     <IconArrowRight className="w-6 h-6 text-white" />
@@ -378,9 +378,7 @@ const Hero: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="p-4">
-                                        <h3 className={`font-bold text-gray-900 mb-1 transition-colors ${
-                                            card.id === 5 ? 'group-hover:text-secondary' : 'group-hover:text-blue-600'
-                                        }`}>{card.title}</h3>
+                                        <h3 className="font-bold text-gray-900 mb-1 group-hover:text-secondary transition-colors">{card.title}</h3>
                                         <p className="text-sm text-gray-600">{card.description}</p>
                                     </div>
                                 </motion.div>
