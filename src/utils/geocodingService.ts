@@ -1,7 +1,7 @@
 // Geocoding Service - Backend API proxy to avoid CORS issues
 // This service calls your Django backend instead of Google Maps directly
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import axiosInstance from '../helper/axiosInstance';
 
 // Types for API responses
 export interface AddressPrediction {
@@ -98,24 +98,13 @@ export async function getAddressSuggestions(input: string, sessionToken?: string
         }
 
         // Use the working endpoint path that bypasses authentication
-        const response = await fetch(`${BASE_URL}/geocoding/google-autocomplete/?${params}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await axiosInstance.get(`/geocoding/google-autocomplete/?${params}`);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.data.error) {
+            throw new Error(response.data.error);
         }
 
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        return data;
+        return response.data;
     } catch (error) {
         console.error('Error fetching address suggestions:', error);
         throw error;
@@ -135,24 +124,13 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string): P
             params.append('sessiontoken', sessionToken);
         }
 
-        const response = await fetch(`${BASE_URL}/geocoding/google-place-details/?${params}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await axiosInstance.get(`/geocoding/google-place-details/?${params}`);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.data.error) {
+            throw new Error(response.data.error);
         }
 
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        return data;
+        return response.data;
     } catch (error) {
         console.error('Error fetching place details:', error);
         throw error;
@@ -168,24 +146,13 @@ export async function geocodeAddress(address: string): Promise<GeocodeResponse> 
             address: address.trim(),
         });
 
-        const response = await fetch(`${BASE_URL}/geocoding/geocode-address/?${params}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await axiosInstance.get(`/geocoding/geocode-address/?${params}`);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.data.error) {
+            throw new Error(response.data.error);
         }
 
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        return data;
+        return response.data;
     } catch (error) {
         console.error('Error geocoding address:', error);
         throw error;
@@ -201,19 +168,8 @@ export async function getPostcodeSuggestions(query: string): Promise<string[]> {
             return [];
         }
 
-        const response = await fetch(`${BASE_URL}/geocoding/postcode-suggestions/?q=${encodeURIComponent(query)}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.suggestions || [];
+        const response = await axiosInstance.get(`/geocoding/postcode-suggestions/?q=${encodeURIComponent(query)}`);
+        return response.data.suggestions || [];
     } catch (error) {
         console.error('Error fetching postcode suggestions:', error);
         return [];
@@ -229,19 +185,8 @@ export async function validatePostcode(postcode: string): Promise<{
     context?: any;
 }> {
     try {
-        const response = await fetch(`${BASE_URL}/morevans/api/v1/locations/validate-postcode/${encodeURIComponent(postcode)}/`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
+        const response = await axiosInstance.get(`/morevans/api/v1/locations/validate-postcode/${encodeURIComponent(postcode)}/`);
+        return response.data;
     } catch (error) {
         console.error('Error validating postcode:', error);
         return {

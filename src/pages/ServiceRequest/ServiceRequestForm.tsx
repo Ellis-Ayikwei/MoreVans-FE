@@ -1,43 +1,24 @@
+import { IconArrowLeft, IconBrandWhatsapp, IconLock, IconPhone, IconShieldCheck, IconStar } from '@tabler/icons-react';
+import { Form, Formik } from 'formik';
 import React, { useEffect, useState } from 'react';
-import { Formik, Form } from 'formik';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useImageUpload } from '../../hooks/useImageUpload';
-import LoadingSpinner from '../../components/ServiceRequest/LoadingSpinner';
-import StepIndicator from '../../components/ServiceRequest/stepIndicator';
-import { validationSchema, stepValidationSchemas } from '../../utilities/validationSchema/requestFormValidation';
-import ContactDetailsStep from '../../components/ServiceRequest/ContactDetailsStep';
-import ServiceDetailsStep from '../../components/ServiceRequest/ServiceDetailsStep';
-import LocationsStep from '../../components/ServiceRequest/LocationsStep';
-import ScheduleStep from '../../components/ServiceRequest/ScheduleStep';
-import RequestReviewPanel from '../../components/ServiceRequest/RequestReviewPanel';
-import RequestDetailsPanel from '../../components/ServiceRequest/RequestDetailsPanel';
-import { ServiceRequest } from '../../types';
-import {
-    IconCheck,
-    IconShieldCheck,
-    IconThumbUp,
-    IconChevronLeft,
-    IconChevronRight,
-    IconStar,
-    IconLock,
-    IconTruck,
-    IconClock,
-    IconMapPin,
-    IconRoute,
-    IconPhone,
-    IconBrandWhatsapp,
-    IconArrowLeft,
-} from '@tabler/icons-react';
-import { getPricePreview, setCurrentStep, submitStepToAPI, resetForm, updateFormValues, setStepData, setBookingDetails } from '../../store/slices/createRequestSlice';
-import { useSelector, useDispatch } from 'react-redux';
-import { IRootState, AppDispatch } from '../../store';
-import StepNavigation from '../../components/ServiceRequest/stepNavigation';
-import showMessage from '../../helper/showMessage';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 import RouteTracker from '../../components/mapsandlocations/routetracker';
 import PriceForecastPage from '../../components/ServiceRequest/Booking/PriceForecastPage';
 import BookingDetailsForm from '../../components/ServiceRequest/Booking/requestUserDetailForm';
-import GuestPaymentPage from '../../components/ServiceRequest/Booking/GuestPaymentPage';
-import { v4 as uuidv4 } from 'uuid';
+import ContactDetailsStep from '../../components/ServiceRequest/ContactDetailsStep';
+import LoadingSpinner from '../../components/ServiceRequest/LoadingSpinner';
+import LocationsStep from '../../components/ServiceRequest/LocationsStep';
+import ScheduleStep from '../../components/ServiceRequest/ScheduleStep';
+import ServiceDetailsStep from '../../components/ServiceRequest/ServiceDetailsStep';
+import StepIndicator from '../../components/ServiceRequest/stepIndicator';
+import showMessage from '../../helper/showMessage';
+import { useImageUpload } from '../../hooks/useImageUpload';
+import { AppDispatch, IRootState } from '../../store';
+import { resetForm, setCurrentStep, updateFormValues } from '../../store/slices/createRequestSlice';
+import { ServiceRequest } from '../../types';
+import { stepValidationSchemas, validationSchema } from '../../utilities/validationSchema/requestFormValidation';
 
 // Define payload types for each step
 interface Step1Payload {

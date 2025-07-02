@@ -1,6 +1,7 @@
 // Enhanced Address Autocomplete Component - Worldwide Search with Detailed Address Display
-import React, { useState, useEffect, useRef } from 'react';
-import { getAddressSuggestions, getPlaceDetails, generateSessionToken, extractCoordinates, extractAddressComponents, type AddressPrediction, type PlaceDetails } from '../utils/geocodingService';
+import React, { useEffect, useRef, useState } from 'react';
+import axiosInstance from '../helper/axiosInstance';
+import { extractAddressComponents, extractCoordinates, generateSessionToken, getAddressSuggestions, getPlaceDetails, type AddressPrediction } from '../utils/geocodingService';
 
 interface AddressAutocompleteProps {
     // New enhanced interface
@@ -173,38 +174,36 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/geocoding/simple-postcode-addresses/?postcode=${encodeURIComponent(formattedPostcode)}`);
-            if (response.ok) {
-                const data = await response.json();
-                const addresses: PostcodeAddress[] =
-                    data.addresses?.map((addr: any) => ({
-                        formatted_address: addr.formatted_address || `${addr.main_text || ''} ${addr.secondary_text || ''}`.trim(),
-                        postcode: formattedPostcode,
-                        address_line1: addr.main_text || addr.address_line1,
-                        city: addr.city || addr.secondary_text?.split(',')[0],
-                        country: 'United Kingdom',
-                        source: addr.source || 'google_places',
-                        place_id: addr.place_id,
-                        main_text: addr.main_text,
-                        secondary_text: addr.secondary_text,
-                    })) || [];
+            const response = await axiosInstance.get(`/geocoding/simple-postcode-addresses/?postcode=${encodeURIComponent(formattedPostcode)}`);
+            const data = response.data;
+            const addresses: PostcodeAddress[] =
+                data.addresses?.map((addr: any) => ({
+                    formatted_address: addr.formatted_address || `${addr.main_text || ''} ${addr.secondary_text || ''}`.trim(),
+                    postcode: formattedPostcode,
+                    address_line1: addr.main_text || addr.address_line1,
+                    city: addr.city || addr.secondary_text?.split(',')[0],
+                    country: 'United Kingdom',
+                    source: addr.source || 'google_places',
+                    place_id: addr.place_id,
+                    main_text: addr.main_text,
+                    secondary_text: addr.secondary_text,
+                })) || [];
 
-                // Cache addresses for 5 minutes
-                const newCache = new Map(addressCache);
-                newCache.set(formattedPostcode, {
-                    addresses,
-                    expiry: Date.now() + 5 * 60 * 1000, // 5 minutes
-                });
-                setAddressCache(newCache);
+            // Cache addresses for 5 minutes
+            const newCache = new Map(addressCache);
+            newCache.set(formattedPostcode, {
+                addresses,
+                expiry: Date.now() + 5 * 60 * 1000, // 5 minutes
+            });
+            setAddressCache(newCache);
 
-                setPostcodeAddresses(addresses);
-                if (onPostcodeAddressesFound) {
-                    onPostcodeAddressesFound(addresses);
-                }
-
-                // Log the postcode addresses
-                logPostcodeAddresses(formattedPostcode, currentAddress, addresses);
+            setPostcodeAddresses(addresses);
+            if (onPostcodeAddressesFound) {
+                onPostcodeAddressesFound(addresses);
             }
+
+            // Log the postcode addresses
+            logPostcodeAddresses(formattedPostcode, currentAddress, addresses);
         } catch (error) {
             console.error('Error fetching postcode addresses:', error);
         }

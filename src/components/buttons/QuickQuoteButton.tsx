@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import QuickQuoteModal from '../modals/QuickQuoteModal';
+import React, { useState } from 'react';
+import QuickQuoteModal from '../QuickQuotePrice/QuickQuoteModal';
 
 interface QuickQuoteButtonProps {
     variant?: 'primary' | 'secondary' | 'outline';
@@ -29,7 +29,7 @@ const QuickQuoteButton: React.FC<QuickQuoteButtonProps> = ({ variant = 'primary'
     return (
         <>
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`} onClick={() => setIsModalOpen(true)}>
-                Get Quick Quote
+                Get Instant Prices
             </motion.button>
 
             <QuickQuoteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} serviceType={serviceType} />
