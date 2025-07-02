@@ -308,7 +308,7 @@ const Hero: React.FC = () => {
                                     type="button"
                                     onClick={handleQuickFormSubmit}
                                     disabled={isLoadingQuote}
-                                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center shadow-lg"
+                                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center shadow-lg"
                                 >
                                     {isLoadingQuote ? (
                                         <>
