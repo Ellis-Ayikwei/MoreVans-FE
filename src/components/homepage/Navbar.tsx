@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
                                             to={to}
                                         className={`flex items-center px-4 py-2.5 rounded-lg text-base font-medium transition-colors duration-200 ${
                                             active 
-                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                                                ? 'bg-secondary-50 dark:bg-secondary-900/20 text-secondary dark:text-secondary-400' 
                                                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                                             }`}
                                             onClick={() => setMobileMenuOpen(false)}
