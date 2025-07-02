@@ -184,7 +184,7 @@ const Hero: React.FC = () => {
                     </div>
                 </motion.div>
 
-                <div className="grid lg:grid-cols-2 gap-16 text-center lg:text-left">
+                <div className="grid max-w-8xl lg:grid-cols-2 gap-16 text-center lg:text-left">
                     {/* Content Column */}
                     <motion.div className="space-y-8" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
                         <div>
