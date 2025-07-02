@@ -169,7 +169,7 @@ const Hero: React.FC = () => {
             {/* Content */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
                 {/* Trust indicators */}
-                <motion.div className="flex items-center justify-center space-x-8 mb-12" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+                <motion.div className="hidden md:flex items-center justify-center space-x-8 mb-12" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                     <div className="flex items-center text-sm text-white/90 drop-shadow-sm">
                         <IconShieldCheck className="w-4 h-4 text-green-400 mr-2 drop-shadow-sm" />
                         Licensed & Insured
